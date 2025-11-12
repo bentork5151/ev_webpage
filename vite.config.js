@@ -19,14 +19,19 @@ export default defineConfig(({ mode }) => {
       }
     },
     server: {
-      port: 3000,
+      port: 5173,
       open: true,
       cors: true,
       proxy: {
         '/api': {
-          target: env.VITE_API_URL || 'http://localhost:5000',
+          target: 'http://localhost:8080',
           changeOrigin: true,
           secure: false,
+          configure: (proxy, options) => {
+            proxy.on('proxyReq', (proxyReq, req, res) => {
+              console.log('Proxying:', req.method, req.url, '->', options.target + req.url)
+            })
+          }
         }
       }
     },
