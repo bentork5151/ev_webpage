@@ -18,7 +18,7 @@ class AuthService {
         const tokenData = parseJwtToken(response.token)
         console.log('Parsed token data:', tokenData)
         
-        const user = await ApiService.get(API_CONFIG.ENDPOINTS.GET_USER_BY_EMAIL, {email: email})
+        let user = await ApiService.get(API_CONFIG.ENDPOINTS.GET_USER_BY_EMAIL, {email: email})
 
         if(user){
           user = {
@@ -44,7 +44,6 @@ class AuthService {
       }
     }
   }
-  
 
   static async verifyCachedCredentials() {
     const cachedData = CacheService.getCachedUser()

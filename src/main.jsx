@@ -11,6 +11,6 @@ document.body.appendChild(script)
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+      <App />
   </React.StrictMode>
 )

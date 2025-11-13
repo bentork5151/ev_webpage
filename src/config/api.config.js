@@ -23,8 +23,8 @@ const API_CONFIG = {
     
 
     CREATE_ORDER: '/api/razorpay/create-order',
-    VERIFY_PAYMENT: '/payment/verify',
-    PROCESS_REFUND: '/payment/refund',
+    VERIFY_PAYMENT: '/api/razorpay/verify-payment',
+    PROCESS_REFUND: '/api/razorpay/refund',
   },
   
   TIMEOUT: 30000,
@@ -38,5 +38,9 @@ export const WS_CONFIG = {
   RECONNECT_ATTEMPTS: 5,
   RECONNECT_DELAY: 3000,
 }
+
+// export const GOOGLE_CONFIG = {
+//   CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID || 'YOUR_DEFAULT_CLIENT_ID.apps.googleusercontent.com'
+// }
 
 export default API_CONFIG

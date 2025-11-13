@@ -41,12 +41,21 @@ export const AuthProvider = ({ children }) => {
     }
   }
   
-  const login = async (email, password) => {
-    const result = await AuthService.login(email, password)
-    if (result.success) {
-      setUser(result.user)
+  const login = async (emailOrCredential, password = null) => {
+    if(password) {
+      const result = await AuthService.login(emailOrCredential, password)
+      if (result.success) {
+        setUser(result.user)
+      }
+      return result
+    } else {
+      const result = await AuthService.googleLogin(emailOrCredential)
+      if (result.success) {
+        setUser(result.user)
+      }
+      return result
     }
-    return result
+    
   }
   
   const logout = () => {
