@@ -89,7 +89,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<SplashScreen />} />
-        <Route path="/home" element={<HomePage />} />
+      <Route path="/login" element={<Login />} />
       </Routes>
     </Router>
   )
