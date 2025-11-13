@@ -1,0 +1,125 @@
+/* --- Base Layout --- */
+.login-container {
+  background-color: #f8f8f8;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s ease-in-out;
+}
+
+.login-container.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- Logo --- */
+.login-logo {
+  width: 130px;
+  margin-bottom: 20px;
+  animation: slideDown 1s ease forwards;
+}
+
+/* --- Onboarding Image --- */
+.onboarding-container {
+  display: flex;
+  justify-content: center;
+}
+
+.onboarding-img {
+  width: 85%;
+  max-width: 380px;
+  margin: 20px 0 30px;
+  animation: fadeUp 1.2s ease forwards;
+}
+
+/* --- Text Section --- */
+.text-section {
+  margin-bottom: 25px;
+}
+
+.welcome-text {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 5px;
+  animation: fadeUp 1.5s ease forwards;
+}
+
+.subtitle-text {
+  color: #333;
+  font-size: 1rem;
+  margin-bottom: 25px;
+}
+
+/* --- Google Button --- */
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.15);
+  padding: 12px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 90%;
+  max-width: 350px;
+}
+
+.google-btn:hover {
+  background-color: #f0f0f0;
+  transform: scale(1.02);
+}
+
+.google-icon {
+  width: 22px;
+  height: 22px;
+  margin-right: 10px;
+}
+
+/* --- Animations --- */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .welcome-text {
+    font-size: 1.8rem;
+  }
+
+  .onboarding-img {
+    width: 95%;
+  }
+
+  .google-btn {
+    font-size: 0.95rem;
+  }
+}
