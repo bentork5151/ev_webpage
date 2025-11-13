@@ -5,12 +5,11 @@ import { parseJwtToken } from '../utils/jwtHelper'
 
 class AuthService {
 
-  static async login(email, password) {
+  static async login(email) {
     try {
       console.log('Attempting login for:', email)
       const response = await ApiService.post(API_CONFIG.ENDPOINTS.LOGIN, {
-        emailOrMobile: email,
-        password: password
+        emailOrMobile: email
       })
       console.log('Login response:', response)
 

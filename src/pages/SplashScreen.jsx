@@ -20,6 +20,12 @@ const SplashScreen = () => {
   const initializeApp = async () => {
     try {
 
+      const user = await AuthService.getCurrentUser();
+
+      if (!user) {
+        navigate(`/login${ocppId ? `/${ocppId}` : ''}`)
+      }
+
       if (ocppId) {
         setStatus('Loading charger data...')
         const chargerResponse = await ApiService.get(

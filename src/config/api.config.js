@@ -4,7 +4,8 @@ const API_CONFIG = {
   
 
   ENDPOINTS: {
-    LOGIN: '/api/user/login',
+    // LOGIN: '/api/user/login',
+    LOGIN: '/api/user/google-login-success',
     VERIFY_TOKEN: '/user/verify',
     REFRESH_TOKEN: '/user/refresh',
     GET_USER_BY_EMAIL: (email) => `/user/byemail/${email}`,

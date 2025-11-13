@@ -55,6 +55,9 @@ const Login = () => {
       
       CacheService.saveUserCredentials(user, token)
 
+      console.log(user)
+      console.log(token)
+
       window.history.replaceState({}, document.title, window.location.pathname)
       
       navigate('/config-charging')
