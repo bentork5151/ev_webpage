@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import "./../assets/style/Login.css";
+import "../assets/styles/Login.css"
+// import "assets/style/Login.css";
 import bentork_logo from "../assets/images/bentork_logo.png";
 import onboarding from "../assets/images/onboarding.png";
 
