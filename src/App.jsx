@@ -1,5 +1,5 @@
 import React from 'react'
-// import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material'
 import { AuthProvider } from './store/AuthContext'
@@ -7,8 +7,8 @@ import AuthGuard from './guards/AuthGuard'
 
 import SplashScreen from './pages/SplashScreen'
 import Login from './pages/Login'
-import ConfigCharging from './pages/ConfigCharging'
-import Receipt from './pages/Receipt'
+// import ConfigCharging from './pages/ConfigCharging'
+// import Receipt from './pages/Receipt'
 
 import ChargingSession from "./pages/ChargingSession";
 
@@ -47,14 +47,7 @@ const router = createBrowserRouter([
   {
     element: <AuthGuard />,
     children: [
-      {
-        path: '/config-charging',
-        element: <ConfigCharging />
-      },
-      {
-        path: '/receipt',
-        element: <Receipt />
-      },
+      
       {
         path: '/charging-session',
         element: <ChargingSession />
@@ -74,26 +67,15 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    
-//     <ThemeProvider theme={theme}>
-//       <CssBaseline />
-//       <AuthProvider>
-//         <RouterProvider router={router} />
-//         <Route path="/" element={<SplashScreen />} />
-//         <Route path="/home" element={<HomeScreen />} />
-//         <Route path="/charging-session" element={<ChargingSession />} />
-// <Route path="/payment-status" element={<PaymentStatus />} />
-
-//       </AuthProvider>
-//     </ThemeProvider>
-    <Router>
-      <Routes>
-        <Route path="/" element={<SplashScreen />} />
-      <Route path="/login" element={<Login />} />
-      </Routes>
-    </Router>
-  )
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </ThemeProvider>
+  );
 }
+
 
 export default App
 
