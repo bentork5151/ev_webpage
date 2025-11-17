@@ -9,6 +9,9 @@ const API_CONFIG = {
     VERIFY_TOKEN: '/user/verify',
     REFRESH_TOKEN: '/user/refresh',
     GET_USER_BY_EMAIL: (email) => `/user/byemail/${email}`,
+
+
+    GET_USER_TRANSACTION: (id) => `/api/user/transaction/{id}`,
     
 
     GET_CHARGER: (ocppId) => `/api/user/charger/ocpp/${ocppId}`,

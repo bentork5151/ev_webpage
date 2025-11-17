@@ -60,7 +60,7 @@ const Login = () => {
 
       window.history.replaceState({}, document.title, window.location.pathname)
       
-      navigate('/config-charging')
+      navigate('/dashboard')
     } catch (error) {
       console.error('OAuth callback error:', error)
       setError('Failed to process login')

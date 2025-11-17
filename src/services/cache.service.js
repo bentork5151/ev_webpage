@@ -53,7 +53,7 @@ class CacheService {
         this.clearCache()
         return null
       }
-      
+      console.log(decryptedData)
       return decryptedData
     } catch (error) {
       console.error('Error getting cached user:', error)
