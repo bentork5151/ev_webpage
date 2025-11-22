@@ -9,8 +9,11 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import ConfigCharging from './pages/ConfigCharging'
 import Receipt from './pages/Receipt'
-import ChargingSession from './pages/ChargingSession'
+
+import ChargingSession from "./pages/ChargingSession";
+
 import PaymentStatus from './pages/PaymentStatus'
+import HomeScreen from "./pages/HomeScreen";
 
 
 const router = createBrowserRouter([
@@ -69,3 +72,7 @@ function App() {
 }
 
 export default App
+
+
+
+

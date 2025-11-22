@@ -149,5 +149,3 @@ const SplashScreen = () => {
     </Wrap>
   )
 }
-
-export default SplashScreen
