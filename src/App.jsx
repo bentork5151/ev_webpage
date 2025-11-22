@@ -1,12 +1,12 @@
 import React from 'react'
-// import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider } from './store/AuthContext'
 import AuthGuard from './guards/AuthGuard'
 
 import SplashScreen from './pages/SplashScreen'
 import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
 import ConfigCharging from './pages/ConfigCharging'
 import Receipt from './pages/Receipt'
 
@@ -16,22 +16,7 @@ import PaymentStatus from './pages/PaymentStatus'
 import HomeScreen from "./pages/HomeScreen";
 
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-})
-
 const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <SplashScreen />
-  },
   {
     path: '/splash/:ocppId',
     element: <SplashScreen />
@@ -47,6 +32,10 @@ const router = createBrowserRouter([
   {
     element: <AuthGuard />,
     children: [
+      {
+        path: '/dashboard',
+        element: <Dashboard />
+      },
       {
         path: '/config-charging',
         element: <ConfigCharging />
@@ -74,24 +63,11 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    
-//     <ThemeProvider theme={theme}>
-//       <CssBaseline />
-//       <AuthProvider>
-//         <RouterProvider router={router} />
-//         <Route path="/" element={<SplashScreen />} />
-//         <Route path="/home" element={<HomeScreen />} />
-//         <Route path="/charging-session" element={<ChargingSession />} />
-// <Route path="/payment-status" element={<PaymentStatus />} />
-
-//       </AuthProvider>
-//     </ThemeProvider>
-    <Router>
-      <Routes>
-        <Route path="/" element={<SplashScreen />} />
-      <Route path="/login" element={<Login />} />
-      </Routes>
-    </Router>
+    <ThemeProvider>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 

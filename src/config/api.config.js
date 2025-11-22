@@ -4,10 +4,14 @@ const API_CONFIG = {
   
 
   ENDPOINTS: {
-    LOGIN: '/api/user/login',
+    // LOGIN: '/api/user/login',
+    LOGIN: '/api/user/google-login-success',
     VERIFY_TOKEN: '/user/verify',
     REFRESH_TOKEN: '/user/refresh',
     GET_USER_BY_EMAIL: (email) => `/user/byemail/${email}`,
+
+
+    GET_USER_TRANSACTION: (id) => `/api/user/transaction/{id}`,
     
 
     GET_CHARGER: (ocppId) => `/api/user/charger/ocpp/${ocppId}`,
@@ -23,8 +27,8 @@ const API_CONFIG = {
     
 
     CREATE_ORDER: '/api/razorpay/create-order',
-    VERIFY_PAYMENT: '/payment/verify',
-    PROCESS_REFUND: '/payment/refund',
+    VERIFY_PAYMENT: '/api/razorpay/verify-payment',
+    PROCESS_REFUND: '/api/razorpay/refund',
   },
   
   TIMEOUT: 30000,
@@ -38,5 +42,9 @@ export const WS_CONFIG = {
   RECONNECT_ATTEMPTS: 5,
   RECONNECT_DELAY: 3000,
 }
+
+// export const GOOGLE_CONFIG = {
+//   CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID || 'YOUR_DEFAULT_CLIENT_ID.apps.googleusercontent.com'
+// }
 
 export default API_CONFIG

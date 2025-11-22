@@ -5,12 +5,11 @@ import { parseJwtToken } from '../utils/jwtHelper'
 
 class AuthService {
 
-  static async login(email, password) {
+  static async login(email) {
     try {
       console.log('Attempting login for:', email)
-      const response = await ApiService.post(API_CONFIG.ENDPOINTS.LOGIN, {
-        emailOrMobile: email,
-        password: password
+      const response = await ApiService.get(API_CONFIG.ENDPOINTS.LOGIN, {
+        email: email
       })
       console.log('Login response:', response)
 
@@ -18,7 +17,7 @@ class AuthService {
         const tokenData = parseJwtToken(response.token)
         console.log('Parsed token data:', tokenData)
         
-        const user = await ApiService.get(API_CONFIG.ENDPOINTS.GET_USER_BY_EMAIL, {email: email})
+        let user = await ApiService.get(API_CONFIG.ENDPOINTS.GET_USER_BY_EMAIL(email))
 
         if(user){
           user = {
@@ -44,16 +43,18 @@ class AuthService {
       }
     }
   }
-  
 
   static async verifyCachedCredentials() {
     const cachedData = CacheService.getCachedUser()
     
     if (!cachedData) {
+      console.log('No cached credentials')
       return { success: false, message: 'No cached credentials' }
     }
     
     if (cachedData.token) {
+      console.log('Cached credentials')
+      console.log(cachedData.token)
       const tokenData = parseJwtToken(cachedData.token)
       if (tokenData) {
         return {
@@ -65,6 +66,7 @@ class AuthService {
     }
     
     CacheService.clearCache()
+    console.log('Clean cache')
     return { success: false, message: 'Token expired' }
   }
   
@@ -77,6 +79,8 @@ class AuthService {
 
   static getCurrentUser() {
     const cachedData = CacheService.getCachedUser()
+    console.log(cachedData)
+    console.log(cachedData.user)
     return cachedData?.user || null
   }
   

@@ -48,6 +48,8 @@ class PaymentService {
         userEmail: userEmail,
         paymentDetails: paymentDetails
       })
+
+      console.log('Order Response:', orderResponse)
       
       return {
         success: true,
@@ -112,7 +114,8 @@ class PaymentService {
         {
           razorpay_order_id: paymentResponse.razorpay_order_id,
           razorpay_payment_id: paymentResponse.razorpay_payment_id,
-          razorpay_signature: paymentResponse.razorpay_signature
+          razorpay_signature: paymentResponse.razorpay_signature,
+          user_id: userDetails?.id || ''
         }
       )
       
@@ -123,7 +126,7 @@ class PaymentService {
           ...verificationResponse
         })
       } else {
-        onFailure('Payment verification failed')
+        onFailure(verificationResponse.message || 'Payment verification failed')
       }
     } catch (error) {
       console.error('Payment verification error:', error)
