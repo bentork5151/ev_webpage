@@ -38,18 +38,22 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'dist',
       sourcemap: mode === 'development',
-      minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: mode === 'production',
-          drop_debugger: mode === 'production'
-        }
-      },
+      minify: 'esbuild',
+      // terserOptions: {
+      //   compress: {
+      //     drop_console: mode === 'production',
+      //     drop_debugger: mode === 'production'
+      //   }
+      // },
+      esbuildOptions: mode === 'production' ? {
+        drop: ['console', 'debugger'],
+      } : {},
       rollupOptions: {
         output: {
           manualChunks: {
             vendor: ['react', 'react-dom', 'react-router-dom'],
-            utils: ['axios']
+            mui: ['@mui/material', '@mui/icons-material'],
+            utils: ['axios', 'dayjs', 'crypto-js']
           }
         }
       }

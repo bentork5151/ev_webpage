@@ -7,6 +7,9 @@ const APP_CONFIG = {
     USER_KEY: 'ev_user_data',
     TOKEN_KEY: 'ev_auth_token',
     CHARGER_KEY: 'ev_charger_data',
+    PLAN_KEY: 'ev_plan_data',
+    TRANSACTION_KEY: 'ev_user_transaction_data',
+    SESSION_KEY: 'ev_session_data',
     EXPIRY_DAYS: 7,
   },
   

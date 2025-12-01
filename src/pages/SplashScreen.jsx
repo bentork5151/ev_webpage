@@ -10,62 +10,14 @@ import { useAuth } from '../store/AuthContext'
 import ThemedImage from '../context/ThemedImage'
 import { ASSETS } from '../assets/images/images.config'
 
-
-const Wrap = styled(Box)({
-display: 'flex',
-flexDirection: 'column',
-alignItems: 'center',
-justifyContent: 'center',
-minHeight: '100vh',
-backgroundColor: 'var(--md-sys-color-background)',
-position: 'relative',
-overflow: 'hidden',
-})
-
-const TopImg = styled('img')({
-position: 'absolute',
-top: 0, left: 0, width: '100%',
-maxHeight: '28vh', objectFit: 'cover', objectPosition: 'bottom'
-})
-
-const BottomImg = styled('img')({
-position: 'absolute',
-bottom: 0, left: 0, width: '100%',
-maxHeight: '28vh', objectFit: 'cover', objectPosition: 'top'
-})
-
-const Content = styled(Box)({
-zIndex: 1,
-display: 'flex',
-flexDirection: 'column',
-alignItems: 'center',
-padding: '2rem',
-})
-
-const Logo = styled('img')({
-width: 180, height: 'auto', marginBottom: '2rem'
-})
-
-const Bar = styled(LinearProgress)({
-  width: 240, height: 4, borderRadius: 2,
-backgroundColor: 'var(--md-sys-color-surface-variant)',
-'& .MuiLinearProgress-bar': {
-backgroundColor: 'var(--md-sys-color-primary)',
-borderRadius: 2,
-},
-})
-
-const Status = styled(Typography)({
-marginTop: '1rem',
-color: 'var(--md-sys-color-on-surface-variant)',
-fontSize: 14,
-})
+import "../assets/styles/SplashScreen.css"; // ✅ Correct CSS path
+import "@material/web/progress/linear-progress.js"; // ✅ Material Web progress
 
 
 const SplashScreen = () => {
   const navigate = useNavigate()
   const { ocppId } = useParams()
-  const { updateChargerData } = useAuth()
+  const { updateChargerData, transactionHistory } = useAuth()
   const [status, setStatus] = useState('Initializing...')
   const [progress, setProgress] = useState(0)
   
@@ -77,44 +29,59 @@ const SplashScreen = () => {
     try {
 
       setProgress(10)
+      setStatus('Checking authentication...')
+
       const cacheUser = await AuthService.getCurrentUser();
 
       if (!cacheUser) {
         setProgress(100)
         navigate(`/login${ocppId ? `/${ocppId}` : ''}`)
+        return
       }
       console.log(cacheUser)
-      const user = await AuthService.login(cacheUser.email);
-      console.log(user.email)
-      console.log(user.name)
-      if (!user) {
+
+      setProgress(25)
+      setStatus('Validating credentials...')
+
+      const loginResult = await AuthService.login(cacheUser.email);
+      console.log(loginResult.user.email)
+      console.log(loginResult.user.name)
+
+      if (!loginResult.success) {
         setProgress(100)
         navigate(`/login${ocppId ? `/${ocppId}` : ''}`)
-      }
-
-      if (ocppId) {
-        setStatus('Loading charger data...')
-        setProgress(35)
-        const chargerResponse = await ApiService.get(
-          API_CONFIG.ENDPOINTS.GET_CHARGER(ocppId)
-        )
-        updateChargerData(chargerResponse)
-        setProgress(55)
+        return
       }
       
+      setProgress(40)
+      
+      if (ocppId) {
+        try{
+          setStatus('Loading charger data...')
+          const chargerResponse = await ApiService.get(
+            API_CONFIG.ENDPOINTS.GET_CHARGER(ocppId)
+          )
+          updateChargerData(chargerResponse)
+        } catch(error){
+          console.error('Failed to load charger data:', error)
+        }
+        setProgress(60)
+      }
+      
+      setStatus('Loading Transaction History')
+      const transactions = await AuthService.loadTransaction(loginResult.user.id, 10)
+      transactionHistory(transactions)
 
       setStatus('Checking authentication...')
-      const authResult = await AuthService.verifyCachedCredentials()
+      // const authResult = await AuthService.verifyCachedCredentials()
       setProgress(80)
+      setStatus('Finalizing...')
 
       await new Promise(resolve => setTimeout(resolve, APP_CONFIG.UI.SPLASH_DURATION))
       setProgress(100)
 
-      if (authResult.success) {
-        navigate('/dashboard')
-      } else {
-        navigate(`/login${ocppId ? `/${ocppId}` : ''}`)
-      }
+      navigate('/dashboard')
+
     } catch (error) {
       console.error('Initialization error:', error)
       setProgress(100)
@@ -125,27 +92,11 @@ const SplashScreen = () => {
   }
   
   return (
-    <Wrap>
-    <ThemedImage
-      lightSrc={ASSETS.top.light}
-      darkSrc={ASSETS.top.dark}
-      alt="Top decoration"
-      style={{ position: 'absolute', top: 0, left: 0, width: '100%', maxHeight: '28vh', objectFit: 'cover', objectPosition: 'bottom' }}
-      />
-    <Content>
-    <ThemedImage
-      lightSrc={ASSETS.logo.light}
-      darkSrc={ASSETS.logo.dark}
-      alt="Company logo"
-      style={{ width: 180, height: 'auto', marginBottom: '2rem' }}
-      />
-    <Bar variant="determinate" value={progress} />
-    <Status>{status}</Status>
-    </Content>
-    <ThemedImage 
-      lightSrc={ASSETS.bottom.light} 
-      darkSrc={ASSETS.bottom.dark} 
-      alt="Bottom decoration" />
-    </Wrap>
+    <Box className="splash-container">
+      <img src={"https://github.com/bentork5151/assets/blob/main/Logo/logo_transparent.png?raw=true"} alt="Bentork Logo" className="splash-logo" />
+      <md-linear-progress indeterminate></md-linear-progress>
+      {/* <Bar variant="determinate" value={progress} />
+      <Status>{status}</Status> */}
+    </Box>
   )
 }

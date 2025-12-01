@@ -1,34 +1,37 @@
 const API_CONFIG = {
 
-  BASE_URL: '',
+  BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
   
 
   ENDPOINTS: {
     // LOGIN: '/api/user/login',
     LOGIN: '/api/user/google-login-success',
-    VERIFY_TOKEN: '/user/verify',
-    REFRESH_TOKEN: '/user/refresh',
-    GET_USER_BY_EMAIL: (email) => `/user/byemail/${email}`,
+    // VERIFY_TOKEN: '/user/verify',
+    // REFRESH_TOKEN: '/user/refresh',
+    GET_USER_BY_EMAIL: (email) => `/api/user/byemail/${email}`,
 
 
-    GET_USER_TRANSACTION: (id) => `/api/user/transaction/{id}`,
+    GET_ALL_USER_TRANSACTIONS: (id) => `/api/wallet/history/${id}`,
+    GET_USER_TRANSACTION: (id) => `/api/wallet/history/${id}`,
     
 
     GET_CHARGER: (ocppId) => `/api/user/charger/ocpp/${ocppId}`,
+    // encodeURIComponent(ocppId)
     
 
-    GET_ALL_PLANS: '/api/user/plans/available',
-    
+    GET_ALL_PLANS: '/api/user-plan-selection/available',
+    GET_PLAN_BY_ID: (id) => `/api/user-plan-selection/${id}`,
+    SELECT_PLAN: '/api/user-plan-selection/select',
 
-    START_SESSION: '/sessions/start',
-    STOP_SESSION: '/sessions/stop',
-    GET_SESSION_STATUS: (sessionId) => `/sessions/${sessionId}/status`,
-    GET_KWH_USED: '/session/kwh/used',
+    START_SESSION: '/api/sessions/start',
+    STOP_SESSION: '/api/sessions/stop',
+    GET_ENERGY_USED: (sessionId) => `/api/sessions/${sessionId}/energy`,
+    GET_SESSION_STATUS: (sessionId) => `/api/sessions/${sessionId}/status`,
+    // GET_KWH_USED: '/session/kwh/used',
     
 
     CREATE_ORDER: '/api/razorpay/create-order',
     VERIFY_PAYMENT: '/api/razorpay/verify-payment',
-    PROCESS_REFUND: '/api/razorpay/refund',
   },
   
   TIMEOUT: 30000,

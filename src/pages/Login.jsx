@@ -13,152 +13,113 @@ import { Google as GoogleIcon } from '@mui/icons-material'
 import { useAuth } from '../store/AuthContext'
 import ApiService from '../services/api.service'
 import API_CONFIG from '../config/api.config'
-import CacheService from '../services/cache.service' // ✅ ADD THIS IMPORT
-import { parseJwtToken } from '../utils/jwtHelper'
+import CacheService from '../services/cache.service'
+import AuthService from '../services/auth.service'
+
+import "../assets/styles/Login.css";
 
 const Login = () => {
   const navigate = useNavigate()
   const { ocppId } = useParams()
-  const { updateChargerData } = useAuth()
+  const { updateChargerData, login: contextLogin, transactionHistory} = useAuth()
+
+  const [animate, setAnimate] = useState(false);
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   
   useEffect(() => {
+    setTimeout(() => setAnimate(true), 200);
     checkOAuthCallback();
-
-    if (ocppId) {
-      loadChargerData()
-    }
-  }, [ocppId])
+  }, [])
 
   const checkOAuthCallback = async () => {
     const urlParam = new URLSearchParams(window.location.search)
     const token = urlParam.get("token")
-    const error = urlParam.get("error")
+    const ocppIdFromUrl = urlParam.get('ocppId') || ocppId
 
     if(token){
-      handleOAuthSuccess(token)
-    } else if (error){
-      setError('Google login failed '+error)
-    }
-  }
-
-  const handleOAuthSuccess = async (token) => {
-    try {
-      const tokenData = parseJwtToken(token)
-      const user = {
-        email: tokenData?.sub || '',
-        name: tokenData?.name || tokenData?.sub || '',
-        loginMethod: 'google'
-      }
+      setLoading(true)
+      try {
+      const result = await contextLogin(token)
       
-      CacheService.saveUserCredentials(user, token)
+      if (!result.success) {
+          setError(result.error)
+          setLoading(false)
+          return
+        }
 
-      console.log(user)
+      console.log('Login successful:',result.user)
       console.log(token)
+
+      if (ocppIdFromUrl) {
+        try {
+          const chargerData = await ApiService.get(
+            API_CONFIG.ENDPOINTS.GET_CHARGER(ocppIdFromUrl),
+            null,
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
+          updateChargerData(chargerData)
+        } catch (error) {
+            console.error('Failed to load charger:', error)
+        }
+      }
+
+      const transactions = await AuthService.loadTransaction(result.user.id, 10)
+      transactionHistory(transactions || [])
 
       window.history.replaceState({}, document.title, window.location.pathname)
       
       navigate('/dashboard')
-    } catch (error) {
-      console.error('OAuth callback error:', error)
-      setError('Failed to process login')
+
+    }catch (error) {
+        console.error('OAuth callback error:', error)
+        setError('Failed to process login')
+        setLoading(false)
     }
-  }
-  
-  const loadChargerData = async () => {
-    try {
-      const chargerResponse = await ApiService.get(
-        API_CONFIG.ENDPOINTS.GET_CHARGER(ocppId)
-      )
-      updateChargerData(chargerResponse)
-    } catch (error) {
-      console.error('Failed to load charger data:', error)
-    }
-  }
+  } 
+}
 
   const handleGoogleSuccess = async () => {
     setLoading(true)
     
     if (ocppId) {
-      sessionStorage.setItem('ocppid', ocppId)
+      sessionStorage.setItem('ocppId', ocppId)
     }
 
     window.location.href = 'http://localhost:8080/oauth2/authorization/google'
   }
   
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Paper elevation={3} sx={{ padding: 4, width: '100%', textAlign: 'center' }}>
-          
-          <Typography component="h1" variant="h4" gutterBottom>
-            Welcome
-          </Typography>
-          
-          <Typography variant="body1" color="text.secondary" gutterBottom>
-            One tap to login
-          </Typography>
-          
-          {ocppId && (
-            <Box sx={{ mt: 1, mb: 2 }}>
-              <Typography variant="caption" color="text.secondary">
-                Charger ID: {ocppId}
-              </Typography>
-            </Box>
-          )}
-          
-          {error && (
-            <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-          
-          {/* Google Sign-In Button */}
-          <Box sx={{ mt: 4, mb: 3 }}>
-            {loading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" py={2}>
-                <CircularProgress />
-                <Typography sx={{ ml: 2 }}>Redirecting to Google...</Typography>
-              </Box>
-            ) : (
-              <Button
-                fullWidth
-                variant="contained"
-                size="large"
-                startIcon={<GoogleIcon />}
-                onClick={handleGoogleSuccess}
-                sx={{
-                  backgroundColor: '#4285F4',
-                  color: 'white',
-                  textTransform: 'none',
-                  fontSize: '16px',
-                  py: 1.5,
-                  '&:hover': {
-                    backgroundColor: '#357ae8'
-                  }
-                }}
-              >
-                Sign in with Google
-              </Button>
-            )}
-          </Box>
-          
-          {/* Footer Text */}
-          <Typography variant="caption" color="text.secondary" display="block" mt={3}>
-            By signing in, you agree to our Terms of Service and Privacy Policy
-          </Typography>
-        </Paper>
-      </Box>
-    </Container>
+    <div className={`login-container ${animate ? "fade-in" : ""}`}>
+      <img
+        src="https://github.com/bentork5151/assets/blob/main/Logo/logo_transparent.png?raw=true"
+        alt="Bentork Logo"
+        className="login-logo"
+      />
+
+      <div className="onboarding-container">
+        <img
+          src="https://github.com/bentork5151/assets/blob/main/Illustrations/onboarding.png?raw=true"
+          alt="Onboarding"
+          className="onboarding-img"
+        />
+      </div>
+
+      <div className="text-section">
+        <h1 className="welcome-text">Welcome</h1>
+        <p className="subtitle-text">One-Tap Login</p>
+      </div>
+
+      <button className="google-btn" onClick={handleGoogleSuccess}>
+        <img
+          src="https://developers.google.com/identity/images/g-logo.png"
+          alt="Google Logo"
+          className="google-icon"
+        />
+        Sign in with Google
+      </button>
+    </div>
   )
 }
 

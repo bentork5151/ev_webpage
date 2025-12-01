@@ -1,16 +1,17 @@
 import ApiService from './api.service'
 import API_CONFIG from '../config/api.config'
-import wsService from './websocket.service'
+import CacheService from './cache.service'
+import APP_CONFIG from '../config/app.config'
+// import wsService from './websocket.service'
 
 class SessionService {
   static activeSession = null
   
-  static async startSession(chargerId, planId, paymentId) {
+  static async startSession(chargerId, planId) {
     try {
       const response = await ApiService.post(API_CONFIG.ENDPOINTS.START_SESSION, {
         chargerId,
-        planId,
-        paymentId
+        planId
       })
       
       if (response.sessionId) {
@@ -21,10 +22,9 @@ class SessionService {
           ...response
         }
         
-        wsService.connect(response.sessionId)
+        // wsService.connect(response.sessionId)
         
-
-        sessionStorage.setItem('activeSession', JSON.stringify(this.activeSession))
+        CacheService.saveSessionData(this.activeSession)
       }
       
       return {
@@ -43,14 +43,18 @@ class SessionService {
 
   static async stopSession(sessionId) {
     try {
+      console.log('Stopping session with ID:', sessionId)
+
       const response = await ApiService.post(API_CONFIG.ENDPOINTS.STOP_SESSION, {
-        sessionId
+        sessionId: sessionId
       })
       
-      wsService.disconnect()
+      console.log('Stop session response:', response)
+
+      // wsService.disconnect()
       
       this.activeSession = null
-      sessionStorage.removeItem('activeSession')
+      sessionStorage.removeItem(APP_CONFIG.CACHE.SESSION_KEY)
       
       return {
         success: true,
@@ -74,19 +78,25 @@ class SessionService {
       return response
     } catch (error) {
       console.error('Failed to get session status:', error)
-      throw error
+      return { status: 'UNKNOWN', error: error.message }
     }
   }
   
 
   static async getKwhUsed(sessionId) {
     try {
-      const response = await ApiService.get(API_CONFIG.ENDPOINTS.GET_KWH_USED, {
-        sessionId
-      })
+      const response = await ApiService.get(API_CONFIG.ENDPOINTS.GET_ENERGY_USED(sessionId))
       return response.kwhUsed || 0
     } catch (error) {
       console.error('Failed to get kWh used:', error)
+
+      const session = this.getActiveSession()
+      if (session && session.startTime) {
+        const elapsed = Date.now() - new Date(session.startTime).getTime()
+        const minutes = elapsed / (1000 * 60)
+        return minutes * 0.5
+      }
+
       return 0
     }
   }
@@ -111,13 +121,44 @@ class SessionService {
 
   static getActiveSession() {
     if (!this.activeSession) {
-      const stored = sessionStorage.getItem('activeSession')
+      const stored = CacheService.getSessionData()
       if (stored) {
-        this.activeSession = JSON.parse(stored)
+        this.activeSession = stored
       }
     }
     return this.activeSession
   }
+
+  static clearSession() {
+    this.activeSession = null
+    CacheService.clearSessionData?.() || sessionStorage.removeItem(APP_CONFIG.CACHE.SESSION_KEY)
+  }
+  
+  // Method to update session data locally (since no WebSocket)
+  static updateSessionLocally(updates) {
+    if (this.activeSession) {
+      this.activeSession = {
+        ...this.activeSession,
+        ...updates
+      }
+      sessionStorage.setItem('activeSession', JSON.stringify(this.activeSession))
+    }
+  }
+  
+  // Simulate session progress (for demo purposes without WebSocket)
+  static simulateProgress(durationMin) {
+    const totalSeconds = durationMin * 60
+    const startTime = new Date(this.activeSession?.startTime || Date.now())
+    const elapsed = Math.floor((Date.now() - startTime.getTime()) / 1000)
+    const percentage = Math.min(100, (elapsed / totalSeconds) * 100)
+    
+    return {
+      elapsed,
+      percentage,
+      remaining: Math.max(0, totalSeconds - elapsed)
+    }
+  }
+
 }
 
 export default SessionService

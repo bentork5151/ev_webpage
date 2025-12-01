@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [chargerData, setChargerData] = useState(null)
+  const [transactionData, setTransactionData] = useState([])
   
 
   useEffect(() => {
@@ -34,6 +35,12 @@ export const AuthProvider = ({ children }) => {
       if (charger) {
         setChargerData(charger)
       }
+
+      const transactions = CacheService.getTransactionHistory()
+      if (transactions) {
+          setTransactionData(transactions)
+      }
+
     } catch (error) {
       console.error('Auth initialization error:', error)
     } finally {
@@ -42,25 +49,34 @@ export const AuthProvider = ({ children }) => {
   }
   
   const login = async (emailOrCredential, password = null) => {
-    if(password) {
-      const result = await AuthService.login(emailOrCredential, password)
-      if (result.success) {
-        setUser(result.user)
+    try{
+      let result;
+
+      if(password) {
+        result = await AuthService.login(emailOrCredential, password)
+      } else {
+        result = await AuthService.googleLogin(emailOrCredential)
       }
-      return result
-    } else {
-      const result = await AuthService.googleLogin(emailOrCredential)
-      if (result.success) {
+
+      if (result && result.success) {
         setUser(result.user)
+        return result
       }
-      return result
-    }
-    
+
+      return result || { success: false, error: 'Login failed' }
+    } catch (error) {
+        console.error('Login error in context:', error)
+        return {
+        success: false,
+        error: error.message || 'Login failed'
+      }
+      }
   }
   
   const logout = () => {
     setUser(null)
     setChargerData(null)
+    setTransactionData([])
     AuthService.logout()
   }
   
@@ -68,15 +84,22 @@ export const AuthProvider = ({ children }) => {
     setChargerData(data)
     CacheService.saveChargerData(data)
   }
+
+  const transactionHistory = (data) => {
+    setTransactionData(data || [])
+    CacheService.saveTransactionHistory(data || [])
+  }
   
   const value = {
     user,
     chargerData,
     loading,
     isAuthenticated: !!user,
+    transactionData,
     login,
     logout,
-    updateChargerData
+    updateChargerData,
+    transactionHistory
   }
   
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

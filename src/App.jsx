@@ -9,49 +9,25 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import ConfigCharging from './pages/ConfigCharging'
 import Receipt from './pages/Receipt'
-
-import ChargingSession from "./pages/ChargingSession";
-
-import PaymentStatus from './pages/PaymentStatus'
-import HomeScreen from "./pages/HomeScreen";
+import ChargingSession from './pages/ChargingSession'
+import Invoice from './pages/Invoice'
+import ThankYou from './pages/ThankYou'
 
 
 const router = createBrowserRouter([
-  {
-    path: '/splash/:ocppId',
-    element: <SplashScreen />
-  },
-  {
-    path: '/login',
-    element: <Login />
-  },
-  {
-    path: '/login/:ocppId',
-    element: <Login />
-  },
-  {
-    element: <AuthGuard />,
+
+  { path: '/', element: <SplashScreen /> },
+  { path: '/splash/:ocppId', element: <SplashScreen /> },
+  { path: '/login', element: <Login /> },
+  { path: '/login/:ocppId', element: <Login /> },
+  { element: <AuthGuard />,
     children: [
-      {
-        path: '/dashboard',
-        element: <Dashboard />
-      },
-      {
-        path: '/config-charging',
-        element: <ConfigCharging />
-      },
-      {
-        path: '/receipt',
-        element: <Receipt />
-      },
-      {
-        path: '/charging-session',
-        element: <ChargingSession />
-      },
-      {
-        path: '/payment-status',
-        element: <PaymentStatus />
-      }
+      { path: '/dashboard', element: <Dashboard /> },
+      { path: '/config-charging', element: <ConfigCharging /> },
+      { path: '/receipt', element: <Receipt /> },
+      { path: '/charging-session', element: <ChargingSession /> },
+      { path: '/invoice', element: <Invoice /> },
+      { path: '/thank-you', element: <ThankYou /> }
     ]
   }
 ], {

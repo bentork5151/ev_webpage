@@ -3,11 +3,17 @@ import API_CONFIG from '../config/api.config'
 import APP_CONFIG from '../config/app.config'
 
 class PaymentService {
-  static razorpayInstance = null
+  // static razorpayInstance = null
   
 
   static initializeRazorpay() {
     return new Promise((resolve) => {
+
+      if (window.Razorpay) {
+        resolve(true)
+        return
+      }
+
       const script = document.createElement('script')
       script.src = 'https://checkout.razorpay.com/v1/checkout.js'
       script.onload = () => {
@@ -21,42 +27,38 @@ class PaymentService {
   }
   
 
-  static calculatePaymentDetails(baseAmount) {
-    const amount = parseFloat(baseAmount)
-    const gst = amount * APP_CONFIG.TAX.GST_RATE
-    const sxt = amount * APP_CONFIG.TAX.SXT_RATE
-    const total = amount + gst + sxt
+  // static calculatePaymentDetails(baseAmount) {
+  //   const amount = parseFloat(baseAmount)
+  //   const gst = amount * APP_CONFIG.TAX.GST_RATE
+  //   const sxt = amount * APP_CONFIG.TAX.SXT_RATE
+  //   const total = amount + gst + sxt
     
-    return {
-      baseAmount: amount.toFixed(2),
-      gst: gst.toFixed(2),
-      sxt: sxt.toFixed(2),
-      total: total.toFixed(2),
-      totalInPaise: Math.round(total * 100)
-    }
-  }
+  //   return {
+  //     baseAmount: amount.toFixed(2),
+  //     gst: gst.toFixed(2),
+  //     sxt: sxt.toFixed(2),
+  //     total: total.toFixed(2),
+  //     totalInPaise: Math.round(total * 100)
+  //   }
+  // }
   
 
-  static async createPaymentOrder(planData, chargerData, userEmail) {
+  static async createOrder(amount) {
     try {
-      const paymentDetails = this.calculatePaymentDetails(planData.walletDeduction)
-      
-      const orderResponse = await ApiService.post(API_CONFIG.ENDPOINTS.CREATE_ORDER, {
-        amount: paymentDetails.totalInPaise,
-        planId: planData.id,
-        chargerId: chargerData.id,
-        userEmail: userEmail,
-        paymentDetails: paymentDetails
+      const response = await ApiService.post(API_CONFIG.ENDPOINTS.CREATE_ORDER, {
+        amount: amount,
       })
 
-      console.log('Order Response:', orderResponse)
+      console.log('Create order response:', response)
+
+      const orderData = typeof response === 'string' ? JSON.parse(response) : response
       
       return {
         success: true,
-        orderId: orderResponse.orderId,
-        amount: paymentDetails.totalInPaise,
-        currency: orderResponse.currency || 'INR',
-        paymentDetails: paymentDetails
+        orderId: orderData.id,
+        amount: orderData.amount,
+        currency: orderData.currency || 'INR',
+        orderData: orderData
       }
     } catch (error) {
       console.error('Failed to create payment order:', error)
@@ -82,18 +84,34 @@ class PaymentService {
       currency: orderData.currency,
       order_id: orderData.orderId,
       name: APP_CONFIG.APP_NAME,
-      description: 'EV Charging Session',
+      description: 'Wallet Recharge',
       prefill: {
         email: userDetails.email,
         name: userDetails.name || '',
-        contact: userDetails.phone || ''
+        contact: userDetails.mobile || ''
       },
       theme: {
         color: '#1976d2'
       },
       handler: async function(response) {
 
-        await PaymentService.verifyPayment(response, onSuccess, onFailure)
+        console.log('Razorpay response:', response)
+        try{
+          const verifyResult = await PaymentService.verifyPayment(response, userDetails.id)
+
+          if (verifyResult.success) {
+            onSuccess({
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              ...verifyResult
+            })
+          } else {
+            onFailure(verifyResult.error || 'Payment verification failed')
+          }
+
+        } catch (error){
+          onFailure(error.message || 'Payment verification failed')
+        }
       },
       modal: {
         ondismiss: function() {
@@ -102,60 +120,76 @@ class PaymentService {
       }
     }
     
-    const paymentObject = new window.Razorpay(options)
-    paymentObject.open()
+    try{
+      const paymentObject = new window.Razorpay(options)
+      paymentObject.open()
+    } catch (error) {
+      console.error('RazorPay open error: ',error)
+      onFailure('Failed to open RazorPay gateway')
+    }
   }
   
 
-  static async verifyPayment(paymentResponse, onSuccess, onFailure) {
+  static async verifyPayment(paymentResponse, userId) {
     try {
-      const verificationResponse = await ApiService.post(
+      const response = await ApiService.post(
         API_CONFIG.ENDPOINTS.VERIFY_PAYMENT,
         {
-          razorpay_order_id: paymentResponse.razorpay_order_id,
-          razorpay_payment_id: paymentResponse.razorpay_payment_id,
-          razorpay_signature: paymentResponse.razorpay_signature,
-          user_id: userDetails?.id || ''
+          order_id: paymentResponse.razorpay_order_id,
+          payment_id: paymentResponse.razorpay_payment_id,
+          signature: paymentResponse.razorpay_signature,
+          user_id: String(userId)
         }
       )
       
-      if (verificationResponse.verified) {
-        onSuccess({
-          paymentId: paymentResponse.razorpay_payment_id,
-          orderId: paymentResponse.razorpay_order_id,
-          ...verificationResponse
-        })
-      } else {
-        onFailure(verificationResponse.message || 'Payment verification failed')
+      console.log('Verify payment response:', response)
+
+      return {
+        success: true,
+        message: response.message || 'Payment successful',
+        walletAmount: response.walletAmount
       }
+      // if (verificationResponse.verified) {
+      //   onSuccess({
+      //     paymentId: paymentResponse.razorpay_payment_id,
+      //     orderId: paymentResponse.razorpay_order_id,
+      //     ...verificationResponse
+      //   })
+      // } else {
+      //   onFailure(verificationResponse.message || 'Payment verification failed')
+      // }
     } catch (error) {
       console.error('Payment verification error:', error)
-      onFailure(error.message || 'Payment verification failed')
+      // onFailure(error.message || 'Payment verification failed')
+      return {
+        success: false,
+        error: error.message || 'Payment verification failed'
+      }
     }
   }
   
 
-  static async processRefund(sessionId, amount, reason) {
-    try {
-      const response = await ApiService.post(API_CONFIG.ENDPOINTS.PROCESS_REFUND, {
-        sessionId,
-        amount,
-        reason
-      })
+  // static async processRefund(sessionId, amount, reason) {
+  //   try {
+  //     const response = await ApiService.post(API_CONFIG.ENDPOINTS.PROCESS_REFUND, {
+  //       sessionId,
+  //       amount,
+  //       reason
+  //     })
       
-      return {
-        success: true,
-        refundId: response.refundId,
-        amount: response.amount
-      }
-    } catch (error) {
-      console.error('Refund processing error:', error)
-      return {
-        success: false,
-        error: error.message || 'Failed to process refund'
-      }
-    }
-  }
+  //     return {
+  //       success: true,
+  //       refundId: response.refundId,
+  //       amount: response.amount
+  //     }
+  //   } catch (error) {
+  //     console.error('Refund processing error:', error)
+  //     return {
+  //       success: false,
+  //       error: error.message || 'Failed to process refund'
+  //     }
+  //   }
+  // }
 }
 
 export default PaymentService

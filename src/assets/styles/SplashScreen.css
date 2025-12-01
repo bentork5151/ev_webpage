@@ -1,41 +1,20 @@
 .splash-container {
-  min-height: 100vh;
-  background-color: #fff;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  height: 100vh;
+  background-color: #ffffff;
 }
 
 .splash-logo {
-  width: 100px;
-  margin-bottom: 20px;
+  width: 120px;
+  margin-bottom: 24px;
 }
 
-/* .splash-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #1a1a1a;
-  margin-bottom: 4px;
-  letter-spacing: 1px;
-}
-
-.splash-subtitle {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 16px;
-} */
-
-.splash-progress {
+md-linear-progress {
   width: 200px;
-}
-
-.splash-progress .MuiLinearProgress-bar {
-  background-color: #00a651 !important;
-}
-
-.splash-percent {
-  margin-top: 8px;
-  color: #666;
-  font-size: 0.8rem;
+  height: 6px;
+  --md-linear-progress-active-indicator-color: #00a651;
+  --md-linear-progress-track-color: #e0e0e0;
 }
