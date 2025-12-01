@@ -100,3 +100,5 @@ const SplashScreen = () => {
     </Box>
   )
 }
+
+export default SplashScreen
