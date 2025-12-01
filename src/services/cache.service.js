@@ -77,12 +77,59 @@ class CacheService {
   static saveChargerData(chargerData) {
     sessionStorage.setItem(APP_CONFIG.CACHE.CHARGER_KEY, JSON.stringify(chargerData))
   }
-  
 
+  
   static getChargerData() {
     const data = sessionStorage.getItem(APP_CONFIG.CACHE.CHARGER_KEY)
     return data ? JSON.parse(data) : null
   }
+  
+  static saveTransactionHistory(transactionData){
+    sessionStorage.setItem(APP_CONFIG.CACHE.TRANSACTION_KEY, JSON.stringify(transactionData))
+  }
+
+  static getTransactionHistory() {
+    const data = sessionStorage.getItem(APP_CONFIG.CACHE.TRANSACTION_KEY)
+    try {
+      return data ? JSON.parse(data) : []
+    } catch (error) {
+      console.error('Error parsing transaction history:', error)
+      return []
+    }
+  }
+
+  static savePlanData(planData) {
+    sessionStorage.setItem(APP_CONFIG.CACHE.PLAN_KEY, JSON.stringify(planData))
+  }
+
+  
+  static getPlanData() {
+    const data = sessionStorage.getItem(APP_CONFIG.CACHE.PLAN_KEY)
+    return data ? JSON.parse(data) : null
+  }
+
+  static clearPlanData() {
+    sessionStorage.removeItem(APP_CONFIG.CACHE.PLAN_KEY)
+  }
+
+  static saveSessionData(SessionData){
+    sessionStorage.setItem(APP_CONFIG.CACHE.SESSION_KEY, JSON.stringify(SessionData))
+  }
+
+  static getSessionData() {
+    const data = sessionStorage.getItem(APP_CONFIG.CACHE.SESSION_KEY)
+    try {
+      return data ? JSON.parse(data) : []
+    } catch (error) {
+      console.error('Error parsing Session Data:', error)
+      return []
+    }
+  }
+
+  static clearSessionData() {
+    sessionStorage.removeItem(APP_CONFIG.CACHE.SESSION_KEY)
+  }
+
 }
 
 export default CacheService

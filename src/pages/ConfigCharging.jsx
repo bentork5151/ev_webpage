@@ -25,6 +25,7 @@ import {
 import ApiService from '../services/api.service'
 import API_CONFIG from '../config/api.config'
 import { useAuth } from '../store/AuthContext'
+import CacheService from '../services/cache.service'
 
 const ConfigCharging = () => {
   const navigate = useNavigate()
@@ -78,8 +79,18 @@ const ConfigCharging = () => {
   }
   
   const confirmAndProceed = () => {
-    sessionStorage.setItem('selectedPlan', JSON.stringify(selectedPlan))
-    navigate('/receipt')
+
+    if (!selectedPlan) {
+      console.error('No plan selected')
+      return
+    }
+
+    CacheService.savePlanData(selectedPlan)
+    setConfirmDialog(false)
+
+    setTimeout(() => {
+      navigate('/receipt')
+    }, 100)
   }
   
   const formatDuration = (minutes) => {
@@ -124,7 +135,7 @@ const ConfigCharging = () => {
       
       <Grid container spacing={3}>
         {plans.map((plan) => (
-          <Grid key={plan.id} size={{ xs: 12, sm: 6, md: 4 }}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Card
               sx={{
                 height: '100%',
