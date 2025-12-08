@@ -1,332 +1,327 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom'
-import {
-  Box, 
-  Container,
-  Grid,
-  Card,
-  CardContent,
-  Paper, 
-  Typography, 
-  Button, 
-  Dialog, 
-  DialogTitle,
-  DialogContent, 
-  DialogActions, 
-  TextField, 
-  Divider, 
-  List, 
-  ListItem, 
-  ListItemText,
-  CircularProgress,
-  Alert
-} from '@mui/material'
-import {
-  AccountBalanceWallet, Email, Person, CreditCard, History
-} from '@mui/icons-material'
-import { useAuth } from '../store/AuthContext'
-import AuthService from '../services/auth.service'
-import PaymentService from '../services/payment.service'
+import React, { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "../store/AuthContext"
+import PaymentService from "../services/payment.service"
 
-const Dashboard  = () => {
+export default function Dashboard() {
+
   const navigate = useNavigate()
   const { user, transactionData } = useAuth()
+
   const [transactions, setTransactions] = useState([])
-  const [showAllTransactions, setShowAllTransactions] = useState(false)
+  const [showDialog, setShowDialog] = useState(false)
+  const [amount, setAmount] = useState("")
   const [loading, setLoading] = useState(false)
-  const [rechargeDialog, setRechargeDialog] = useState(false)
-  const [rechargeAmount, setRechargeAmount] = useState('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
 
   useEffect(() => {
     if (!user) {
-      navigate('/login')
+      navigate("/login")
       return
     }
 
-    loadInitialData()
-  }, [])
-
-  const loadInitialData = () => {
     if (Array.isArray(transactionData)) {
       setTransactions(transactionData)
-    } else {
-      setTransactions([])
     }
-  }
+  }, [user, transactionData, navigate])
+
 
   const handleRecharge = async () => {
-    if(!rechargeAmount || parseFloat(rechargeAmount) <= 0){
-      setError('Please enter a valid amount')
-      return
-    }
-
-    const amount = parseFloat(rechargeAmount)
-    
-    if (amount < 1) {
-      setError('Minimum recharge amount is ₹1')
+    if (!amount || amount <= 0) {
+      setError("Enter valid amount")
       return
     }
 
     setLoading(true)
-    setError('')
-    setSuccess('')
+    setError("")
 
-    try{
-      console.log('Creating order for amount:', amount)
+    try {
       const orderResult = await PaymentService.createOrder(amount)
-
-      if (!orderResult.success) {
-        setError(orderResult.error || 'Failed to create payment order')
-        setLoading(false)
-        return
-      }
-
-      console.log('Order created:', orderResult)
 
       PaymentService.processPayment(
         orderResult,
         user,
-        handleRechargeSuccess,
-        handleRechargeFailure
+        handleSuccess,
+        handleFailure
       )
 
-    } catch(error){
-      console.error('Recharge error:', error)
-      setError('Failed to process recharge')
+    } catch (error) {
+      setError("Recharge failed")
       setLoading(false)
     }
   }
 
-  const handleRechargeSuccess = async (response) => {
-    console.log('Payment successful:', response)
-
-    setSuccess('Payment successful! Wallet updated.')
-    setRechargeAmount('')
+  const handleSuccess = () => {
+    setSuccess("Payment Successful")
     setLoading(false)
 
-    try{
-      const updatedUser = await AuthService.login(user.email)
-
-      if (updatedUser.success) {
-        const transactions = await AuthService.loadTransaction(user.id, 10)
-        setTransactions(transactions)
-
-        setTimeout(() => {
-          setRechargeDialog(false)
-          setSuccess('')
-          window.location.reload() // Refresh to show updated balance
-        }, 2000)
-      }
-    } catch (error){
-      console.error('Failed to refresh user data')
-
-      setTimeout(() => {
-        setRechargeDialog(false)
-        window.location.reload()
-      }, 2000);
-    }
+    setTimeout(() => {
+      setShowDialog(false)
+      setSuccess("")
+      setAmount("")
+      window.location.reload()
+    }, 1500)
   }
 
-  const handleRechargeFailure = (error) => {
-    console.error('Payment failed:', error)
-    setError(error || 'Recharge failed')
+  const handleFailure = (err) => {
+    setError(err || "Failed")
     setLoading(false)
   }
 
-  const handleCloseDialog = () => {
-    if (!loading) {
-      setRechargeDialog(false)
-      setRechargeAmount('')
-      setError('')
-      setSuccess('')
-    }
-  }
 
-  const loadAllTransactions = async () => {
-    setLoading(true)
-    try{
-      const allTransaction = await AuthService.loadTransaction(user.id, 'all')
-      setTransactions(allTransaction)
-      setShowAllTransactions(true)
-    } catch(error){
-      console.error('Failed to load all transaction: ', error)
-    }
+  return (
+    <div className="dashboard">
 
-    setLoading(false)
-  }
+      {/* ==== INTERNAL CSS ==== */}
+      <style>{`
+        body{
+          background:#f6f6f6;
+          font-family:Arial;
+        }
+        .dashboard{
+          padding:20px;
+          max-width:420px;
+          margin:auto;
+        }
+        .card{
+          background:white;
+          padding:20px;
+          border-radius:16px;
+          margin-bottom:20px;
+        }
+        .profile-photo{
+          width:90px;
+          height:90px;
+          border-radius:20px;
+          border:1px solid #eee;
+          margin:0 auto 10px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:40px;
+        }
+        .center{text-align:center}
+        .menu{
+          display:grid;
+          grid-template-columns: repeat(4,1fr);
+          margin-top:15px;
+        }
+        .menu div{
+          text-align:center;
+          font-size:12px;
+        }
+        .circle{
+          width:45px;
+          height:45px;
+          border-radius:50%;
+          border:1px solid #eee;
+          margin:auto auto 8px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+        }
+        .wallet-row{
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+        }
+        .btn{
+          padding:8px 15px;
+          border-radius:20px;
+          border:none;
+          background:#212121;
+          color:white;
+          font-weight:bold;
+          cursor:pointer;
+        }
+        .amount{
+          font-size:28px;
+          font-weight:400;
+          margin-top:8px;
+        }
+        .transaction{
+          background:white;
+          padding:15px;
+          border-radius:14px;
+          display:flex;
+          justify-content:space-between;
+          margin-bottom:12px;
+        }
+        .green{color:green}
+        .start-btn{
+          position:fixed;
+          left:0;
+          right:0;
+          bottom:15px;
+          padding:15px;
+          background:#6DB85B;
+          color:white;
+          border-radius:15px;
+          font-weight:bold;
+          border:none;
+          width:90%;
+          margin:auto;
+          display:block;
+        }
+        .dialog-backdrop{
+          position:fixed;
+          top:0;
+          left:0;
+          right:0;
+          bottom:0;
+          background:rgba(0,0,0,0.5);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+        }
+        .dialog{
+          background:white;
+          width:90%;
+          padding:20px;
+          border-radius:15px;
+        }
+        input{
+          width:100%;
+          padding:10px;
+          margin-top:10px;
+          border-radius:8px;
+          border:1px solid #ccc;
+        }
+        .error{color:red;margin-top:10px}
+        .success{color:green;margin-top:10px}
+      `}</style>
 
-  const formatTransaction = (transaction) =>{
-    const isCredit = transaction.type === 'credit'
-    return {
-      text: `${isCredit ? '+' : '-'} ₹${transaction.amount}`,
-      color: isCredit ? 'success.main' : 'error.main',
-      date: new Date(transaction.createdAt).toLocaleDateString(),
-      method: transaction.method || 'wallet'
-    }
-  }
+      {/* TITLE */}
+      <h4>Dashboard</h4>
 
-  return(
-    <Container maxWidth="lg" sx={{ py: 4, pb: 12 }}>
-      {/* User Info Card */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" gap={2}>
-                <Person sx={{ fontSize: 40, color: 'primary.main' }} />
-                <Box>
-                  <Typography variant="h6">{user?.name || 'User'}</Typography>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <Email fontSize="small" />
-                    <Typography variant="body2">{user?.email}</Typography>
-                  </Box>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
-                <Box display="flex" alignItems="center" gap={2}>
-                  <AccountBalanceWallet sx={{ fontSize: 40, color: 'success.main' }} />
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      Wallet Balance
-                    </Typography>
-                    <Typography variant="h5">
-                      ₹{user?.walletBalance || '0.00'}
-                    </Typography>
-                  </Box>
-                </Box>
-                <Button
-                  variant="contained"
-                  startIcon={<CreditCard />}
-                  onClick={() => setRechargeDialog(true)}
-                >
-                  Recharge
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-      
-      {/* Transactions */}
-      <Paper sx={{ mt: 3, p: 3 }}>
-        <Box display="flex" alignItems="center" gap={1} mb={2}>
-          <History />
-          <Typography variant="h6">Transaction History</Typography>
-        </Box>
-        
-        <List>
-          {transactions.length === 0 ? (
-            <ListItem>
-              <ListItemText primary="No transactions found" />
-            </ListItem>
-          ) : (
-            transactions.map((transaction, index) => {
-              const formatted = formatTransaction(transaction)
-              return (
-                <React.Fragment key={transaction.id || index}>
-                  <ListItem>
-                    <ListItemText
-                      primary={
-                        <Box display="flex" justifyContent="space-between">
-                          <Typography sx={{ color: formatted.color }}>
-                            {formatted.text}
-                          </Typography>
-                          <Typography variant="body2">
-                            {formatted.method}
-                          </Typography>
-                        </Box>
-                      }
-                      secondary={formatted.date}
-                    />
-                  </ListItem>
-                  {index < transactions.length - 1 && <Divider />}
-                </React.Fragment>
-              )
-            })
-          )}
-        </List>
-        
-        {!showAllTransactions && transactions.length >= 10 && (
-          <Box display="flex" justifyContent="center" mt={2}>
-            <Button onClick={loadAllTransactions} disabled={loading}>
-              {loading ? <CircularProgress size={20} /> : 'View More'}
-            </Button>
-          </Box>
-        )}
-      </Paper>
-      
-      {/* Start Charging Button */}
-      <Box position="fixed" bottom={24} left={0} right={0} px={3}>
-        <Button
-          fullWidth
-          variant="contained"
-          size="large"
-          onClick={() => navigate('/config-charging')}
-          sx={{ maxWidth: 600, mx: 'auto', display: 'block' }}
-        >
-          Start Charging
-        </Button>
-      </Box>
-      
-      {/* Recharge Dialog */}
-      <Dialog open={rechargeDialog} onClose={handleCloseDialog} maxWidth="xs" fullWidth>
-        <DialogTitle>Recharge Wallet</DialogTitle>
-        <DialogContent>
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-          
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Amount (₹)"
-            type="number"
-            fullWidth
-            value={rechargeAmount}
-            onChange={(e) => setRechargeAmount(e.target.value)}
-            disabled={loading}
-            inputProps={{ min: 1, step: 1 }}
-            helperText="Minimum amount: ₹1"
-          />
-          
-          {/* Quick amount buttons */}
-          <Box display="flex" gap={1} mt={2} flexWrap="wrap">
-            {[100, 200, 500, 1000].map((amount) => (
-              <Button
-                key={amount}
-                variant="outlined"
-                size="small"
-                onClick={() => setRechargeAmount(amount.toString())}
-                disabled={loading}
-              >
-                ₹{amount}
-              </Button>
-            ))}
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog} disabled={loading}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleRecharge} 
-            variant="contained" 
-            disabled={loading || !rechargeAmount}
-          >
-            {loading ? <CircularProgress size={20} /> : `Pay ₹${rechargeAmount || 0}`}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+      {/* PROFILE */}
+      <div className="card center">
+        <div className="profile-photo">👤</div>
+        <b>{user?.name || "User"}</b>
+        <p>{user?.email}</p>
+{/* 
+        <div className="menu">
+          {["Download","Terms","Privacy","About"].map((i,k)=>(
+            <div key={k}>
+              <div className="circle">⬇️</div>
+              {i}
+            </div>
+          ))}
+        </div> */}
+
+<div className="menu">
+  {[
+    {
+      name: "Download",
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2">
+          <path d="M12 3v12" />
+          <path d="M7 10l5 5 5-5" />
+          <path d="M5 21h14" />
+        </svg>
+      )
+    },
+    {
+      name: "Terms",
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+      )
+    },
+    {
+      name: "Privacy",
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2">
+          <path d="M12 2l7 4v6c0 5-3.5 9.7-7 10-3.5-.3-7-5-7-10V6l7-4z" />
+        </svg>
+      )
+    },
+    {
+      name: "About",
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="16" x2="12" y2="12" />
+          <line x1="12" y1="8" x2="12.01" y2="8" />
+        </svg>
+      )
+    },
+  ].map((item, k) => (
+    <div key={k}>
+      <div className="circle">{item.icon}</div>
+      {item.name}
+    </div>
+  ))}
+</div>
+
+
+
+
+      </div>
+
+      {/* WALLET */}
+      <div className="card">
+        <div className="wallet-row">
+          <p>Wallet Balance</p>
+          {/* <b>Wallet Balance</b> */}
+          <button className="btn" onClick={()=>setShowDialog(true)}>Add balance</button>
+        </div>
+        <div className="amount">₹ {user?.walletBalance || 0.00}</div>
+        <small>Available for charging</small>
+      </div>
+
+      {/* TRANSACTIONS */}
+      {transactions?.map((t,i)=>(
+        <div className="transaction" key={i} style={{background:i===0?"#e6f7dc":"white"}}>
+          <div>
+            <b>{t?.type === "credit" ? "Credited" : "Debited"}</b>
+            <p>via {t?.method || "wallet"}</p>
+          </div>
+          <div style={{textAlign:"right"}}>
+            <span className="green">Completed</span>
+            <p><b>₹ {t?.amount}</b></p>
+          </div>
+        </div>
+      ))}
+
+
+      {/* START CHARGING */}
+      <button className="start-btn" onClick={()=>navigate("/config-charging")}>
+        Start 
+      </button>
+
+
+      {/* DIALOG */}
+      {showDialog && (
+        <div className="dialog-backdrop">
+          <div className="dialog">
+            <h3>Recharge Wallet</h3>
+
+            {error && <p className="error">{error}</p>}
+            {success && <p className="success">{success}</p>}
+
+            <input
+              type="number"
+              placeholder="Enter amount"
+              value={amount}
+              onChange={(e)=>setAmount(e.target.value)}
+            />
+
+            <br/><br/>
+
+            <button className="btn" onClick={handleRecharge}>
+              {loading ? "Processing..." : `Pay ₹${amount || 0}`}
+            </button>
+            <button style={{marginLeft:10}} onClick={()=>setShowDialog(false)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+    </div>
   )
 }
-
-export default Dashboard 
