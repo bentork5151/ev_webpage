@@ -1,61 +1,33 @@
 import React from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material'
+import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider } from './store/AuthContext'
 import AuthGuard from './guards/AuthGuard'
 
 import SplashScreen from './pages/SplashScreen'
 import Login from './pages/Login'
-// import ConfigCharging from './pages/ConfigCharging'
-// import Receipt from './pages/Receipt'
+import Dashboard from './pages/Dashboard'
+import ConfigCharging from './pages/ConfigCharging'
+import Receipt from './pages/Receipt'
+import ChargingSession from './pages/ChargingSession'
+import Invoice from './pages/Invoice'
+import ThankYou from './pages/ThankYou'
 
-import ChargingSession from "./pages/ChargingSession";
-
-import PaymentStatus from './pages/PaymentStatus'
-import HomeScreen from "./pages/HomeScreen";
-
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-})
 
 const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <SplashScreen />
-  },
-  {
-    path: '/splash/:ocppId',
-    element: <SplashScreen />
-  },
-  {
-    path: '/login',
-    element: <Login />
-  },
-  {
-    path: '/login/:ocppId',
-    element: <Login />
-  },
-  {
-    element: <AuthGuard />,
+
+  { path: '/', element: <SplashScreen /> },
+  { path: '/splash/:ocppId', element: <SplashScreen /> },
+  { path: '/login', element: <Login /> },
+  { path: '/login/:ocppId', element: <Login /> },
+  { element: <AuthGuard />,
     children: [
-      
-      {
-        path: '/charging-session',
-        element: <ChargingSession />
-      },
-      {
-        path: '/payment-status',
-        element: <PaymentStatus />
-      }
+      { path: '/dashboard', element: <Dashboard /> },
+      { path: '/config-charging', element: <ConfigCharging /> },
+      { path: '/receipt', element: <Receipt /> },
+      { path: '/charging-session', element: <ChargingSession /> },
+      { path: '/invoice', element: <Invoice /> },
+      { path: '/thank-you', element: <ThankYou /> }
     ]
   }
 ], {
@@ -67,15 +39,13 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <ThemeProvider>
       <AuthProvider>
         <RouterProvider router={router} />
       </AuthProvider>
     </ThemeProvider>
-  );
+  )
 }
-
 
 export default App
 

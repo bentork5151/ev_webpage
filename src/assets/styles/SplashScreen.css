@@ -13,8 +13,8 @@
 }
 
 md-linear-progress {
-  width: 78px;
-  border-radius: "60px";
+  width: 200px;
+  height: 6px;
   --md-linear-progress-active-indicator-color: #00a651;
   --md-linear-progress-track-color: #e0e0e0;
 }
