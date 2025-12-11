@@ -28,19 +28,19 @@ const SplashScreen = () => {
   const initializeApp = async () => {
     try {
 
-      setProgress(10)
+      // setProgress(10)
       setStatus('Checking authentication...')
 
       const cacheUser = await AuthService.getCurrentUser();
 
       if (!cacheUser) {
-        setProgress(100)
+        // setProgress(100)
         navigate(`/login${ocppId ? `/${ocppId}` : ''}`)
         return
       }
       console.log(cacheUser)
 
-      setProgress(25)
+      // setProgress(25)
       setStatus('Validating credentials...')
 
       const loginResult = await AuthService.login(cacheUser.email);
@@ -48,13 +48,13 @@ const SplashScreen = () => {
       console.log(loginResult.user.name)
 
       if (!loginResult.success) {
-        setProgress(100)
+        // setProgress(100)
         navigate(`/login${ocppId ? `/${ocppId}` : ''}`)
         return
       }
       
-      setProgress(40)
-      
+      // setProgress(40)
+
       if (ocppId) {
         try{
           setStatus('Loading charger data...')
@@ -65,7 +65,7 @@ const SplashScreen = () => {
         } catch(error){
           console.error('Failed to load charger data:', error)
         }
-        setProgress(60)
+        // setProgress(60)
       }
       
       setStatus('Loading Transaction History')
@@ -74,17 +74,17 @@ const SplashScreen = () => {
 
       setStatus('Checking authentication...')
       // const authResult = await AuthService.verifyCachedCredentials()
-      setProgress(80)
+      // setProgress(80)
       setStatus('Finalizing...')
 
       await new Promise(resolve => setTimeout(resolve, APP_CONFIG.UI.SPLASH_DURATION))
-      setProgress(100)
+      // setProgress(100)
 
       navigate('/dashboard')
 
     } catch (error) {
       console.error('Initialization error:', error)
-      setProgress(100)
+      // setProgress(100)
       setTimeout(() => {
         navigate(`/login${ocppId ? `/${ocppId}` : ''}`)
       }, 1000)

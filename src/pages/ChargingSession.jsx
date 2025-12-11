@@ -620,7 +620,9 @@ const getBatteryHealth = () => {
     const checkEnergy = async () => {
       try {
         const status = await SessionService.getSessionStatus(sessionId)
+        console.log("Server Status:", status);
         const kwh = await SessionService.getKwhUsed(sessionId)
+        console.log("Server Status:", status);
         setChargingData((prev) => ({
           ...prev,
           energyUsed: kwh || 0,
@@ -772,7 +774,7 @@ const getBatteryHealth = () => {
 
         <p className="station-id">Station ID: {session?.stationId || session?.sessionId || session?.id}</p>
 
-        {/* <Dialog open={stopDialog} onClose={() => setStopDialog(false)}>
+        <Dialog open={stopDialog} onClose={() => setStopDialog(false)}>
           <DialogTitle>Warning!</DialogTitle>
           <DialogContent>
             <p>Are you sure want to Stop the Charging?</p>
@@ -783,7 +785,7 @@ const getBatteryHealth = () => {
             <Button onClick={() => setStopDialog(false)}color="error">Cancel</Button>
             <Button onClick={handleStopSession} color="error" variant="contained">Stop</Button>
           </DialogActions>
-        </Dialog> */}
+        </Dialog>
 
         <Dialog open={stopDialog} onClose={() => setStopDialog(false)}>
   <DialogTitle style={{ fontWeight: "700", fontSize: "22px" }}>
