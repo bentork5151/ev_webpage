@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
       cors: true,
       proxy: {
         '/api': {
-          target: 'http://localhost:8080',
+          target: 'http://dev.bentork.com:8080',
           changeOrigin: true,
           secure: false,
           configure: (proxy, options) => {
@@ -58,8 +58,8 @@ export default defineConfig(({ mode }) => {
         }
       }
     },
-    define: {
-      __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
-    }
+   define: {
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  }
   }
 })
