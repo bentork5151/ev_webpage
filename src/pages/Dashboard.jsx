@@ -4,7 +4,10 @@ import { useAuth } from "../store/AuthContext"
 import PaymentService from "../services/payment.service"
 import APP_CONFIG from "../config/app.config"
 import AuthService from "../services/auth.service"
-
+import Download from "../assets/images/Terms.svg";
+import Terms from "../assets/images/energy.svg";
+import Privacy from "../assets/images/Privacy.svg";
+import About from "../assets/images/About.svg";
 export default function Dashboard() {
 
   const navigate = useNavigate()
@@ -273,7 +276,6 @@ export default function Dashboard() {
             </div>
           ))}
         </div> */}
-
 <div className="menu">
   {[
     {
@@ -312,7 +314,7 @@ export default function Dashboard() {
           <line x1="12" y1="8" x2="12.01" y2="8" />
         </svg>
       )
-    },
+    }
   ].map((item, k) => (
     <div key={k}>
       <div className="circle">{item.icon}</div>
@@ -320,6 +322,7 @@ export default function Dashboard() {
     </div>
   ))}
 </div>
+
 
 
 
