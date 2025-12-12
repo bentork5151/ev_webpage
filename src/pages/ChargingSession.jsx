@@ -667,8 +667,8 @@ const getBatteryHealth = () => {
   }
 
   const handleSessionComplete = (data) => {
-    clearInterval(intervalRef.current)
-    clearInterval(energyIntervalRef.current)
+    // clearInterval(intervalRef.current)
+    // clearInterval(energyIntervalRef.current)
     setChargingData((prev) => ({ ...prev, status: data.status }))
     setSessionCompleted(true)
     setTimeout(() => navigate("/invoice"), 1500)

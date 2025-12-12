@@ -199,7 +199,7 @@ import APP_CONFIG from "../config/app.config"
 
 const Receipt = () => {
   const navigate = useNavigate()
-  const { user = {}, chargerData } = useAuth()
+  const { user, chargerData } = useAuth()
 
   const [selectedPlan, setSelectedPlan] = useState(null)
   const [paymentDetails, setPaymentDetails] = useState(null)

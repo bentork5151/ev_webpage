@@ -23,7 +23,7 @@ html {
   overflow-y: scroll;
 }
 
-/* Custom scrollbar with M3 theming */
+/* Custom scrollbar with M3 theming
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -40,4 +40,4 @@ html {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--md-sys-color-outline-variant);
-}
+} */

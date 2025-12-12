@@ -92,6 +92,40 @@ class AuthService {
     }
   }
 
+  static async userByEmail(email) {
+    const token = CacheService.getToken()
+
+    if(token) {
+      const userDetails = await ApiService.get(
+        API_CONFIG.ENDPOINTS.GET_USER_BY_EMAIL(email),
+        null,
+        { headers : { Authorization : `Bearer ${token}`}}
+      )
+
+      const user = {
+        id: userDetails.id,
+        email: userDetails.email,
+        name: userDetails.name || email,
+        mobile: userDetails.mobile,
+        walletBalance: Number(userDetails.walletBalance ?? 0)
+      }
+
+      CacheService.saveUserCredentials(user, token)
+
+      return {
+        success : true,
+        user : user,
+        token : token
+      }
+    } else {
+      return {
+        success : false,
+        message : "Falied to get user details"
+      }
+    }
+    
+  }
+
   static async loadTransaction(userId, limit = 10){
     try{
 

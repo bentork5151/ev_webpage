@@ -1,6 +1,5 @@
 import React from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider } from './store/AuthContext'
 import AuthGuard from './guards/AuthGuard'
 
@@ -39,11 +38,9 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <ThemeProvider>
       <AuthProvider>
         <RouterProvider router={router} />
       </AuthProvider>
-    </ThemeProvider>
   )
 }
 
