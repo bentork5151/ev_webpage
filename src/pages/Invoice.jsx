@@ -225,6 +225,18 @@ const Invoice = () => {
 
   const [sessionData, setSessionData] = useState(null);
 
+  const selectedPlanName = () => {
+    const plan = CacheService.getPlanData();
+    console.info('plan data: ',plan)
+    return plan.planName || 'N/A'
+  }
+
+  const formatDuration = (mins) => {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${h}h ${m}m`;
+  };
+
   useEffect(() => {
     const data = JSON.parse(sessionStorage.getItem("sessionCompletion") || "{}");
 
@@ -243,7 +255,7 @@ const Invoice = () => {
   //  Dynamic Values
   // -----------------------------
 
-  const planName = sessionData?.plan?.planName || "N/A";
+  const planName = 0;
   const rate = sessionData?.plan?.rate || 0;
   const energy = sessionData?.energyUsed || 0;
   const duration = sessionData?.duration || 0;
@@ -253,12 +265,6 @@ const Invoice = () => {
     (energy * rate);
 
   const gstAmount = ((finalCost * 18) / 100).toFixed(2);
-
-  const formatDuration = (mins) => {
-    const h = Math.floor(mins / 60);
-    const m = mins % 60;
-    return `${h}h ${m}m`;
-  };
 
   const Row = ({ label, value, big }) => (
     <div className="row">
@@ -368,14 +374,14 @@ const Invoice = () => {
       </div>
 
       {/* INVOICE NUMBER (dynamic if available) */}
-      <div className="invoice-no">
+      {/* <div className="invoice-no">
         <span>{sessionData?.invoiceId || "N/A"}</span>
         <span>{sessionData?.invoiceId || "N/A"}</span>
-      </div>
+      </div> */}
 
       <h3>Charging Details</h3>
 
-      <Row label="Station Name" value={chargerData?.name || "N/A"} />
+      <Row label="Station Name" value={chargerData?.stationName || "N/A"} />
       <Row label="Charger Type" value={chargerData?.chargerType || "N/A"} />
       <Row label="Duration" value={formatDuration(duration)} />
       <Row label="Energy Delivered" value={`${energy} kWh`} />

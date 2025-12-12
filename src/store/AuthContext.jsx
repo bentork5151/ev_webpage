@@ -72,6 +72,45 @@ export const AuthProvider = ({ children }) => {
       }
       }
   }
+
+  const userByEmail = async (email) => {
+    try {
+      const updatedUser = await AuthService.userByEmail(email)
+
+      if(updatedUser.success) {
+        updateUserData(updatedUser.user)
+        return {
+          success: true,
+          updatedUser
+        }
+      }
+
+      return {
+        success: false,
+        message: result?.message || 'Failed to fetch user'
+      }
+    } catch (error) {
+      console.error('Failed to fetch user')
+      return {
+        success: false,
+        message: 'Failed to fetch User',
+        error: error.message || 'Login failed'
+      }
+    }
+  }
+
+  const updatedWalletBalance = async (newBalance) => {
+    setUser(prevUser => {
+      const updateUser = { ...prevUser, walletBalance: newBalance}
+
+      const token = CacheService.getToken()
+      if (token) {
+        CacheService.saveUserCredentials(updateUser, token)
+      }
+
+      return updateUser
+    })
+  }
   
   const logout = () => {
     setUser(null)
@@ -89,6 +128,16 @@ export const AuthProvider = ({ children }) => {
     setTransactionData(data || [])
     CacheService.saveTransactionHistory(data || [])
   }
+
+  const updateUserData = (data) => {
+    setUser(data);
+    const token = CacheService.getToken()
+    if(token){
+      CacheService.saveUserCredentials(data, token)
+    }
+  }
+
+
   
   const value = {
     user,
@@ -99,7 +148,10 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     updateChargerData,
-    transactionHistory
+    transactionHistory,
+    updateUserData,
+    userByEmail,
+    updatedWalletBalance
   }
   
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

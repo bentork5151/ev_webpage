@@ -8,7 +8,7 @@ import AuthService from "../services/auth.service"
 export default function Dashboard() {
 
   const navigate = useNavigate()
-  const { user, transactionData } = useAuth()
+  const { user, transactionData, userByEmail, transactionHistory } = useAuth()
 
   const [transactions, setTransactions] = useState([])
   const [showDialog, setShowDialog] = useState(false)
@@ -18,15 +18,12 @@ export default function Dashboard() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [isVerifying, setIsVerifying] = useState(false)
-  const [walletBalance, setWalletBalance] = useState()
 
   useEffect(() => {
     if (!user) {
       navigate("/login")
       return
     }
-
-    setWalletBalance(user?.walletBalance || 0);
 
     if (Array.isArray(transactionData)) {
       setTransactions(transactionData);
@@ -86,12 +83,18 @@ export default function Dashboard() {
 
   const reloadData = async () => {
     try{
-      const userReload = await AuthService.login(user.email)
-
-      setWalletBalance(userReload?.user?.walletBalance || 0);
+      console.info('First')
+      const userReload = await userByEmail(user.email)
+      console.debug('Second')
+      if(!userReload.success && !userReload.updatedUser) {
+        setError('Failed to fetch User')
+        return
+      }
+      console.debug('third')
 
       const transactionReload  = await AuthService.loadTransaction(user.id, 10);
       setTransactions(transactionReload);
+      transactionHistory(transactionReload);
 
       setTimeout(() => {
         setSuccess("Verification Completed");
@@ -330,7 +333,7 @@ export default function Dashboard() {
           {/* <b>Wallet Balance</b> */}
           <button className="btn" onClick={()=>setShowDialog(true)}>Add balance</button>
         </div>
-        <div className="amount">₹ {walletBalance}</div>
+        <div className="amount">₹ {user?.walletBalance || 0}</div>
         <small>Available for charging</small>
       </div>
 
