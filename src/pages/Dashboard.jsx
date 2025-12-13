@@ -338,7 +338,7 @@ export default function Dashboard() {
   ].map((item, k) => (
     <div key={k} style={{ textAlign: "center" }}>
       <div className="circle">
-        <img src={item.icon} alt={item.name} width="22" height="20"/>
+        <img src={item.icon} alt={item.name} width="24" height="24"/>
       </div>
 
       {/* TEXT ONLY FONT CHANGE */}

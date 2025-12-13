@@ -1,15 +1,16 @@
+
+
 .splash-container {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   height: 100vh;
   background-color: #ffffff;
+  padding-top: 300px;   /* 🔥 moves logo UP */
 }
 
 .splash-logo {
-  width: 120px;
-  margin-bottom: 24px;
+  width: 220px;
 }
 
 md-linear-progress {
@@ -17,4 +18,10 @@ md-linear-progress {
   height: 6px;
   --md-linear-progress-active-indicator-color: #00a651;
   --md-linear-progress-track-color: #e0e0e0;
+}
+
+.splash-text {
+  margin-top: 12px;
+  font-family: 'Lexend', sans-serif;
+  font-size: 14px;
 }
