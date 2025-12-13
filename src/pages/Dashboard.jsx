@@ -206,7 +206,12 @@ export default function Dashboard() {
   align-items: center;
   gap: 6px;
 }
-
+       .Transactions-name{
+       padding:12px;
+        font-size:18px;
+          font-weight:400;
+       
+       }
         .btn{
           padding:8px 15px;
           border-radius:20px;
@@ -302,7 +307,7 @@ export default function Dashboard() {
       `}</style>
 
       {/* TITLE */}
-      <h2>Dashboard</h2>
+      <h2>Your Wallet</h2>
 <br />
       {/* PROFILE */}
       <div className="card center">
@@ -372,7 +377,10 @@ export default function Dashboard() {
     </button>
   </div>
 
-  <div className="amount">₹ {user?.walletBalance || 0}</div>
+ <div className="amount">
+  ₹ {Number(user?.walletBalance ?? 0).toLocaleString("en-IN")}
+</div>
+
 <br />
   <p className="small-font available-text">
     Available for charging
@@ -381,17 +389,17 @@ export default function Dashboard() {
 
 
       {/* TRANSACTIONS */}
+      <p className="Transactions-name">Transactions</p>
       {transactions?.map((t,i)=>(
-        <div className="transaction" key={i} style={{background:i===0?"#e1ffd7ff":"white"}}>
+        <div className="transaction" key={i} >
           <div>
             <b className="transaction-font">{t?.type === "credit" ? "Credited" : "Debited"}</b>
-            <br /><br />
+           
             <p className="small-font">via {t?.method || "wallet"}</p>
           </div>
           <div style={{textAlign:"right"}}>
             <span className="green">Completed</span>
-            <br />
-            <br />
+           
             <p className="small-font"><p>Rs. {t?.amount}</p></p>
           </div>
         </div>
