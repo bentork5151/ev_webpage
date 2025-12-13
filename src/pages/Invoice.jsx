@@ -248,6 +248,23 @@ const Invoice = () => {
       CacheService.clearSessionData();
     }
   }, []);
+// Invoice page to open and NOT allow going back
+
+  useEffect(() => {
+  // Push current page to history
+  window.history.pushState(null, "", window.location.href);
+
+  const handleBack = () => {
+    window.history.pushState(null, "", window.location.href);
+  };
+
+  window.addEventListener("popstate", handleBack);
+
+  return () => {
+    window.removeEventListener("popstate", handleBack);
+  };
+}, []);
+
 
   if (!sessionData) return null;
 
@@ -283,16 +300,18 @@ const Invoice = () => {
         }
 
         .header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-        }
+  display: flex;
+  justify-content: center;   /* 🔥 horizontal center */
+  align-items: center;       /* 🔥 vertical center */
+  height: 48px;              /* optional, clean spacing */
+}
 
-        .header h2 {
-          font-size: 20px;
-          margin: 0;
-        }
+.header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
 
         .bell {
           position: relative;
@@ -361,16 +380,35 @@ const Invoice = () => {
           border-radius: 16px;
           font-size: 15px;
         }
+
+       .bottom-button {
+  position: fixed;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.bottom-button button {
+  width: 90%;
+  padding: 14px;
+  border-radius: 24px;
+  border: none;
+  background: #212121;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+ 
       `}</style>
 
       {/* HEADER */}
       <div className="header">
-        <ArrowBackIosNew style={{ cursor: "pointer" }} onClick={() => navigate(-1)} />
+      
         <h2>Invoice</h2>
-        <div className="bell">
-          <NotificationsNoneOutlined />
-          <div className="badge">7</div>
-        </div>
+      
       </div>
 
       {/* INVOICE NUMBER (dynamic if available) */}
@@ -405,7 +443,15 @@ const Invoice = () => {
         </div>
       </div>
 
-      <Row label="Total Amount Paid" value={`₹${finalCost}`} big />
+      <Row label="Total Amount Paid" value={`₹${finalCost}`} />
+
+      {/* BOTTOM BUTTON */}
+<div className="bottom-button">
+  <button onClick={() => navigate("/thank-you")}>
+    OK
+  </button>
+</div>
+
     </div>
   );
 };
