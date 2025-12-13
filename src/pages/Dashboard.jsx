@@ -4,10 +4,16 @@ import { useAuth } from "../store/AuthContext"
 import PaymentService from "../services/payment.service"
 import APP_CONFIG from "../config/app.config"
 import AuthService from "../services/auth.service"
-import Download from "../assets/images/Terms.svg";
-import Terms from "../assets/images/energy.svg";
+import Download from "../assets/images/download.svg";
+import Terms from "../assets/images/Terms.svg";
 import Privacy from "../assets/images/Privacy.svg";
 import About from "../assets/images/About.svg";
+import Help from "../assets/images/Help.svg";
+import ProfileIcon from "../assets/images/profile.svg";
+import WalletIcon from "../assets/images/wallet.svg";
+
+
+
 export default function Dashboard() {
 
   const navigate = useNavigate()
@@ -132,29 +138,46 @@ export default function Dashboard() {
           max-width:420px;
           margin:auto;
         }
+          .profile-name{
+          font-size:18px;
+          font-weight:500;
+          }
         .card{
           background:white;
           padding:20px;
           border-radius:16px;
           margin-bottom:20px;
         }
-        .profile-photo{
-          width:90px;
-          height:90px;
-          border-radius:20px;
-          border:1px solid #eee;
-          margin:0 auto 10px;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          font-size:40px;
-        }
-        .center{text-align:center}
+       .small-font{
+            font-size:12px;
+          
+       }
+          .profile-photo{
+  width:90px;
+  height:90px;
+  border-radius:20px;
+  border:1px solid #eee;
+  margin:0 auto 13px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#FFFFFF;
+}
+  .profile-img{
+  width:60px;
+  height:60px;
+  object-fit:contain;
+}
+        .center{text-align: center}
         .menu{
           display:grid;
-          grid-template-columns: repeat(4,1fr);
+          grid-template-columns: repeat(5,1fr);
           margin-top:15px;
+          
         }
+         .small-font available-text{
+          margin-top: 20px;
+          }
         .menu div{
           text-align:center;
           font-size:12px;
@@ -169,11 +192,21 @@ export default function Dashboard() {
           align-items:center;
           justify-content:center;
         }
+          .circle img{
+  display:block;
+}
+
         .wallet-row{
           display:flex;
           justify-content:space-between;
           align-items:center;
         }
+         .wallet-title{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
         .btn{
           padding:8px 15px;
           border-radius:20px;
@@ -182,21 +215,30 @@ export default function Dashboard() {
           color:white;
           font-weight:bold;
           cursor:pointer;
+            font-size:8px;
         }
         .amount{
-          font-size:28px;
+          font-size:20px;
           font-weight:400;
-          margin-top:8px;
+          margin-top:12px;
         }
         .transaction{
-          background:white;
+          background:#f6f6f6;
           padding:15px;
           border-radius:14px;
           display:flex;
           justify-content:space-between;
           margin-bottom:12px;
         }
-        .green{color:green}
+      .transaction-font{
+           font-size:16px;
+          font-weight:400;
+
+          }
+
+        .green{color:#000000;
+         font-size:12px;
+        }  
         .start-btn{
           position:fixed;
           left:0;
@@ -260,13 +302,23 @@ export default function Dashboard() {
       `}</style>
 
       {/* TITLE */}
-      <h4>Dashboard</h4>
-
+      <h2>Dashboard</h2>
+<br />
       {/* PROFILE */}
       <div className="card center">
-        <div className="profile-photo">👤</div>
-        <b>{user?.name || "User"}</b>
-        <p>{user?.email}</p>
+      <div className="profile-photo">
+  <img
+    src={user?.profileImage || ProfileIcon}
+    alt="Profile"
+    className="profile-img"
+  />
+</div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+  <p className="profile-name">{user?.name || "User"}</p>
+  <p className="small-font">{user?.email}</p>
+</div>
+
 {/* 
         <div className="menu">
           {["Download","Terms","Privacy","About"].map((i,k)=>(
@@ -278,78 +330,69 @@ export default function Dashboard() {
         </div> */}
 <div className="menu">
   {[
-    {
-      name: "Download",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2">
-          <path d="M12 3v12" />
-          <path d="M7 10l5 5 5-5" />
-          <path d="M5 21h14" />
-        </svg>
-      )
-    },
-    {
-      name: "Terms",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          <polyline points="14 2 14 8 20 8" />
-        </svg>
-      )
-    },
-    {
-      name: "Privacy",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2">
-          <path d="M12 2l7 4v6c0 5-3.5 9.7-7 10-3.5-.3-7-5-7-10V6l7-4z" />
-        </svg>
-      )
-    },
-    {
-      name: "About",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="16" x2="12" y2="12" />
-          <line x1="12" y1="8" x2="12.01" y2="8" />
-        </svg>
-      )
-    }
+    { name: "Download App", icon: Download },
+    { name: "Terms & Conditions", icon: Terms },
+    { name: "Privacy Policy", icon: Privacy },
+    { name: "Help", icon: Help },
+    { name: "About", icon: About },
   ].map((item, k) => (
-    <div key={k}>
-      <div className="circle">{item.icon}</div>
-      {item.name}
+    <div key={k} style={{ textAlign: "center" }}>
+      <div className="circle">
+        <img src={item.icon} alt={item.name} width="22" height="20"/>
+      </div>
+
+      {/* TEXT ONLY FONT CHANGE */}
+      <span
+        style={{
+          fontFamily: "'Lexend', sans-serif",
+          fontSize: "8px",
+          fontWeight: 400
+        }}
+      >
+        {item.name}
+      </span>
     </div>
   ))}
 </div>
 
 
 
-
-
       </div>
 
       {/* WALLET */}
-      <div className="card">
-        <div className="wallet-row">
-          <p>Wallet Balance</p>
-          {/* <b>Wallet Balance</b> */}
-          <button className="btn" onClick={()=>setShowDialog(true)}>Add balance</button>
-        </div>
-        <div className="amount">₹ {user?.walletBalance || 0}</div>
-        <small>Available for charging</small>
-      </div>
+    <div className="card">
+  <div className="wallet-row">
+    <div className="wallet-title">
+      <img src={WalletIcon} alt="Wallet" width="14" height="14" />
+      <p className="small-font">Wallet Balance</p>
+    </div>
+
+    <button className="btn" onClick={() => setShowDialog(true)}>
+      Add balance
+    </button>
+  </div>
+
+  <div className="amount">₹ {user?.walletBalance || 0}</div>
+<br />
+  <p className="small-font available-text">
+    Available for charging
+  </p>
+</div>
+
 
       {/* TRANSACTIONS */}
       {transactions?.map((t,i)=>(
-        <div className="transaction" key={i} style={{background:i===0?"#e6f7dc":"white"}}>
+        <div className="transaction" key={i} style={{background:i===0?"#e1ffd7ff":"white"}}>
           <div>
-            <b>{t?.type === "credit" ? "Credited" : "Debited"}</b>
-            <p>via {t?.method || "wallet"}</p>
+            <b className="transaction-font">{t?.type === "credit" ? "Credited" : "Debited"}</b>
+            <br /><br />
+            <p className="small-font">via {t?.method || "wallet"}</p>
           </div>
           <div style={{textAlign:"right"}}>
             <span className="green">Completed</span>
-            <p><b>₹ {t?.amount}</b></p>
+            <br />
+            <br />
+            <p className="small-font"><p>Rs. {t?.amount}</p></p>
           </div>
         </div>
       ))}
