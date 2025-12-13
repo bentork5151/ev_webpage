@@ -1,6 +1,6 @@
 const API_CONFIG = {
 
-  BASE_URL: import.meta.env.VITE_API_URL || 'http://dev.bentork.com:8080',
+  BASE_URL: import.meta.env.VITE_API_BASE_URL,
   
 
   ENDPOINTS: {
