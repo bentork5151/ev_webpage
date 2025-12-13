@@ -91,12 +91,18 @@ const SplashScreen = () => {
   }
   
   return (
-    <Box className="splash-container">
-      <img src={"https://github.com/bentork5151/assets/blob/main/Logo/logo_transparent.png?raw=true"} alt="Bentork Logo" className="splash-logo" />
-      <md-linear-progress indeterminate></md-linear-progress>
-      {/* <Bar variant="determinate" value={progress} /> */}
-      <p>{status}</p>
-    </Box>
+   <Box className="splash-container">
+  <img
+    src="https://github.com/bentork5151/assets/blob/main/Logo/logo_transparent.png?raw=true"
+    alt="Bentork Logo"
+    className="splash-logo"
+  />
+
+  <md-linear-progress indeterminate></md-linear-progress>
+
+  <p className="splash-text">{status}</p>
+</Box>
+
   )
 }
 
