@@ -11,7 +11,8 @@ import About from "../assets/images/About.svg";
 import Help from "../assets/images/Help.svg";
 import ProfileIcon from "../assets/images/profile.svg";
 import WalletIcon from "../assets/images/wallet.svg";
-
+import ArrowUp from "../assets/images/ArrowUp.svg";
+import ArrowDown from "../assets/images/ArrowDown.svg";
 
 
 export default function Dashboard() {
@@ -138,15 +139,26 @@ export default function Dashboard() {
           max-width:420px;
           margin:auto;
         }
+          .main-title{
+          font-size:16px;
+          font-weight:500;
+          }
           .profile-name{
           font-size:18px;
-          font-weight:500;
+          font-weight:400;
           }
         .card{
           background:white;
           padding:20px;
           border-radius:16px;
           margin-bottom:20px;
+        }
+          .card-1{
+          background:#B1DDFF80;
+          padding:10px;
+          border-radius:12px;
+           border:1px solid #eee;
+         
         }
        .small-font{
             font-size:12px;
@@ -173,23 +185,31 @@ export default function Dashboard() {
           display:grid;
           grid-template-columns: repeat(5,1fr);
           margin-top:15px;
+         
           
         }
          .small-font available-text{
           margin-top: 20px;
           }
+           .small-font{
+           font-size:10px;
+           font-weight:400;
+
+           }
         .menu div{
           text-align:center;
           font-size:12px;
         }
         .circle{
-          width:45px;
-          height:45px;
-          border-radius:50%;
+          width:46px;
+          height:46px;
+          border-radius:12px;
           border:1px solid #eee;
           margin:auto auto 8px;
           display:flex;
+           padding:12px;
           align-items:center;
+           gap: 10px;
           justify-content:center;
         }
           .circle img{
@@ -206,12 +226,34 @@ export default function Dashboard() {
   align-items: center;
   gap: 6px;
 }
-       .Transactions-name{
-       padding:12px;
-        font-size:18px;
-          font-weight:400;
+  .tx-right {
+  text-align: right;
+}
+
+.tx-status {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #dff5cc;
+  color: #2e7d32;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+.tx-amount {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.tx-amount.green {
+  color: #2e7d32;
+}
+
+.tx-amount.red {
+  color: #000000ff;
+}
+      
        
-       }
         .btn{
           padding:8px 15px;
           border-radius:20px;
@@ -227,19 +269,62 @@ export default function Dashboard() {
           font-weight:400;
           margin-top:12px;
         }
-        .transaction{
-          background:#f6f6f6;
-          padding:15px;
-          border-radius:14px;
-          display:flex;
-          justify-content:space-between;
-          margin-bottom:12px;
-        }
-      .transaction-font{
-           font-size:16px;
-          font-weight:400;
+          .transactions-title {
+  font-size: 18px;
+  font-weight: 400;
+ 
+  padding:12px;
+}
+        .transaction-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f7f7f5;
+  border-radius: 12px;
+    border:0.25px solid #00000045;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+  .tx-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tx-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-          }
+.tx-icon img {
+  width: 16px;
+  height: 16px;
+}
+
+.tx-icon.credit {
+  background: #dff5cc;
+}
+
+.tx-icon.debit {
+  background: #ffe1cc;
+}
+
+
+.tx-title {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.tx-sub {
+  font-size: 12px;
+  color: #777;
+}
+    
+
+
 
         .green{color:#000000;
          font-size:12px;
@@ -259,17 +344,16 @@ export default function Dashboard() {
           margin:auto;
           display:block;
         }
-        .dialog-backdrop{
-          position:fixed;
-          top:0;
-          left:0;
-          right:0;
-          bottom:0;
-          background:rgba(0,0,0,0.5);
-          display:flex;
-          align-items:center;
-          justify-content:center;
-        }
+        .dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
         .dialog{
           background:white;
           width:90%;
@@ -304,10 +388,57 @@ export default function Dashboard() {
         .error{color:red;margin-top:10px}
         .success{color:green;margin-top:10px}
         .spacing{font-size:0.7rem;margin-bottom:16px}
+
+
+        /* Common button styles */
+.btn-primary,
+.btn-secondary {
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  min-width: 120px;
+}
+
+/* Primary Pay Button */
+.btn-primary {
+  background: linear-gradient(135deg, #000000ff, #000000ff);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+}
+
+/* Secondary Cancel Button */
+.btn-secondary {
+  margin-left: 10px;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+/* Disabled State */
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
       `}</style>
 
       {/* TITLE */}
-      <h2>Your Wallet</h2>
+      <h2 className="main-title">Your Wallet</h2>
 <br />
       {/* PROFILE */}
       <div className="card center">
@@ -343,7 +474,7 @@ export default function Dashboard() {
   ].map((item, k) => (
     <div key={k} style={{ textAlign: "center" }}>
       <div className="circle">
-        <img src={item.icon} alt={item.name} width="24" height="24"/>
+        <img src={item.icon} alt={item.name} width="22" height="22"/>
       </div>
 
       {/* TEXT ONLY FONT CHANGE */}
@@ -365,11 +496,11 @@ export default function Dashboard() {
       </div>
 
       {/* WALLET */}
-    <div className="card">
+    <div className="card-1">
   <div className="wallet-row">
     <div className="wallet-title">
       <img src={WalletIcon} alt="Wallet" width="14" height="14" />
-      <p className="small-font">Wallet Balance</p>
+      <h6 className="small-font">Wallet Balance</h6>
     </div>
 
     <button className="btn" onClick={() => setShowDialog(true)}>
@@ -378,7 +509,7 @@ export default function Dashboard() {
   </div>
 
  <div className="amount">
-  ₹ {Number(user?.walletBalance ?? 0).toLocaleString("en-IN")}
+  ₹{Number(user?.walletBalance ?? 0).toLocaleString("en-IN")}
 </div>
 
 <br />
@@ -389,21 +520,44 @@ export default function Dashboard() {
 
 
       {/* TRANSACTIONS */}
-      <p className="Transactions-name">Transactions</p>
-      {transactions?.map((t,i)=>(
-        <div className="transaction" key={i} >
-          <div>
-            <b className="transaction-font">{t?.type === "credit" ? "Credited" : "Debited"}</b>
-           
-            <p className="small-font">via {t?.method || "wallet"}</p>
+   <p className="transactions-title">Transactions</p>
+
+{transactions?.map((t, i) => {
+  const isCredit = t?.type === "credit";
+
+  return (
+    <div className="transaction-card" key={i}>
+      {/* LEFT */}
+      <div className="tx-left">
+        <div className={`tx-icon ${isCredit ? "credit" : "debit"}`}>
+          <img
+            src={isCredit ? ArrowDown : ArrowUp}
+            alt={isCredit ? "Credit" : "Debit"}
+          />
+        </div>
+
+        <div>
+          <div className="tx-title">
+            {isCredit ? "Credited" : "Debited"}
           </div>
-          <div style={{textAlign:"right"}}>
-            <span className="green">Completed</span>
-           
-            <p className="small-font"><p>Rs. {t?.amount}</p></p>
+          <div className="tx-sub">
+            via {t?.method || "Wallet"}
           </div>
         </div>
-      ))}
+      </div>
+
+      {/* RIGHT */}
+      <div className="tx-right">
+        <div className={`tx-amount ${isCredit ? "green" : "red"}`}>
+          {isCredit ? "+" : "-"}₹{t?.amount}
+        </div>
+        <span className="tx-status">Completed</span>
+        
+      </div>
+    </div>
+  );
+})}
+
 
 
       {/* START CHARGING */}
@@ -445,17 +599,24 @@ export default function Dashboard() {
 
                 <p className="spacing">This will also include GST(18%) and PST(18%) of the Amount </p>
 
-                <button className="btn" onClick={handleRecharge} disabled={loading || parseFloat(totalAmount) <= 0}>
-                  {loading ? "Processing..." : `Pay ₹${totalAmount || 0}`}
-                </button>
-                <button style={{marginLeft:10}} 
-                  onClick={()=> {
-                    if(!loading)setShowDialog(false)
-                    }}
-                  disabled={loading}  
-                >
-                  Cancel
-                </button>
+                <button
+  className="btn-primary"
+  onClick={handleRecharge}
+  disabled={loading || parseFloat(totalAmount) <= 0}
+>
+  {loading ? "Processing..." : `Pay ₹${totalAmount || 0}`}
+</button>
+
+<button
+  className="btn-secondary"
+  onClick={() => {
+    if (!loading) setShowDialog(false)
+  }}
+  disabled={loading}
+>
+  Cancel
+</button>
+
               </>
             )}
           </div>

@@ -23,7 +23,7 @@ const router = createBrowserRouter([
     children: [
       { path: '/dashboard', element: <Dashboard /> },
       { path: '/config-charging', element: <ConfigCharging /> },
-      { path: '/receipt', element: <Receipt /> },
+        { path: '/receipt', element: <Receipt /> },
       { path: '/charging-session', element: <ChargingSession /> },
       { path: '/invoice', element: <Invoice /> },
       { path: '/thank-you', element: <ThankYou /> }

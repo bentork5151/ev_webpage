@@ -255,6 +255,9 @@ const ConfigCharging = () => {
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [powerValue, setPowerValue] = useState(10);
+   const [showPaymentDialog, setShowPaymentDialog] = useState(false); 
+const totalAmount =
+  Number(selectedPlan?.rate || 0) * Number(powerValue);
 
   useEffect(() => {
     fetchPlans();
@@ -274,73 +277,156 @@ const ConfigCharging = () => {
     CacheService.savePlanData(updatedPlan);
     navigate("/receipt");
   };
+  
+const handleConfirmPayment = () => {
+  if (!selectedPlan) return;
+
+  const updatedPlan = {
+    ...selectedPlan,
+    energyProvided: powerValue,
+    // walletDeduction: totalAmount,
+walletDeduction: Number(totalAmount.toFixed(2))
+  };
+
+  CacheService.savePlanData(updatedPlan);
+
+  // ✅ Close dialog first
+  setShowPaymentDialog(false);
+
+  // ✅ Navigate AFTER state update
+  setTimeout(() => {
+    navigate("/Receipt", { replace: true });
+  }, 100);
+};
+
+
+  useEffect(() => {
+  if (plans.length && !selectedPlan) {
+    setSelectedPlan(plans[0]);
+  }
+}, [plans]);
 
   return (
     <>
       <style>{`
         html, body {
-          margin: 0;
-          padding: 0;
-          height: 100%;
-          font-family: Arial, sans-serif;
-          overflow-y: auto;
-        }
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+  overflow: hidden;   /* ✅ STOP PAGE SCROLL */
+}
 
-        .page {
-          max-width: 480px;
-          margin: 0 auto;
-          padding: 16px 16px 220px;
-          box-sizing: border-box;
-        }
+       .page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+  height: calc(100vh - 80px); /* ✅ FULL SCREEN */
+  box-sizing: border-box;
+  overflow: hidden; /* ✅ NO VERTICAL SCROLL */
+}
 
         .header {
-          text-align: center;
-          margin-bottom: 10px;
+         display: flex;
+  justify-content: flex-start; /* 👈 move logo to left */
+ 
+  margin-bottom: 8px;
+         
+         
         }
+/* ===== MAIN WRAPPER ===== */
+.top-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
 
-        .top-flex {
-          margin: 20px 0 10px;
-        }
+/* ===== LEFT ===== */
+.left-content {
+  width: 50%;
+}
 
-        .title {
-          font-size: 28px;
-          font-weight: 500;
-        }
+/* ===== RIGHT ===== */
+.right-content {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+}
+        /* ===== TITLE ===== */
+.top-flex {
+  margin: 20px 0 18px;
+}
 
-        .sub {
-          font-size: 16px;
-          color: #444;
-        }
+.title {
+  font-size: 42px;
+  font-weight: 300;
+  line-height: 1.1;
+}
 
-        .station {
-          background: #111;
-          color: #fff;
-          padding: 16px;
-          border-radius: 16px;
-          margin: 20px 0;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          flex-wrap: wrap;
-        }
+.sub {
+  font-size: 18px;
 
-        .station-text {
-          max-width: 60%;
-        }
+    font-weight: 300;
+}
+/* ===== STATION LAYOUT ===== */
+.station-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+       /* ===== STATION CARD ===== */
+.station {
+  background: #212121;
+  color: #fff;
+  padding: 12px 6px;
+  border-radius: 12px;
+ 
+}
 
-        .station strong {
-          display: block;
-          margin-bottom: 6px;
-        }
+.station-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 300;
+  margin-bottom: 10px;
+}
+  .station-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 
-        .station-img {
-          width: 100px;
-          max-width: 40%;
-        }
+.station-list li {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #fffefeff;
+  position: relative;
+  padding-left: 14px;
+  font-weight: 300;
+}
+
+.station-list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #ffffff;
+}
+
+      
+
+        /* ===== IMAGE ===== */
+.station-img {
+  width: 166px;
+  height: 190px;
+
+
+}
 
         .label {
-          font-weight: 600;
+          font-weight: 400;
           margin: 20px 0 8px;
+           font-size: 14px;
         }
 
         md-slider {
@@ -360,44 +446,51 @@ const ConfigCharging = () => {
             transition: all 0.3s ease;
         }
 
-        .scroll {
-          display: flex;
-          gap: 14px;
-          overflow-x: auto;
-          padding: 10px 0;
-          -webkit-overflow-scrolling: touch;
-        }
+      .scroll {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;   /* ✅ only horizontal scroll */
+  overflow-y: hidden;
+  padding: 10px 0;
+  -webkit-overflow-scrolling: touch;
+}
 
-        .card {
-          min-width: 150px;
-          padding: 16px;
-          border-radius: 16px;
-          border: 2px solid #e6e6e6;
-          background: #f5f5f5;
-          cursor: pointer;
-          position: relative;
-          flex-shrink: 0;
-          text-align: center;
-        }
+       .card {
+  min-width: 150px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 2px solid #e6e6e6;
+  background: #f5f5f5;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  text-align: center;
+  transition: all 0.25s ease;
+}
 
-        .card.selected {
-          border: 2px solid #67B84B;
-          background: white;
-        }
+       .card.selected {
+  border: 2px solid #67B84B;
+  background: #fff;
+}
 
-        .popular {
-          position: absolute;
-          top: -12px;
-          left: 20px;
-          background: #67B84B;
-          color: white;
-          padding: 2px 10px;
-          border-radius: 16px;
-          font-size: 12px;
-        }
-
+       .popular {
+  position: absolute;
+  top: -12px;
+  left: 16px;
+  background: #67B84B;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.card:hover {
+  transform: translateY(-3px);
+}
         .card strong {
-          font-size: 20px;
+          font-size: 18px;
+          font-weight: 400;
+
         }
 
         .time {
@@ -408,8 +501,8 @@ const ConfigCharging = () => {
         .price {
           margin-top: 10px;
           color: #67B84B;
-          font-weight: bold;
-          font-size: 20px;
+          font-weight: 700;
+          font-size: 18px;
         }
 
         .info {
@@ -441,10 +534,37 @@ const ConfigCharging = () => {
         @media (max-width: 768px) {
           .title { font-size: 24px; }
           .sub { font-size: 14px; }
-          .station-img { width: 80px; }
+         
           .card strong { font-size: 18px; }
           .price { font-size: 18px; }
         }
+
+
+
+       .dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.48);
+  display: flex;
+  justify-content: center; /* center horizontally */
+  align-items: center;     /* center vertically */
+  z-index: 999;
+}
+       .dialog {
+  background: #fff;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 16px;
+  padding: 16px;
+  animation: scaleUp 0.3s ease;
+}
+        @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+        .section{border-radius:16px;padding:14px;margin-bottom:12px}
+        .blue{background:#f1f8ff;border:1px solid #cce3ff}
+        .green{background:#eaffdb}
+        .row{display:flex;justify-content:space-between;margin:10px 0}
+        .pay-btn{background:#111;color:#fff;padding:16px;border-radius:16px;text-align:center;margin-top:12px}
+      
       `}</style>
 
       <div className="page">
@@ -452,27 +572,42 @@ const ConfigCharging = () => {
           <img
             src="https://github.com/bentork5151/assets/blob/main/Logo/logo_transparent.png?raw=true"
             alt="BENTORK Logo"
-            style={{ height: "70px", objectFit: "contain", width: "140px" }}
+            style={{ height: "55px", objectFit: "contain", width: "200px" }}
           />
         </div>
 
-        <div className="top-flex">
-          <div className="title">Charging</div>
-          <div className="sub">Configuration</div>
-        </div>
+      <div className="top-section">
+  {/* LEFT SIDE */}
+  <div className="left-content">
+    <div className="top-flex">
+      <div className="title">Charging</div>
+      <div className="sub">Configuration</div>
+    </div>
 
-        <div className="station">
-          <div className="station-text">
-            <strong>🔌 Station</strong>
-            <div>• {chargerData?.name || "Bentork EV Station"}</div>
-            <div>• Charger: {chargerData?.chargerType || "Type 2"}</div>
-          </div>
-          <img
-            className="station-img"
-            src="https://raw.githubusercontent.com/bentork5151/assets/19d62ecada81d6658614b7da7360f863b727105a/Illustrations/undraw_editable_y4ms.svg"
-            alt="EV"
-          />
-        </div>
+    <div className="station">
+      <div className="station-text">
+        <strong className="station-title">🔌 Station</strong>
+
+        <ul className="station-list">
+          <li>{chargerData?.name || "Bentork EV Station"}</li>
+          <li>Charger: {chargerData?.chargerType || "Type 2"}</li>
+          <li>Power: {chargerData?.chargerType === "DC" ? "DC" : "AC"}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  {/* RIGHT SIDE */}
+  <div className="right-content">
+    <img
+      className="station-img"
+      src="https://raw.githubusercontent.com/bentork5151/assets/19d62ecada81d6658614b7da7360f863b727105a/Illustrations/undraw_editable_y4ms.svg"
+      alt="EV Illustration"
+    />
+  </div>
+</div>
+
+
 
         <div className="label">Custom Power Range</div>
         <md-slider
@@ -480,25 +615,29 @@ const ConfigCharging = () => {
           min="0"
           max="100"
           step="10"
-          value={powerValue}
-          onInput={(e) => setPowerValue(e.target.value)}
+          value={powerValue}  
+         onInput={(e) => setPowerValue(Number(e.target.value))}
         ></md-slider>
 
         <div className="label">Based on Time</div>
-        <div className="scroll">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`card ${selectedPlan?.id === plan.id ? "selected" : ""}`}
-              onClick={() => setSelectedPlan(plan)}
-            >
-              {plan.isPopular && <div className="popular">Popular</div>}
-              <strong>{plan.planName}</strong>
-              <div className="time">{plan.durationMin} mins</div>
-              <div className="price">₹{plan.walletDeduction}</div>
-            </div>
-          ))}
-        </div>
+       <div className="scroll">
+  {plans.map((plan) => (
+    <div
+      key={plan.id}
+      className={`card ${selectedPlan?.id === plan.id ? "selected" : ""}`}
+      onClick={() => setSelectedPlan(plan)}
+    >
+      {selectedPlan?.id === plan.id && (
+        <div className="popular">Popular</div>
+      )}
+
+      <strong>{plan.planName}</strong>
+      <div className="time">{plan.durationMin} mins</div>
+      <div className="price">₹{plan.walletDeduction}</div>
+    </div>
+  ))}
+</div>
+
 
         <div className="label">Based on Power</div>
         <div className="scroll">
@@ -518,9 +657,47 @@ const ConfigCharging = () => {
         <div className="info">✓ Optimal charging rates for your vehicle</div>
       </div>
 
-      <div className="pay-bar" onClick={handleConfirm}>
+      {/* <div className="pay-bar" onClick={handleConfirm}>
         Pay ₹{selectedPlan?.walletDeduction || "0.00"}
+      </div> */}
+
+ <div className="pay-bar" onClick={() => setShowPaymentDialog(true)}>
+        PAY ₹{selectedPlan?.walletDeduction || 0}
       </div>
+
+      {/* ===== PAYMENT DIALOG ===== */}
+      {showPaymentDialog && (
+  <div className="dialog-backdrop" onClick={() => setShowPaymentDialog(false)}>
+  <div className="dialog" onClick={(e) => e.stopPropagation()}>
+            <h3>Payment Summary</h3>
+
+            <div className="section blue">
+  <strong>Charging Details</strong>
+  <div className="row"><span>Duration</span><span>{selectedPlan?.durationMin} mins</span></div>
+  <div className="row"><span>Charger Type</span><span>{chargerData?.chargerType}</span></div>
+  <div className="row"><span>Energy</span><span>{powerValue} kWh</span></div>
+  <div className="row"><span>Rate</span><span>₹{selectedPlan?.rate}/kWh</span></div>
+</div>
+
+<div className="section">
+  <strong>Price Breakdown</strong>
+ <div className="row">
+  <span>Total Amount</span>
+  <span>₹{totalAmount.toFixed(2)}</span>
+</div>
+
+</div>
+
+            <div className="section green">
+              <div className="row"><strong>Wallet Balance</strong><strong>₹101.92</strong></div>
+            </div>
+
+            <div className="pay-btn" onClick={handleConfirmPayment}>
+              PAY
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

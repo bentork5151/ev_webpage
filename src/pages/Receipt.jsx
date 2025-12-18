@@ -255,7 +255,7 @@ const Receipt = () => {
         // Save dynamic session and plan
         CacheService.saveSessionData(result.session)
         CacheService.savePlanData(selectedPlan)
-        navigate("/charging-session")
+        // navigate("/charging-session")
       } else {
         setError(result?.error || "Failed to start session")
       }
