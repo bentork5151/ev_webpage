@@ -562,8 +562,25 @@ walletDeduction: Number(totalAmount.toFixed(2))
         .section{border-radius:16px;padding:14px;margin-bottom:12px}
         .blue{background:#f1f8ff;border:1px solid #cce3ff}
         .green{background:#eaffdb}
-        .row{display:flex;justify-content:space-between;margin:10px 0}
-        .pay-btn{background:#111;color:#fff;padding:16px;border-radius:16px;text-align:center;margin-top:12px}
+        .row{display:flex;justify-content:space-between;margin:10px 0;     font-size: 12px;
+          font-weight: 400;
+           margin-left: 35px;
+          
+        }
+          .dialog-title{
+          font-size: 16px;
+          font-weight: 400;
+            padding: 10px;
+          }
+            .dialog-sub{
+            font-size: 14px;
+          font-weight: 400;
+          }
+
+        .pay-btn{background:#111;color:#fff;padding:16px;border-radius:16px;text-align:center;margin-top:12px;
+         font-size: 12px;
+          font-weight: 500;
+        }
       
       `}</style>
 
@@ -669,10 +686,10 @@ walletDeduction: Number(totalAmount.toFixed(2))
       {showPaymentDialog && (
   <div className="dialog-backdrop" onClick={() => setShowPaymentDialog(false)}>
   <div className="dialog" onClick={(e) => e.stopPropagation()}>
-            <h3>Payment Summary</h3>
+            <h3 className="dialog-title">Payment Summary</h3>
 
             <div className="section blue">
-  <strong>Charging Details</strong>
+  <strong className="dialog-sub">Charging Details</strong>
   <div className="row"><span>Duration</span><span>{selectedPlan?.durationMin} mins</span></div>
   <div className="row"><span>Charger Type</span><span>{chargerData?.chargerType}</span></div>
   <div className="row"><span>Energy</span><span>{powerValue} kWh</span></div>
