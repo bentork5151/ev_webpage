@@ -255,9 +255,18 @@ const ConfigCharging = () => {
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [powerValue, setPowerValue] = useState(10);
-   const [showPaymentDialog, setShowPaymentDialog] = useState(false); 
-const totalAmount =
-  Number(selectedPlan?.rate || 0) * Number(powerValue);
+   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+
+const baseAmount = Number(selectedPlan?.rate || 0) * Number(powerValue)
+
+const gstAmount = baseAmount * 0.18
+const pstAmount = baseAmount * 0.05
+
+const totalAmountWithTax = baseAmount + gstAmount + pstAmount
+const isChargerUnavailable =
+  chargerData?.status === "OFFLINE" || chargerData?.status === "BUSY";
+
+  
 
   useEffect(() => {
     fetchPlans();
@@ -559,9 +568,33 @@ walletDeduction: Number(totalAmount.toFixed(2))
   animation: scaleUp 0.3s ease;
 }
         @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-        .section{border-radius:16px;padding:14px;margin-bottom:12px}
-        .blue{background:#f1f8ff;border:1px solid #cce3ff}
+        .section{border-radius:16px;padding:14px;margin-bottom:12px;
+          border: 0.5px solid #0000004b;
+
+        }
+          .help{
+          font-size: 10px;
+          font-weight: 700;
+          margin-left: 30px;
+          color: #852221;
+  text-decoration: underline;
+  cursor: pointer
+
+          }
+  .help:hover {
+  opacity: 0.8;
+}
+  .row-1{font-size: 12px;
+          font-weight: 400;
+          justify-content:space-between;
+            border-radius: 12px;
+            color: #852221;
+          
+          }
+     
+.blue{background:#f1f8ff;border:1px solid #cce3ff}
         .green{background:#eaffdb}
+        .Red{background:#F9DEDC}
         .row{display:flex;justify-content:space-between;margin:10px 0;     font-size: 12px;
           font-weight: 400;
            margin-left: 35px;
@@ -576,6 +609,14 @@ walletDeduction: Number(totalAmount.toFixed(2))
             font-size: 14px;
           font-weight: 400;
           }
+          .divider {
+  margin: 12px 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
+  .row.total {
+  font-size: 16px;
+}
 
         .pay-btn{background:#111;color:#fff;padding:16px;border-radius:16px;text-align:center;margin-top:12px;
          font-size: 12px;
@@ -688,6 +729,18 @@ walletDeduction: Number(totalAmount.toFixed(2))
   <div className="dialog" onClick={(e) => e.stopPropagation()}>
             <h3 className="dialog-title">Payment Summary</h3>
 
+           <div className="section Red">
+  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+    <strong className="row-1">
+      Charger is offline. Please try again later
+    </strong>
+    <a href="https://bentork.com/" className="help">
+      Help
+    </a>
+  </div>
+</div>
+
+
             <div className="section blue">
   <strong className="dialog-sub">Charging Details</strong>
   <div className="row"><span>Duration</span><span>{selectedPlan?.durationMin} mins</span></div>
@@ -697,12 +750,30 @@ walletDeduction: Number(totalAmount.toFixed(2))
 </div>
 
 <div className="section">
-  <strong>Price Breakdown</strong>
- <div className="row">
-  <span>Total Amount</span>
-  <span>₹{totalAmount.toFixed(2)}</span>
-</div>
+  <strong className="dialog-sub">Price Breakdown</strong>
 
+  <div className="row">
+    <span>Session Cost</span>
+    <span>₹{baseAmount.toFixed(2)}</span>
+  </div>
+
+  <div className="row">
+    <span>GST (18%)</span>
+    <span>₹{gstAmount.toFixed(2)}</span>
+  </div>
+
+  <div className="row">
+    <span>PST (5%)</span>
+    <span>₹{pstAmount.toFixed(2)}</span>
+  </div>
+
+  <hr className="divider" />
+
+  <div className="row total">
+    <strong>Total Amount</strong>
+    <strong>₹{totalAmountWithTax.toFixed(2)}</strong>
+
+  </div>
 </div>
 
             <div className="section green">
