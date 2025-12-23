@@ -14,6 +14,8 @@ import WalletIcon from "../assets/images/wallet.svg";
 import ArrowUp from "../assets/images/ArrowUp.svg";
 import ArrowDown from "../assets/images/ArrowDown.svg";
 
+import logoutIcon from "../assets/images/Logout.svg";
+
 
 export default function Dashboard() {
 
@@ -28,6 +30,9 @@ export default function Dashboard() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [isVerifying, setIsVerifying] = useState(false)
+
+  const [showTerms, setShowTerms] = useState(false);
+const [showPrivacy, setShowPrivacy] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -139,10 +144,42 @@ export default function Dashboard() {
           max-width:420px;
           margin:auto;
         }
-          .main-title{
-          font-size:16px;
-          font-weight:500;
-          }
+          .title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+}
+
+.main-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 400;
+   
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 28px;
+  background-color: #F2B8B5; /* light pink like image */
+  color: #852221;
+  font-size: 8px;
+  cursor: pointer;
+}
+
+
+
+.logout-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+
           .profile-name{
           font-size:18px;
           font-weight:400;
@@ -154,10 +191,11 @@ export default function Dashboard() {
           margin-bottom:20px;
         }
           .card-1{
-          background:#B1DDFF80;
+          background:#303030;
           padding:10px;
           border-radius:12px;
            border:1px solid #eee;
+           color: #ffffffff;
          
         }
        .small-font{
@@ -181,24 +219,46 @@ export default function Dashboard() {
   object-fit:contain;
 }
         .center{text-align: center}
-        .menu{
-          display:grid;
-          grid-template-columns: repeat(5,1fr);
-          margin-top:15px;
-         
-          
-        }
+        .menu {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin-top: 15px;
+}
+
+.menu-item {
+  text-align: center;
+  cursor: pointer;
+}
+
+.menu-item:hover .circle {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.menu-item:hover .menu-text {
+  color: #6DB85B;
+}
+
+.menu-text {
+  font-family: "Lexend", sans-serif;
+  font-size: 8px;
+  font-weight: 400;
+  opacity: 0.75;
+  display: block;
+}
+  
          .small-font available-text{
           margin-top: 20px;
+          
           }
            .small-font{
-           font-size:10px;
+           font-size:12px;
            font-weight:400;
 
            }
         .menu div{
           text-align:center;
-          font-size:12px;
+          font-size:10px;
+           font-weight:400;
         }
         .circle{
           width:46px;
@@ -256,19 +316,38 @@ export default function Dashboard() {
        
         .btn{
           padding:8px 15px;
-          border-radius:20px;
+          border-radius:28px;
           border:none;
-          background:#212121;
-          color:white;
-          font-weight:bold;
+          background:#FFFFFF;
+          color:#000000;
+          font-weight:500;
           cursor:pointer;
-            font-size:8px;
+            font-size:12px;
         }
         .amount{
-          font-size:20px;
+          font-size:18px;
           font-weight:400;
           margin-top:12px;
         }
+          .transactions-scroll {
+  max-height: 260px;       /* control visible height */
+  overflow-y: auto;        /* enable vertical scroll */
+  padding-right: 4px;
+}
+  /* Smooth scrolling */
+.transactions-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Optional: hide scrollbar (mobile look) */
+.transactions-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.transactions-scroll::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
           .transactions-title {
   font-size: 18px;
   font-weight: 400;
@@ -438,7 +517,17 @@ button:disabled {
       `}</style>
 
       {/* TITLE */}
-      <h2 className="main-title">Your Wallet</h2>
+      {/* TITLE BAR */}
+<div className="title-bar">
+  <h2 className="main-title">Wallet</h2>
+
+  <button className="logout-btn">
+    Logout
+    <img src={logoutIcon} alt="logout" className="logout-icon" />
+  </button>
+</div>
+
+
 <br />
       {/* PROFILE */}
       <div className="card center">
@@ -472,21 +561,21 @@ button:disabled {
     { name: "Help", icon: Help },
     { name: "About", icon: About },
   ].map((item, k) => (
-    <div key={k} style={{ textAlign: "center" }}>
+    <div
+      key={k}
+      className="menu-item"
+      onClick={() => {
+        if (item.name === "Terms & Conditions") setShowTerms(true);
+        else if (item.name === "Privacy Policy") setShowPrivacy(true);
+        else if (item.name === "Help") navigate("/help");
+        else if (item.name === "About") navigate("/about");
+      }}
+    >
       <div className="circle">
-        <img src={item.icon} alt={item.name} width="22" height="22"/>
+        <img src={item.icon} alt={item.name} width="22" height="22" />
       </div>
 
-      {/* TEXT ONLY FONT CHANGE */}
-      <span
-        style={{
-          fontFamily: "'Lexend', sans-serif",
-          fontSize: "8px",
-          fontWeight: 400
-        }}
-      >
-        {item.name}
-      </span>
+      <span className="menu-text">{item.name}</span>
     </div>
   ))}
 </div>
@@ -522,41 +611,43 @@ button:disabled {
       {/* TRANSACTIONS */}
    <p className="transactions-title">Transactions</p>
 
-{transactions?.map((t, i) => {
-  const isCredit = t?.type === "credit";
+<div className="transactions-scroll">
+  {transactions?.map((t, i) => {
+    const isCredit = t?.type === "credit";
 
-  return (
-    <div className="transaction-card" key={i}>
-      {/* LEFT */}
-      <div className="tx-left">
-        <div className={`tx-icon ${isCredit ? "credit" : "debit"}`}>
-          <img
-            src={isCredit ? ArrowDown : ArrowUp}
-            alt={isCredit ? "Credit" : "Debit"}
-          />
+    return (
+      <div className="transaction-card" key={i}>
+        {/* LEFT */}
+        <div className="tx-left">
+          <div className={`tx-icon ${isCredit ? "credit" : "debit"}`}>
+            <img
+              src={isCredit ? ArrowDown : ArrowUp}
+              alt={isCredit ? "Credit" : "Debit"}
+            />
+          </div>
+
+          <div>
+            <div className="tx-title">
+              {isCredit ? "Credited" : "Debited"}
+            </div>
+            <div className="tx-sub">
+              via {t?.method || "Wallet"}
+            </div>
+          </div>
         </div>
 
-        <div>
-          <div className="tx-title">
-            {isCredit ? "Credited" : "Debited"}
+        {/* RIGHT */}
+        <div className="tx-right">
+          <div className={`tx-amount ${isCredit ? "green" : "red"}`}>
+            {isCredit ? "+" : "-"}₹{t?.amount}
           </div>
-          <div className="tx-sub">
-            via {t?.method || "Wallet"}
-          </div>
+          <span className="tx-status">Completed</span>
         </div>
       </div>
+    );
+  })}
+</div>
 
-      {/* RIGHT */}
-      <div className="tx-right">
-        <div className={`tx-amount ${isCredit ? "green" : "red"}`}>
-          {isCredit ? "+" : "-"}₹{t?.amount}
-        </div>
-        <span className="tx-status">Completed</span>
-        
-      </div>
-    </div>
-  );
-})}
 
 
 
