@@ -1,330 +1,31 @@
-// import React, { useState, useEffect } from 'react'
-// import { useNavigate } from 'react-router-dom'
-// import {
-//   Container,
-//   Grid,
-//   Card,
-//   CardContent,
-//   CardActions,
-//   Typography,
-//   Button,
-//   Box,
-//   CircularProgress,
-//   Alert,
-//   Chip,
-//   Dialog,
-//   DialogTitle,
-//   DialogContent,
-//   DialogActions
-// } from '@mui/material'
-// import {
-//   BoltOutlined,
-//   AccessTime,
-//   AccountBalanceWallet
-// } from '@mui/icons-material'
-// import ApiService from '../services/api.service'
-// import API_CONFIG from '../config/api.config'
-// import { useAuth } from '../store/AuthContext'
-// import CacheService from '../services/cache.service'
-
-// const ConfigCharging = () => {
-//   const navigate = useNavigate()
-//   const { user, chargerData } = useAuth()
-  
-//   const [plans, setPlans] = useState([])
-//   const [selectedPlan, setSelectedPlan] = useState(null)
-//   const [loading, setLoading] = useState(true)
-//   const [error, setError] = useState('')
-//   const [confirmDialog, setConfirmDialog] = useState(false)
-  
-//   useEffect(() => {
-//     fetchPlans()
-//   }, [])
-  
-//   const fetchPlans = async () => {
-//     try {
-//       setLoading(true)
-//       const response = await ApiService.get(API_CONFIG.ENDPOINTS.GET_ALL_PLANS)
-      
-//       const filteredPlans = chargerData?.chargerType 
-//         ? response.filter(plan => plan.chargerType === chargerData.chargerType)
-//         : response
-      
-//       setPlans(filteredPlans)
-//     } catch (error) {
-//       console.error('Failed to fetch plans:', error)
-//       setError('Failed to load charging plans')
-//     } finally {
-//       setLoading(false)
-//     }
-//   }
-  
-//   const handlePlanSelect = (plan) => {
-//     setSelectedPlan(plan)
-//     setError('')
-//   }
-  
-//   const handleProceedToPayment = () => {
-//     if (!selectedPlan) {
-//       setError('Please select a charging plan')
-//       return
-//     }
-    
-//     if (!chargerData) {
-//       setError('Charger information not available')
-//       return
-//     }
-    
-//     setConfirmDialog(true)
-//   }
-  
-//   const confirmAndProceed = () => {
-
-//     if (!selectedPlan) {
-//       console.error('No plan selected')
-//       return
-//     }
-
-//     CacheService.savePlanData(selectedPlan)
-//     setConfirmDialog(false)
-
-//     setTimeout(() => {
-//       navigate('/receipt')
-//     }, 100)
-//   }
-  
-//   const formatDuration = (minutes) => {
-//     const hours = Math.floor(minutes / 60)
-//     const mins = minutes % 60
-//     return hours > 0 ? `${hours}h ${mins}m` : `${mins} minutes`
-//   }
-  
-//   if (loading) {
-//     return (
-//       <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-//         <CircularProgress />
-//       </Box>
-//     )
-//   }
-  
-//   return (
-//     <Container maxWidth="lg" sx={{ py: 4 }}>
-//       <Typography variant="h4" gutterBottom align="center">
-//         Select Charging Plan
-//       </Typography>
-      
-//       {chargerData && (
-//         <Box textAlign="center" mb={3}>
-//           <Chip 
-//             label={`Charger: ${chargerData.name || chargerData.ocppId}`}
-//             color="primary"
-//           />
-//           <Chip 
-//             label={`Type: ${chargerData.chargerType}`}
-//             color="secondary"
-//             sx={{ ml: 1 }}
-//           />
-//         </Box>
-//       )}
-      
-//       {error && (
-//         <Alert severity="error" sx={{ mb: 3 }}>
-//           {error}
-//         </Alert>
-//       )}
-      
-//       <Grid container spacing={3}>
-//         {plans.map((plan) => (
-//           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-//             <Card
-//               sx={{
-//                 height: '100%',
-//                 cursor: 'pointer',
-//                 border: selectedPlan?.id === plan.id ? '2px solid' : '1px solid #e0e0e0',
-//                 borderColor: selectedPlan?.id === plan.id ? 'primary.main' : '#e0e0e0',
-//                 transition: 'all 0.3s ease',
-//                 '&:hover': {
-//                   boxShadow: 3,
-//                   transform: 'translateY(-4px)'
-//                 }
-//               }}
-//               onClick={() => handlePlanSelect(plan)}
-//             >
-//               <CardContent>
-//                 <Typography variant="h5" component="div" gutterBottom>
-//                   {plan.planName}
-//                 </Typography>
-                
-//                 <Typography variant="body2" color="text.secondary" mb={2}>
-//                   {plan.description}
-//                 </Typography>
-                
-//                 <Box display="flex" flexDirection="column" gap={2}>
-//                   <Box display="flex" alignItems="center">
-//                     <AccountBalanceWallet sx={{ mr: 1, color: 'primary.main' }} />
-//                     <Typography variant="h6">
-//                       ₹{plan.walletDeduction}
-//                     </Typography>
-//                   </Box>
-                  
-//                   {plan.energyProvided && (
-//                     <Box display="flex" alignItems="center">
-//                       <BoltOutlined sx={{ mr: 1, color: 'warning.main' }} />
-//                       <Typography>
-//                         {plan.energyProvided} kWh
-//                       </Typography>
-//                     </Box>
-//                   )}
-                  
-//                   <Box display="flex" alignItems="center">
-//                     <AccessTime sx={{ mr: 1, color: 'info.main' }} />
-//                     <Typography>
-//                       {formatDuration(plan.durationMin)}
-//                     </Typography>
-//                   </Box>
-                  
-//                   <Typography variant="caption" color="text.secondary">
-//                     Rate: ₹{plan.rate}/kWh
-//                   </Typography>
-//                 </Box>
-//               </CardContent>
-              
-//               {selectedPlan?.id === plan.id && (
-//                 <CardActions>
-//                   <Chip label="Selected" color="primary" size="small" />
-//                 </CardActions>
-//               )}
-//             </Card>
-//           </Grid>
-//         ))}
-//       </Grid>
-      
-//       <Box display="flex" justifyContent="center" mt={4}>
-//         <Button
-//           variant="contained"
-//           size="large"
-//           disabled={!selectedPlan}
-//           onClick={handleProceedToPayment}
-//           sx={{ minWidth: 200 }}
-//         >
-//           Pay ₹{selectedPlan?.walletDeduction || 0}
-//         </Button>
-//       </Box>
-      
-//       <Dialog open={confirmDialog} onClose={() => setConfirmDialog(false)}>
-//         <DialogTitle>Confirm Selection</DialogTitle>
-//         <DialogContent>
-//           <Typography>
-//             You have selected: <strong>{selectedPlan?.planName}</strong>
-//           </Typography>
-//           <Typography variant="body2" sx={{ mt: 1 }}>
-//             Amount: ₹{selectedPlan?.walletDeduction}
-//           </Typography>
-//           <Typography variant="body2">
-//             Duration: {selectedPlan && formatDuration(selectedPlan.durationMin)}
-//           </Typography>
-//         </DialogContent>
-//         <DialogActions>
-//           <Button onClick={() => setConfirmDialog(false)}>Cancel</Button>
-//           <Button onClick={confirmAndProceed} variant="contained">
-//             Proceed to Payment
-//           </Button>
-//         </DialogActions>
-//       </Dialog>
-//     </Container>
-//   )
-// }
-
-// export default ConfigCharging
-
-
-
-
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import ApiService from "../services/api.service";
-import API_CONFIG from "../config/api.config";
-import { useAuth } from "../store/AuthContext";
-import CacheService from "../services/cache.service";
+import React from "react";
+import { Outlet } from "react-router-dom";
+import { useCharging } from '../store/ChargingContext'
 import "@material/web/slider/slider.js";
 
 const ConfigCharging = () => {
-  const navigate = useNavigate();
-  const { chargerData } = useAuth();
+  const {
+    plans,
+    selectedPlan,
+    powerValue,
+    plansLoading,
+    chargerData,
+    openReceipt,
+    selectPlan,
+    updatePowerValue
+  } = useCharging()
 
-  const [plans, setPlans] = useState([]);
-  const [selectedPlan, setSelectedPlan] = useState(null);
-  const [powerValue, setPowerValue] = useState(10);
-   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-
-const baseAmount = Number(selectedPlan?.rate || 0) * Number(powerValue)
-
-const gstAmount = baseAmount * 0.18
-const pstAmount = baseAmount * 0.05
-
-const totalAmountWithTax = baseAmount + gstAmount + pstAmount
-const isChargerUnavailable =
-  chargerData?.status === "OFFLINE" || chargerData?.status === "BUSY";
-
-  
-
-  useEffect(() => {
-    fetchPlans();
-  }, []);
-
-  const fetchPlans = async () => {
-    const response = await ApiService.get(API_CONFIG.ENDPOINTS.GET_ALL_PLANS);
-    const filtered = chargerData?.chargerType
-      ? response.filter((p) => p.chargerType === chargerData.chargerType)
-      : response;
-    setPlans(filtered);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedPlan) return;
-    const updatedPlan = { ...selectedPlan, energyProvided: powerValue };
-    CacheService.savePlanData(updatedPlan);
-    navigate("/receipt");
-  };
-  
-const handleConfirmPayment = () => {
-  if (!selectedPlan) return;
-
-  const updatedPlan = {
-    ...selectedPlan,
-    energyProvided: powerValue,
-    // walletDeduction: totalAmount,
-walletDeduction: Number(totalAmount.toFixed(2))
-  };
-
-  CacheService.savePlanData(updatedPlan);
-
-  // ✅ Close dialog first
-  setShowPaymentDialog(false);
-
-  // ✅ Navigate AFTER state update
-  setTimeout(() => {
-    navigate("/Receipt", { replace: true });
-  }, 100);
-};
-
-
-  useEffect(() => {
-  if (plans.length && !selectedPlan) {
-    setSelectedPlan(plans[0]);
-  }
-}, [plans]);
 
   return (
     <>
       <style>{`
         html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family: Arial, sans-serif;
-  overflow: hidden;   /* ✅ STOP PAGE SCROLL */
-}
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: Arial, sans-serif;
+        overflow: hidden;   /* ✅ STOP PAGE SCROLL */
+      }
 
        .page {
   max-width: 480px;
@@ -622,6 +323,15 @@ walletDeduction: Number(totalAmount.toFixed(2))
          font-size: 12px;
           font-weight: 500;
         }
+
+        .loading-skeleton {
+          background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s infinite;
+          border-radius: 16px;
+          min-width: 150px;
+          height: 100px;
+        }
       
       `}</style>
 
@@ -648,7 +358,7 @@ walletDeduction: Number(totalAmount.toFixed(2))
 
         <ul className="station-list">
           <li>{chargerData?.name || "Bentork EV Station"}</li>
-          <li>Charger: {chargerData?.chargerType || "Type 2"}</li>
+          <li>Charger: {chargerData?.connectorType || "Type 2"}</li>
           <li>Power: {chargerData?.chargerType === "DC" ? "DC" : "AC"}</li>
         </ul>
       </div>
@@ -671,45 +381,60 @@ walletDeduction: Number(totalAmount.toFixed(2))
         <md-slider
           labeled
           min="0"
-          max="100"
-          step="10"
+          max="1"
+          step="0.1"
           value={powerValue}  
-         onInput={(e) => setPowerValue(Number(e.target.value))}
+         onInput={(e) => updatePowerValue(Number(e.target.value))}
         ></md-slider>
 
         <div className="label">Based on Time</div>
        <div className="scroll">
-  {plans.map((plan) => (
-    <div
-      key={plan.id}
-      className={`card ${selectedPlan?.id === plan.id ? "selected" : ""}`}
-      onClick={() => setSelectedPlan(plan)}
-    >
-      {selectedPlan?.id === plan.id && (
-        <div className="popular">Popular</div>
-      )}
-
-      <strong>{plan.planName}</strong>
-      <div className="time">{plan.durationMin} mins</div>
-      <div className="price">₹{plan.walletDeduction}</div>
-    </div>
-  ))}
-</div>
+        {plansLoading ? (
+          <>
+            <div className="loading-skeleton" />
+              <div className="loading-skeleton" />
+              <div className="loading-skeleton" />
+          </>
+        ):(
+          plans.map((plan) => (
+            <div
+              key={plan.id}
+              className={`card ${selectedPlan?.id === plan.id ? "selected" : ""}`}
+              onClick={() => selectPlan(plan)}
+            >
+              {selectedPlan?.id === plan.id && (
+                <div className="popular">Popular</div>
+              )}
+              <strong>{plan.planName}</strong>
+              <div className="time">{plan.durationMin} mins</div>
+              <div className="price">₹{plan.walletDeduction}</div>
+            </div>
+          ))
+        )}
+        </div>
 
 
         <div className="label">Based on Power</div>
         <div className="scroll">
-          {plans.map((plan) => (
+          {plansLoading ? (
+          <>
+            <div className="loading-skeleton" />
+              <div className="loading-skeleton" />
+              <div className="loading-skeleton" />
+          </>
+          ):(
+          plans.map((plan) => (
             <div
               key={plan.id + "p"}
               className={`card ${selectedPlan?.id === plan.id ? "selected" : ""}`}
-              onClick={() => setSelectedPlan(plan)}
+              onClick={() => selectPlan(plan)}
             >
-              <strong>{plan.energyProvided || 10} kWh</strong>
+              <strong>{plan.planName} kWh</strong>
               <div className="time">{plan.durationMin} mins</div>
               <div className="price">₹{plan.walletDeduction}</div>
             </div>
-          ))} 
+          ))
+        )} 
         </div>
 
         <div className="info">✓ Optimal charging rates for your vehicle</div>
@@ -719,73 +444,12 @@ walletDeduction: Number(totalAmount.toFixed(2))
         Pay ₹{selectedPlan?.walletDeduction || "0.00"}
       </div> */}
 
- <div className="pay-bar" onClick={() => setShowPaymentDialog(true)}>
+      <div className="pay-bar" onClick={openReceipt}>
         PAY ₹{selectedPlan?.walletDeduction || 0}
       </div>
 
-      {/* ===== PAYMENT DIALOG ===== */}
-      {showPaymentDialog && (
-  <div className="dialog-backdrop" onClick={() => setShowPaymentDialog(false)}>
-  <div className="dialog" onClick={(e) => e.stopPropagation()}>
-            <h3 className="dialog-title">Payment Summary</h3>
-
-           <div className="section Red">
-  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-    <strong className="row-1">
-      Charger is offline. Please try again later
-    </strong>
-    <a href="https://bentork.com/" className="help">
-      Help
-    </a>
-  </div>
-</div>
-
-
-            <div className="section blue">
-  <strong className="dialog-sub">Charging Details</strong>
-  <div className="row"><span>Duration</span><span>{selectedPlan?.durationMin} mins</span></div>
-  <div className="row"><span>Charger Type</span><span>{chargerData?.chargerType}</span></div>
-  <div className="row"><span>Energy</span><span>{powerValue} kWh</span></div>
-  <div className="row"><span>Rate</span><span>₹{selectedPlan?.rate}/kWh</span></div>
-</div>
-
-<div className="section">
-  <strong className="dialog-sub">Price Breakdown</strong>
-
-  <div className="row">
-    <span>Session Cost</span>
-    <span>₹{baseAmount.toFixed(2)}</span>
-  </div>
-
-  <div className="row">
-    <span>GST (18%)</span>
-    <span>₹{gstAmount.toFixed(2)}</span>
-  </div>
-
-  <div className="row">
-    <span>PST (5%)</span>
-    <span>₹{pstAmount.toFixed(2)}</span>
-  </div>
-
-  <hr className="divider" />
-
-  <div className="row total">
-    <strong>Total Amount</strong>
-    <strong>₹{totalAmountWithTax.toFixed(2)}</strong>
-
-  </div>
-</div>
-
-            <div className="section green">
-              <div className="row"><strong>Wallet Balance</strong><strong>₹101.92</strong></div>
-            </div>
-
-            <div className="pay-btn" onClick={handleConfirmPayment}>
-              PAY
-            </div>
-          </div>
-        </div>
-      )}
+      
+      <Outlet/>
     </>
   );
 };
