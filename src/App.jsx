@@ -6,8 +6,7 @@ import AuthGuard from './guards/AuthGuard'
 import SplashScreen from './pages/SplashScreen'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
-import ConfigCharging from './pages/ConfigCharging'
-import Receipt from './pages/Receipt'
+import ChargingFlow from './wrapper/ChargingFlow'
 import ChargingSession from './pages/ChargingSession'
 import Invoice from './pages/Invoice'
 import ThankYou from './pages/ThankYou'
@@ -22,8 +21,18 @@ const router = createBrowserRouter([
   { element: <AuthGuard />,
     children: [
       { path: '/dashboard', element: <Dashboard /> },
-      { path: '/config-charging', element: <ConfigCharging /> },
-        { path: '/receipt', element: <Receipt /> },
+
+      { path: '/config-charging', element: <ChargingFlow />,
+        children: [
+          { path: 'receipt',
+            lazy: async () => {
+              const { default: Receipt } = await import('./pages/Receipt')
+              return { Component: Receipt }
+            }
+          }
+        ]
+      },
+      
       { path: '/charging-session', element: <ChargingSession /> },
       { path: '/invoice', element: <Invoice /> },
       { path: '/thank-you', element: <ThankYou /> }
