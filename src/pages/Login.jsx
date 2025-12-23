@@ -15,6 +15,8 @@ import ApiService from '../services/api.service'
 import API_CONFIG from '../config/api.config'
 import CacheService from '../services/cache.service'
 import AuthService from '../services/auth.service'
+import Logo from "../assets/images/logo.png";
+import Onboarding from "../assets/images/onboarding.png";
 
 import "../assets/styles/Login.css";
 
@@ -93,17 +95,18 @@ const Login = () => {
   return (
     <div className={`login-container ${animate ? "fade-in" : ""}`}>
       <img
-        src="https://github.com/bentork5151/assets/blob/main/Logo/logo_transparent.png?raw=true"
-        alt="Bentork Logo"
-        className="login-logo"
-      />
-
+    src={Logo}
+    alt="Bentork Logo"
+    className="login-logo"
+  />
+<div className='card-2'>
+     
       <div className="onboarding-container">
-        <img
-          src="https://github.com/bentork5151/assets/blob/main/Illustrations/onboarding.png?raw=true"
-          alt="Onboarding"
-          className="onboarding-img"
-        />
+      <img
+        src={Onboarding}
+        alt="Onboarding"
+        className="onboarding-img"
+      />
       </div>
 
       <div className="text-section">
@@ -117,8 +120,12 @@ const Login = () => {
           alt="Google Logo"
           className="google-icon"
         />
-        Sign in with Google
+        SignIn with Google
       </button>
+       <p className="subtitle-text-1">Start charging smarter today</p>
+      </div>
+
+      <p className='fotter-text'>Connect Your Charger • Follow Simple Steps</p>
     </div>
   )
 }
