@@ -7,18 +7,23 @@ import APP_CONFIG from '../config/app.config'
 class SessionService {
   static activeSession = null
   
-  static async startSession(chargerId, planId) {
+  static async startSession(chargerId, planId, boxId) {
     try {
       const response = await ApiService.post(API_CONFIG.ENDPOINTS.START_SESSION, {
         chargerId,
-        planId
+        planId,
+        boxId
       })
+
+      const sessionStatus = await this.getSessionStatus(response?.sessionId)
+
+      console.log('response from session start: ',response)
       
       if (response.sessionId) {
         this.activeSession = {
           id: response.sessionId,
           startTime: new Date().toISOString(),
-          status: 'ACTIVE',
+          status: sessionStatus,
           ...response
         }
         
