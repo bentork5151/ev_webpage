@@ -208,28 +208,47 @@
 
 
 
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ArrowBackIosNew,
-  NotificationsNoneOutlined,
-  CheckCircle,
-} from "@mui/icons-material";
+import { CheckCircle } from "@mui/icons-material";
 import { useAuth } from "../store/AuthContext";
 import CacheService from "../services/cache.service";
 
 const Invoice = () => {
   const navigate = useNavigate();
-  const { user, chargerData } = useAuth();
-
+  const { chargerData } = useAuth();
   const [sessionData, setSessionData] = useState(null);
 
-  const selectedPlanName = () => {
-    const plan = CacheService.getPlanData();
-    console.info('plan data: ',plan)
-    return plan.planName || 'N/A'
-  }
+  useEffect(() => {
+    const data = JSON.parse(
+      sessionStorage.getItem("sessionCompletion") || "{}"
+    );
+
+    if (data) {
+      setSessionData(data?.completionData || data);
+      sessionStorage.removeItem("sessionCompletion");
+      CacheService.clearPlanData();
+      CacheService.clearSessionData();
+    }
+  }, []);
+
+  if (!sessionData) return null;
+
+  /* ---------------- Dynamic Values ---------------- */
+  const stationName = chargerData?.stationName || "N/A";
+  const chargerType = chargerData?.chargerType || "N/A";
+
+  const durationMin = sessionData?.duration || 0;
+  const energy = sessionData?.energyUsed || 0;
+  const rate = sessionData?.plan?.rate || 0;
+
+  const totalCost =
+    sessionData?.finalCost ||
+    sessionData?.amountDebited ||
+    energy * rate;
+
+  const transactionId = sessionData?.transactionId || "N/A";
+  const paymentMethod = sessionData?.paymentMethod || "Wallet";
 
   const formatDuration = (mins) => {
     const h = Math.floor(mins / 60);
@@ -237,221 +256,194 @@ const Invoice = () => {
     return `${h}h ${m}m`;
   };
 
-  useEffect(() => {
-    const data = JSON.parse(sessionStorage.getItem("sessionCompletion") || "{}");
-
-    if (data) {
-      setSessionData(data?.completionData || data);
-
-      sessionStorage.removeItem("sessionCompletion");
-      CacheService.clearPlanData();
-      CacheService.clearSessionData();
-    }
-  }, []);
-// Invoice page to open and NOT allow going back
-
-  useEffect(() => {
-  // Push current page to history
-  window.history.pushState(null, "", window.location.href);
-
-  const handleBack = () => {
-    window.history.pushState(null, "", window.location.href);
-  };
-
-  window.addEventListener("popstate", handleBack);
-
-  return () => {
-    window.removeEventListener("popstate", handleBack);
-  };
-}, []);
-
-
-  if (!sessionData) return null;
-
-  // -----------------------------
-  //  Dynamic Values
-  // -----------------------------
-
-  const planName = 0;
-  const rate = sessionData?.plan?.rate || 0;
-  const energy = sessionData?.energyUsed || 0;
-  const duration = sessionData?.duration || 0;
-  const finalCost =
-    sessionData?.finalCost ||
-    sessionData?.amountDebited ||
-    (energy * rate);
-
-  const gstAmount = ((finalCost * 18) / 100).toFixed(2);
-
-  const Row = ({ label, value, big }) => (
-    <div className="row">
-      <span className={`label ${big && "big"}`}>{label}</span>
-      <span className={`value ${big && "big"}`}>{value}</span>
+  const Row = ({ label, value, highlight }) => (
+    <div className={`row ${highlight ? "highlight" : ""}`}>
+      <span>{label}</span>
+      <span>{value}</span>
     </div>
   );
 
   return (
-    <div className="invoice-container">
+    <div className="invoice-page">
       <style>{`
-        .invoice-container {
-          padding: 16px;
+        * {
+          box-sizing: border-box;
+        }
+
+        body {
+          margin: 0;
+        }
+
+        .invoice-page {
+          min-height: 100vh;
+          background: #f4f4f4;
+          font-family: Inter, sans-serif;
           padding-bottom: 120px;
-          font-family: Arial, sans-serif;
         }
 
-        .header {
-  display: flex;
-  justify-content: center;   /* 🔥 horizontal center */
-  align-items: center;       /* 🔥 vertical center */
-  height: 48px;              /* optional, clean spacing */
-}
-
-.header h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-
-        .bell {
-          position: relative;
-        }
-
-        .badge {
-          position: absolute;
-          top: -5px;
-          right: -5px;
-          background: red;
+        /* HEADER */
+        .invoice-header {
+          background: #1f1f1f;
           color: #fff;
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          font-size: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          text-align: center;
+          padding: 28px 16px 36px;
+          border-bottom-left-radius: 28px;
+          border-bottom-right-radius: 28px;
+          
+          
         }
 
-        .invoice-no {
-          display: flex;
-          justify-content: space-between;
-          font-size: 14px;
-          margin-bottom: 20px;
+        .invoice-header h1 {
+          margin: 0;
+          font-size: 16px;
+          font-weight: 700;
+          font-family: 'Roboto', sans-serif;
         }
 
-        h3 {
-          margin: 20px 0 10px;
+        .invoice-header p {
+     
+          font-size: 12px;
+           font-weight: 400;
+         opacity: 0.75;
+         font-family: 'Roboto', sans-serif;
+          color: #fff;
+         
+        }
+          .sub-heading{
           font-size: 18px;
+           font-weight: 600;
+          }
+
+        /* CARD */
+        .card {
+          background: #fff;
+          margin: 16px;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 0 0 1px #e6e6e6;
+        }
+
+        .card h2 {
+          margin: 0;
+          padding: 16px;
+          font-size: 18px;
+          font-weight: 600;
         }
 
         .row {
           display: flex;
           justify-content: space-between;
-          padding: 10px 0;
-          font-size: 15px;
+          padding: 14px 16px;
+          font-size: 12px;
+          border-top: 1px solid #eee;
         }
 
-        .label {
+        .row span:first-child {
           color: #444;
+        }
+
+        .row span:last-child {
           font-weight: 500;
         }
 
-        .value {
-          font-weight: 400;
-        }
-
-        .big {
-          font-size: 17px;
+        .highlight {
+          background: #B1DDFF;
           font-weight: 600;
         }
 
-        .divider {
-          border-bottom: 1px solid #ddd;
-          margin: 20px 0;
-        }
-
-        .status {
+        .paid {
           display: flex;
           align-items: center;
           gap: 6px;
-          color: #6DB85B;
-          font-weight: 700;
-          padding: 4px 10px;
-          border-radius: 16px;
-          font-size: 15px;
+          color: #63b54f;
+          font-weight: 600;
         }
 
-       .bottom-button {
-  position: fixed;
-  bottom: 16px;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-}
+        .paid svg {
+          font-size: 18px;
+        }
 
-.bottom-button button {
-  width: 90%;
-  padding: 14px;
-  border-radius: 24px;
-  border: none;
-  background: #212121;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-}
- 
+        .highlight-green {
+          background: #C0EFB0;
+          font-weight: 600;
+        }
+
+        /* BOTTOM BUTTON */
+        .bottom-action {
+          position: fixed;
+          bottom: 16px;
+          left: 0;
+          right: 0;
+          display: flex;
+          justify-content: center;
+        }
+
+        .bottom-action button {
+          width: 90%;
+          max-width: 420px;
+          padding: 14px;
+          border-radius: 28px;
+          border: none;
+          background: #1f1f1f;
+          color: #fff;
+          font-size: 16px;
+          font-weight: 600;
+        }
+
+        /* RESPONSIVE */
+        @media (min-width: 768px) {
+          .card {
+            max-width: 600px;
+            margin: 16px auto;
+          }
+        }
       `}</style>
 
       {/* HEADER */}
-      <div className="header">
-      
-        <h2>Invoice</h2>
-      
+      <div className="invoice-header">
+        <h1>Invoice</h1>
+        <p>Session Completed</p>
       </div>
 
-      {/* INVOICE NUMBER (dynamic if available) */}
-      {/* <div className="invoice-no">
-        <span>{sessionData?.invoiceId || "N/A"}</span>
-        <span>{sessionData?.invoiceId || "N/A"}</span>
-      </div> */}
+      {/* CHARGING DETAILS */}
+      <div className="card">
+        <h2 className="sub-heading">Charging Details</h2>
 
-      <h3>Charging Details</h3>
+        <Row label="Station Name" value={stationName} />
+        <Row label="Charger Type" value={chargerType} />
+        <Row label="Duration" value={formatDuration(durationMin)} />
+        <Row label="Energy Delivered" value={`${energy} kWh`} />
+        <Row label="Rate per kWh" value={`₹${rate}`} />
+        <Row label="Total Energy Cost" value={`₹${totalCost}`} highlight />
+      </div>
 
-      <Row label="Station Name" value={chargerData?.stationName || "N/A"} />
-      <Row label="Charger Type" value={chargerData?.chargerType || "N/A"} />
-      <Row label="Duration" value={formatDuration(duration)} />
-      <Row label="Energy Delivered" value={`${energy} kWh`} />
-      <Row label="Charging Plan" value={planName} />
-      <Row label="Rate per kWh" value={`₹${rate}`} />
-      <Row label="GST (18%)" value={`₹${gstAmount}`} />
-      <Row label="Total Energy Cost" value={`₹${finalCost}`} big />
+      {/* PAYMENT DETAILS */}
+      <div className="card">
+        <h2>Payment Details</h2>
 
-      <div className="divider" />
+        <Row label="Payment Method" value={paymentMethod} />
+        <Row label="Transaction ID" value={transactionId} />
 
-      <h3>Payment Details</h3>
+        <div className="row">
+          <span>Status</span>
+          <span className="paid">
+            <CheckCircle />
+            PAID
+          </span>
+        </div>
 
-      <Row label="Payment Method" value={sessionData?.paymentMethod || "Wallet"} />
-      <Row label="Transaction ID" value={sessionData?.transactionId || "N/A"} />
-
-      <div className="row">
-        <span className="label">Status</span>
-        <div className="status">
-          <CheckCircle style={{ fontSize: 16 }} />
-          PAID
+        <div className="row highlight-green">
+          <span>Total Amount Paid</span>
+          <span>₹{totalCost}</span>
         </div>
       </div>
 
-      <Row label="Total Amount Paid" value={`₹${finalCost}`} />
-
       {/* BOTTOM BUTTON */}
-<div className="bottom-button">
-  <button onClick={() => navigate("/thank-you")}>
-    OK
-  </button>
-</div>
-
+      <div className="bottom-action">
+        <button onClick={() => navigate("/thank-you")}>
+          Done
+        </button>
+      </div>
     </div>
   );
 };
