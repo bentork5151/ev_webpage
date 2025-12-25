@@ -7,7 +7,9 @@ import ApiService from '../services/api.service'
 import API_CONFIG from '../config/api.config'
 import APP_CONFIG from '../config/app.config'
 import { useAuth } from '../store/AuthContext'
-
+import logo from "../assets/images/logo.png";
+import TopRightBg from "../assets/images/tr.png";
+import BottomImg from "../assets/images/BottomImg.png";
 import "../assets/styles/SplashScreen.css"; // ✅ Correct CSS path
 import "@material/web/progress/linear-progress.js"; // ✅ Material Web progress
 
@@ -91,12 +93,23 @@ const SplashScreen = () => {
   }
   
   return (
+    
    <Box className="splash-container">
+    <img
+  src={TopRightBg}
+  alt="Background decoration"
+  className="top-right-image"
+/>
+   <img
+  src={BottomImg}
+  alt="Bottom decoration"
+  className="bottom-image"
+/>
   <img
-    src="https://github.com/bentork5151/assets/blob/main/Logo/logo_transparent.png?raw=true"
-    alt="Bentork Logo"
-    className="splash-logo"
-  />
+  src={logo}
+  alt="Bentork Logo"
+  className="splash-logo"
+/>
 
   <md-linear-progress indeterminate></md-linear-progress>
 
