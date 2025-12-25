@@ -1,8 +1,9 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
+
 import { useCharging } from '../store/ChargingContext'
 import "@material/web/slider/slider.js";
-
+import WalletIcon from "../assets/images/wallet.svg";
 const ConfigCharging = () => {
   const {
     plans,
@@ -24,7 +25,7 @@ const ConfigCharging = () => {
         padding: 0;
         height: 100%;
         font-family: Arial, sans-serif;
-        overflow: hidden;   /* ✅ STOP PAGE SCROLL */
+     
       }
 
        .page {
@@ -38,12 +39,40 @@ const ConfigCharging = () => {
 
         .header {
          display: flex;
-  justify-content: flex-start; /* 👈 move logo to left */
- 
-  margin-bottom: 8px;
+    alignItems: "center",
+    justifyContent: "space-between"
+     padding: 12px 18px;
+  flex-direction: row;
+
+
          
          
         }
+
+.wallet-button {
+    display: flex;             
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    padding: 6px 8px;
+    margin-left: 100px;
+
+    border-radius: 28px;        
+    border: 0.25px solid #ddd;  
+
+    background-color:#212121;  
+    opacity: 1;              
+
+    font-family: 'Roboto', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+
+    color: #fff;             
+    cursor: pointer;
+      height: 28px;           
+  width: 70px;            
+}
 /* ===== MAIN WRAPPER ===== */
 .top-section {
   display: flex;
@@ -342,6 +371,13 @@ const ConfigCharging = () => {
             alt="BENTORK Logo"
             style={{ height: "55px", objectFit: "contain", width: "200px" }}
           />
+
+          {/* walletbutton */}
+          <button className="wallet-button"
+    onClick={() => navigate("/dashboard")}>
+        <img src={WalletIcon} alt="Wallet" width="14" height="14" />
+    Wallet
+  </button>
         </div>
 
       <div className="top-section">

@@ -38,7 +38,7 @@ const Login = () => {
   const checkOAuthCallback = async () => {
     const urlParam = new URLSearchParams(window.location.search)
     const token = urlParam.get("token")
-    const ocppIdFromUrl = urlParam.get('ocppId') || ocppId
+    const ocppIdFromUrl = sessionStorage.getItem('ocppId')
 
     if(token){
       setLoading(true)
@@ -88,7 +88,7 @@ const Login = () => {
     if (ocppId) {
       sessionStorage.setItem('ocppId', ocppId)
     }
-
+    console.log('google')
     window.location.href = import.meta.env.VITE_API_BASE_URL + '/oauth2/authorization/google'
   }
   

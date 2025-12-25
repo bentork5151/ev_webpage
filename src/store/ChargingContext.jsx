@@ -123,10 +123,10 @@ export const ChargingProvider = ({ children }) => {
             return { success: false}
         }
 
-        if (!isChargerUnavailable) {
-            setError('Charger is unavailable')
-            return { success: false}
-        }
+        // if (!isChargerUnavailable) {
+        //     setError('Charger is unavailable')
+        //     return { success: false}
+        // }
 
         setLoading(true)
         setError('')
@@ -145,10 +145,10 @@ export const ChargingProvider = ({ children }) => {
 
             console.log('result: ',result)
 
-            if (result?.session?.status === 'FAILED') {
-                setError('Charging failed to start')
-                return { success : false}
-            }
+            // if (result?.session?.status === 'FAILED') {
+            //     setError('Charging failed to start')
+            //     return { success : false}
+            // }
 
             if (result?.success) {
                 CacheService.saveSessionData(result.session)
