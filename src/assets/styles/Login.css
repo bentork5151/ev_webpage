@@ -3,16 +3,16 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden; /* ❌ disable page scroll */
   font-family: "Roboto", sans-serif;
 }
 
 
 /* --- Base Layout --- */
 .login-container {
-  background-color: #F2F2F2;
-  height: 100vh;
-  display: flex;
+  background-color: #ffffff;
+
+  min-height: 100vh; 
+    display: flex;
   flex-direction: column;
   align-items: center;
   /* justify-content: center; */
@@ -21,6 +21,8 @@ html, body {
   opacity: 0;
   transform: translateY(40px);
   transition: all 0.8s ease-in-out;
+    position: relative;    /* ✅ needed for bottom image */
+  overflow-x: hidden;   
 }
 
 .login-container.fade-in {
@@ -30,10 +32,11 @@ html, body {
 
 /* --- Logo --- */
 .login-logo {
-  width: 130px;
+  width: clamp(190px, 20vw, 130px);
+  margin-top: clamp(20px, 8vh, 82px);
   margin-bottom: 20px;
+   padding: 18px 28px;
   animation: fadeUp 0.5s ease forwards;
-    margin-top: 82px;
 
     
 }
@@ -45,7 +48,7 @@ html, body {
 }
 
 .onboarding-img {
-  width: 85%;
+  width: 100%;
   max-width: 380px;
   margin: 00px  30px;
   animation: fadeUp 0.5s ease forwards;
@@ -128,7 +131,7 @@ html, body {
   }
 }
 .card-2{
-    background:#FFFFFF;
+    background:#F1F1F1;
           padding:18px;
           border-radius:28px;
            border:1px solid #eee;
@@ -140,7 +143,7 @@ html, body {
 .fotter-text{
       font-weight: 400;
   font-size: 10px;
-      margin-top: 150px;
+      margin-top: auto;
  padding: 28px 10px;
  gap: 10px;
   opacity: 0.75; 
@@ -155,6 +158,25 @@ html, body {
     opacity: 1;
     transform: translateY(0);
   }
+}
+.bottom-image {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+       /* optional */
+  z-index: 0;
+  pointer-events: none;
+}
+.top-right-image {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 180px;        /* adjust size */
+       /* optional */
+  z-index: 1;          /* keep behind content */
+  pointer-events: none; /* avoid click issues */
+    opacity: 0.5;
 }
 
 /* --- Responsive --- */
