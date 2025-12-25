@@ -31,6 +31,7 @@ export default function Dashboard() {
   const [success, setSuccess] = useState("")
   const [isVerifying, setIsVerifying] = useState(false)
 
+  
   const [showTerms, setShowTerms] = useState(false);
 const [showPrivacy, setShowPrivacy] = useState(false);
 
@@ -717,3 +718,5 @@ button:disabled {
     </div>
   )
 }
+
+
