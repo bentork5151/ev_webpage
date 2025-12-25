@@ -17,8 +17,9 @@ import CacheService from '../services/cache.service'
 import AuthService from '../services/auth.service'
 import Logo from "../assets/images/logo.png";
 import Onboarding from "../assets/images/onboarding.png";
-
+import BottomImg from "../assets/images/BottomImg.png";
 import "../assets/styles/Login.css";
+import TopRightBg from "../assets/images/tr.png";
 
 const Login = () => {
   const navigate = useNavigate()
@@ -94,6 +95,16 @@ const Login = () => {
   
   return (
     <div className={`login-container ${animate ? "fade-in" : ""}`}>
+       <img
+  src={TopRightBg}
+  alt="Background decoration"
+  className="top-right-image"
+/>
+      <img
+  src={BottomImg}
+  alt="Bottom decoration"
+  className="bottom-image"
+/>
       <img
     src={Logo}
     alt="Bentork Logo"
