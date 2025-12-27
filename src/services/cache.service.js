@@ -112,22 +112,129 @@ class CacheService {
     sessionStorage.removeItem(APP_CONFIG.CACHE.PLAN_KEY)
   }
 
-  static saveSessionData(SessionData){
-    sessionStorage.setItem(APP_CONFIG.CACHE.SESSION_KEY, JSON.stringify(SessionData))
+  static saveSessionData(sessionData){
+    if (!sessionData) {
+      return null
+    }
+
+    const dataToSave = {
+      ...sessionData,
+      savedAt: new Date().toISOString()
+    }
+
+    localStorage.setItem(APP_CONFIG.CACHE.SESSION_KEY, JSON.stringify(dataToSave))
+    sessionStorage.setItem(APP_CONFIG.CACHE.SESSION_KEY, JSON.stringify(dataToSave))
   }
 
   static getSessionData() {
-    const data = sessionStorage.getItem(APP_CONFIG.CACHE.SESSION_KEY)
     try {
-      return data ? JSON.parse(data) : []
+      let data = sessionStorage.getItem(APP_CONFIG.CACHE.SESSION_KEY)
+      
+      if (!data) {
+        data = localStorage.getItem(APP_CONFIG.CACHE.SESSION_KEY)
+
+        if (data) {
+          sessionStorage.getItem(APP_CONFIG.CACHE.SESSION_KEY)
+        }
+      }
+
+      if (!data) {
+        return null
+      }
+
+      const parse = JSON.parse(data)
+
+      if (parse.savedAt) {
+        const savedTime = new Date(parse.savedAt).getTime()
+        const now = Date.now()
+        const maxAge = 24 * 60 * 60 * 1000 // 24 hours
+
+        if (now - savedTime > maxAge) {
+          this.clearSessionData()
+          return null
+        }
+      }
+
+      return parse
     } catch (error) {
       console.error('Error parsing Session Data:', error)
-      return []
+      return null
     }
   }
 
+  static updateSessionData(updates) {
+    const current = this.getSessionData()
+    if (!current) {
+      return
+    }
+
+    const updated = {
+      ...current,
+      ...updates,
+      updatedAT: new Date().toISOString()
+    }
+
+    this.saveSessionData(updated)
+    return updated
+  }
+
   static clearSessionData() {
+    localStorage.removeItem(APP_CONFIG.CACHE.SESSION_KEY)
     sessionStorage.removeItem(APP_CONFIG.CACHE.SESSION_KEY)
+  }
+
+  static hasActiveSession() {
+    const session = this.getSessionData()
+    if (!session) {
+      return false
+    }
+
+    const activeStatuses = ['ACTIVE', 'INITIATED']
+    return activeStatuses.includes(String(session.status).toUpperCase())
+  }
+
+  static saveSessionTimer(timeData) {
+    sessionStorage.setItem(APP_CONFIG.SESSION.SESSION_TIMER, JSON.stringify({
+      ...timeData,
+      savesAt: Date.now()
+    }))
+  }
+
+  static getSessionTimer() {
+    try {
+      const data = sessionStorage.getItem(APP_CONFIG.SESSION.SESSION_TIMER)
+      if (!data) {
+        return null
+      }
+
+      const parse = JSON.parse(data)
+
+      const elapsedSincesSave = Math.floor((Date.now() - parse.savesAt)/1000)
+
+      return {
+        ...parse,
+        timeElapsed: parse.timeElapsed + elapsedSincesSave
+      }
+    } catch (error) {
+      return null
+    }
+  }
+
+  static clearSessionTimer() {
+    sessionStorage.removeItem(APP_CONFIG.SESSION.SESSION_TIMER)
+  }
+
+  static saveNotificationPreference(enabled) {
+    localStorage.setItem(APP_CONFIG.SESSION.NOTIFICATION_PREFERENCE, JSON.stringify(enabled))
+  }
+
+  static getNotificationPreference() {
+    try {
+      const data = localStorage.getItem(APP_CONFIG.SESSION.NOTIFICATION_PREFERENCE)
+      return data !== null ? JSON.parse(data) : true
+    } catch (error) {
+      return true
+    }
   }
 
 }

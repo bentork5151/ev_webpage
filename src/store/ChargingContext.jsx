@@ -20,7 +20,7 @@ export const useCharging = () => {
 export const ChargingProvider = ({ children }) => {
     const navigate = useNavigate()
     const location = useLocation()
-    const { user, chargerData, updatedWalletBalance} = useAuth()
+    const { user, chargerData, updatedWalletBalance, updateChargerData} = useAuth()
 
     const [plans, setPlans] = useState([])
     const [selectedPlan, setSelectedPlan] = useState(null)
@@ -152,25 +152,31 @@ export const ChargingProvider = ({ children }) => {
 
             console.log('result: ',result)
 
-            // if (result?.session?.status === 'FAILED') {
-            //     setError('Charging failed to start')
-            //     return { success : false}
-            // }
-
-            if (result?.success) {
-                CacheService.saveSessionData(result.session)
-
-                const newBalance = Number(user?.walletBalance || 0) - pricing.formattedTotalAmount
-                updatedWalletBalance(newBalance)
-
-                navigate('/charging-session', {replace: true})
-                return { success: true }
-            } else {
-                const errMsg = result?.error || 'Failed to start session'
-                console.error(errMsg)
-                setError(errMsg)
-                return { success: false }
+            if (result?.session?.status === 'FAILED') {
+                setError('Charging failed to start')
+                return { success : false}
             }
+
+            if (!result.success) {
+                setError(result.error || 'Failed to start charging session')
+                CacheService.clearPlanData()
+                CacheService.clearSessionData()
+                return { success: false, error: result.error }
+            }
+
+            const sessionStatus = String(result.session?.status || '').toUpperCase()
+            if (sessionStatus === 'FAILED') {
+                setError('Charging session failed to start. Please try again.')
+                CacheService.clearPlanData()
+                CacheService.clearSessionData()
+                return { success: false, error: 'Session failed to start' }
+            }
+
+            const newBalance = Number(user?.walletBalance || 0) - pricing.totalAmount
+            updatedWalletBalance(newBalance)
+
+            navigate('/charging-session', { replace: true })
+            return { success: true }
         } catch (error) {
             console.error('Payment process error: ',error)
             const errMsg = error?.message || 'Something went wrong, please try again later'
