@@ -3,14 +3,18 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { AuthProvider } from './store/AuthContext'
 import AuthGuard from './guards/AuthGuard'
 
+import EmailService from './services/email.service'
+
 import SplashScreen from './pages/SplashScreen'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import ChargingFlow from './wrapper/ChargingFlow'
-import ChargingSession from './pages/ChargingSession'
+import SessionFlow from './wrapper/SessionFlow'
 import Invoice from './pages/Invoice'
 import ThankYou from './pages/ThankYou'
 
+
+EmailService.init()
 
 const router = createBrowserRouter([
 
@@ -33,7 +37,7 @@ const router = createBrowserRouter([
         ]
       },
       
-      { path: '/charging-session', element: <ChargingSession /> },
+      { path: '/charging-session', element: <SessionFlow  /> },
       { path: '/invoice', element: <Invoice /> },
       { path: '/thank-you', element: <ThankYou /> }
     ]

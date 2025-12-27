@@ -1,267 +1,184 @@
-// import React, { useEffect, useState } from 'react'
-// import { useNavigate } from 'react-router-dom'
-// import {
-//   Container,
-//   Paper,
-//   Typography,
-//   CircularProgress,
-//   Alert,
-//   Box,
-//   Button,
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableRow,
-//   Divider
-// } from '@mui/material'
-// import {
-//   CheckCircle,
-//   Logout
-// } from '@mui/icons-material'
-// import { useAuth } from '../store/AuthContext'
-// import CacheService from '../services/cache.service'
-
-// const Invoice = () => {
-//   const navigate = useNavigate()
-//   const { user, chargerData, logout } = useAuth()
-//   const [sessionData, setSessionData] = useState(null)
-//   const [loading, setLoading] = useState(true)
-  
-//   useEffect(() => {
-//     const completion  = JSON.parse(sessionStorage.getItem('sessionCompletion') || '{}')
-//     if (completion) {
-//       try {
-//         const parsed = completion
-//         console.log('Parsed session completion data:', parsed)
-        
-//         const completionData = parsed.completionData || parsed
-//         setSessionData(completionData)
-        
-//         sessionStorage.removeItem('sessionCompletion')
-//         CacheService.clearPlanData()
-//         CacheService.clearSessionData()
-//       } catch (error) {
-//         console.error('Error parsing session data:', error)
-//         setSessionData(null)
-//       }
-//     } else {
-//       console.warn('No session completion data found')
-//       setSessionData(null)
-//     }
-    
-//     setLoading(false)
-//   }, [])
-  
-//   const handleOk = () => {
-//     navigate('/thank-you')
-//   }
-  
-//   // const handleLogout = () => {
-//   //   logout()
-//   // }
-
-//   if (loading) {
-//     return (
-//       <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-//         <CircularProgress />
-//       </Box>
-//     )
-//   }
-  
-//   if (!sessionData) {
-//     return (
-//       <Container maxWidth="sm" sx={{ py: 4 }}>
-//         <Paper elevation={3} sx={{ p: 4 }}>
-//           <Alert severity="warning" sx={{ mb: 3 }}>
-//             No session data found. The session may have already been processed.
-//           </Alert>
-//           <Box display="flex" justifyContent="center">
-//             <Button variant="contained" onClick={() => navigate('/dashboard')}>
-//               Go to Dashboard
-//             </Button>
-//           </Box>
-//         </Paper>
-//       </Container>
-//     )
-//   }
-
-//   const planName = sessionData.plan?.planName || 'N/A'
-//   const energyUsed = sessionData.energyUsed ?? 0
-//   const duration = sessionData.duration ?? 0
-//   const rate = sessionData.plan?.rate ?? 0
-//   const finalCost = sessionData.finalCost ?? sessionData.amountDebited ?? (energyUsed * rate)
-//   const refundIssued = sessionData.refundIssued || false
-//   const extraDebited = sessionData.extraDebited || false
-  
-//   return (
-//     <Container maxWidth="sm" sx={{ py: 4 }}>
-//       <Paper elevation={3} sx={{ p: 4 }}>
-//         <Box display="flex" alignItems="center" justifyContent="center" mb={3}>
-//           <CheckCircle sx={{ fontSize: 60, color: 'success.main', mr: 2 }} />
-//           <Typography variant="h4">Charging Complete</Typography>
-//         </Box>
-
-//         {/* Status Messages */}
-//         {refundIssued && (
-//           <Alert severity="info" sx={{ mb: 2 }}>
-//             A refund has been issued for unused energy.
-//           </Alert>
-//         )}
-//         {extraDebited && (
-//           <Alert severity="warning" sx={{ mb: 2 }}>
-//             Extra amount was debited due to higher usage.
-//           </Alert>
-//         )}
-        
-//         <Typography variant="h6" gutterBottom>Invoice Details</Typography>
-        
-//         <Table size="small">
-//           <TableBody>
-//             <TableRow>
-//               <TableCell>User Name</TableCell>
-//               <TableCell align="right">{user?.name}</TableCell>
-//             </TableRow>
-//             <TableRow>
-//               <TableCell>Email</TableCell>
-//               <TableCell align="right">{user?.email}</TableCell>
-//             </TableRow>
-//             <TableRow>
-//               <TableCell colSpan={2}><Divider /></TableCell>
-//             </TableRow>
-//             <TableRow>
-//               <TableCell>Charger Name</TableCell>
-//               <TableCell align="right">{chargerData?.stationId || chargerData?.name || 'N/A'}</TableCell>
-//             </TableRow>
-//             <TableRow>
-//               <TableCell>OCPP ID</TableCell>
-//               <TableCell align="right">{chargerData?.ocppId || 'N/A'}</TableCell>
-//             </TableRow>
-//             <TableRow>
-//               <TableCell>Charger Type</TableCell>
-//               <TableCell align="right">{chargerData?.chargerType || 'N/A'}</TableCell>
-//             </TableRow>
-//             <TableRow>
-//               <TableCell colSpan={2}><Divider /></TableCell>
-//             </TableRow>
-//             <TableRow>
-//               <TableCell>Plan</TableCell>
-//               <TableCell align="right">{planName}</TableCell>
-//             </TableRow>
-//             <TableRow>
-//               <TableCell>Energy Used</TableCell>
-//               <TableCell align="right">{energyUsed?.toFixed(2)} kWh</TableCell>
-//             </TableRow>
-//             <TableRow>
-//               <TableCell>Time Taken</TableCell>
-//               <TableCell align="right">{duration} minutes</TableCell>
-//             </TableRow>
-//             <TableRow>
-//               <TableCell>Rate</TableCell>
-//               <TableCell align="right">₹{rate}/kWh</TableCell>
-//             </TableRow>
-//             <TableRow>
-//               <TableCell colSpan={2}><Divider /></TableCell>
-//             </TableRow>
-//             <TableRow>
-//               <TableCell><Typography variant="h6">Total Amount</Typography></TableCell>
-//               <TableCell align="right">
-//                 <Typography variant="h6">₹{Number(finalCost).toFixed(2)}</Typography>
-//               </TableCell>
-//             </TableRow>
-
-//             {sessionData.message && (
-//               <TableRow>
-//                 <TableCell colSpan={2}>
-//                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-//                     {sessionData.message}
-//                   </Typography>
-//                 </TableCell>
-//               </TableRow>
-//             )}
-
-//           </TableBody>
-//         </Table>
-        
-//         <Box display="flex" gap={2} justifyContent="center" mt={4}>
-//           <Button variant="contained" onClick={handleOk}>OK</Button>
-//         </Box>
-        
-//         <Box position="fixed" bottom={24} left={0} right={0} textAlign="center">
-//           <Button startIcon={<Logout />} color="error" onClick={logout}>
-//             Logout
-//           </Button>
-//         </Box>
-//       </Paper>
-//     </Container>
-//   )
-// }
-
-// export default Invoice 
-
-
-
-
-
-
-
-
-
-
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle } from "@mui/icons-material";
+import { CheckCircle, Email, Download } from "@mui/icons-material";
+import { CircularProgress, Alert, Snackbar } from "@mui/material"
 import { useAuth } from "../store/AuthContext";
 import CacheService from "../services/cache.service";
+import EmailService from "../services/email.service"
+import SessionService from "../services/session.service"
 
 const Invoice = () => {
   const navigate = useNavigate();
-  const { chargerData } = useAuth();
+  const { user, chargerData } = useAuth();
+  const emailSentRef = useRef(false)
   const [sessionData, setSessionData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true)
+  const [emailStatus, setEmailStatus] = useState({
+    sending: false,
+    sent: false,
+    error: null
+  })
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' })
 
   useEffect(() => {
-    const data = JSON.parse(
-      sessionStorage.getItem("sessionCompletion") || "{}"
-    );
+    loadSessionData()
+  }, [])
 
-    if (data) {
-      setSessionData(data?.completionData || data);
-      sessionStorage.removeItem("sessionCompletion");
-      CacheService.clearPlanData();
-      CacheService.clearSessionData();
+  const loadSessionData = async () => {
+    try {
+      const stored = sessionStorage.getItem("sessionCompletion")
+      
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        const completionData = parsed.completionData || parsed
+
+        setSessionData(completionData)
+
+        sessionStorage.removeItem("sessionCompletion")
+        CacheService.clearPlanData()
+        SessionService.clearSession()
+
+        if (!emailSentRef.current && user?.email) {
+          emailSentRef.current = true
+          await sendInvoiceEmail(completionData)
+        }
+      } else {
+        console.warn("No session completion data found")
+      }
+    } catch (error) {
+      console.error("Error loading session data:", error)
+    } finally {
+      setIsLoading(false)
     }
-  }, []);
+  }
 
-  if (!sessionData) return null;
+  const sendInvoiceEmail = async (data) => {
+    // setEmailStatus({ sending: true, sent: false, error: null })
 
-  /* ---------------- Dynamic Values ---------------- */
-  const stationName = chargerData?.stationName || "N/A";
-  const chargerType = chargerData?.chargerType || "N/A";
+    try {
+      const invoiceData = {
+        userName: user?.name || 'Customer',
+        userEmail: user?.email,
+        sessionId: data.sessionId,
+        receiptId: data.receiptId || data.transactionId,
+        stationName: data.stationName || chargerData?.stationName || chargerData?.name || 'N/A',
+        chargerType: data.chargerType || chargerData?.chargerType || 'N/A',
+        duration: data.duration || 0,
+        energyUsed: data.energyUsed || 0,
+        rate: data.rate || data.plan?.rate || 0,
+        totalCost: data.finalCost || data.amountDebited || 0,
+        paymentMethod: data.paymentMethod || 'Wallet',
+        transactionId: data.transactionId || data.receiptId || data.sessionId,
+        completedAt: data.endTime || new Date().toISOString()
+      }
 
-  const durationMin = sessionData?.duration || 0;
-  const energy = sessionData?.energyUsed || 0;
-  const rate = sessionData?.plan?.rate || 0;
+      console.log('Invoice data: ',invoiceData)
 
-  const totalCost =
-    sessionData?.finalCost ||
-    sessionData?.amountDebited ||
-    energy * rate;
+      const result = await EmailService.sendInvoiceEmail(invoiceData)
 
-  const transactionId = sessionData?.transactionId || "N/A";
-  const paymentMethod = sessionData?.paymentMethod || "Wallet";
+      if (result.success) {
+        setEmailStatus({ sending: false, sent: true, error: null })
+        setSnackbar({
+          open: true,
+          message: `Invoice sent to ${user?.email}`,
+          severity: 'success'
+        })
+      } else {
+        throw new Error(result.error)
+      }
+
+    } catch (error) {
+      console.error("Failed to send invoice email:", error)
+      setEmailStatus({ 
+        sending: false, 
+        sent: false, 
+        error: error.message || 'Failed to send email'
+      })
+    }
+  }
+
+  const handleResendEmail = async () => {
+    if (sessionData && user?.email) {
+      await sendInvoiceEmail(sessionData)
+    }
+  }
+
+  const handleDone = () => {
+    navigate("/thank-you")
+  }
+
+  if (isLoading) {
+    return (
+      <div className="invoice-loading">
+        <CircularProgress sx={{ color: '#7dbb63' }} />
+        <p>Loading invoice...</p>
+        <style>{`
+          .invoice-loading {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            gap: 16px;
+          }
+        `}</style>
+      </div>
+    )
+  }
+
+  if (!sessionData) {
+    return (
+      <div className="invoice-page">
+        {/* <style>{invoiceStyles}</style> */}
+        <div className="invoice-header">
+          <h1>Invoice</h1>
+          <p>No session data found</p>
+        </div>
+        <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
+          <p>The session data may have already been processed.</p>
+          <button className="done-btn" onClick={() => navigate('/dashboard')}>
+            Go to Dashboard
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const stationName = sessionData.stationName || chargerData?.stationName || chargerData?.name || "N/A"
+  const chargerType = sessionData.chargerType || chargerData?.chargerType || "N/A"
+  const durationMin = sessionData.duration || 0
+  const energy = sessionData.energyUsed || 0
+  const rate = sessionData.rate || sessionData.plan?.rate || 0
+  const totalCost = sessionData.finalCost || sessionData.amountDebited || (energy * rate)
+  const transactionId = sessionData.transactionId || sessionData.receiptId || sessionData.sessionId || "N/A"
+  const paymentMethod = sessionData.paymentMethod || "Wallet"
+  const sessionId = sessionData.sessionId || "N/A"
+  const completedAt = sessionData.endTime || sessionData.completedAt || new Date().toISOString()
 
   const formatDuration = (mins) => {
-    const h = Math.floor(mins / 60);
-    const m = mins % 60;
-    return `${h}h ${m}m`;
-  };
+    const h = Math.floor(mins / 60)
+    const m = mins % 60
+    if (h > 0) return `${h}h ${m}m`
+    return `${m} min`
+  }
 
-  const Row = ({ label, value, highlight }) => (
-    <div className={`row ${highlight ? "highlight" : ""}`}>
+  const formatDate = (dateString) => {
+    try {
+      return new Date(dateString).toLocaleString('en-IN', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      })
+    } catch {
+      return 'N/A'
+    }
+  }
+
+  const Row = ({ label, value, highlight, className }) => (
+    <div className={`row ${highlight ? 'highlight' : ''} ${className || ''}`}>
       <span>{label}</span>
       <span>{value}</span>
     </div>
-  );
+  )
 
   return (
     <div className="invoice-page">
@@ -273,6 +190,47 @@ const Invoice = () => {
         body {
           margin: 0;
         }
+
+
+        /* EMAIL STATUS */
+  .email-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 16px;
+    margin: -24px 16px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .email-status.sending {
+    background: #1976d2;
+    color: #fff;
+  }
+
+  .email-status.sent {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  .email-status.error {
+    background: #ffebee;
+    color: #c62828;
+  }
+
+  .email-status button {
+    background: #c62828;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+
 
         .invoice-page {
           min-height: 100vh;
@@ -289,8 +247,10 @@ const Invoice = () => {
           padding: 28px 16px 36px;
           border-bottom-left-radius: 28px;
           border-bottom-right-radius: 28px;
-          
-          
+        }
+
+        .header-icon {
+          margin-bottom: 16px;
         }
 
         .invoice-header h1 {
@@ -401,9 +361,33 @@ const Invoice = () => {
 
       {/* HEADER */}
       <div className="invoice-header">
+        <div className="header-icon">
+          <CheckCircle sx={{ fontSize: 48, color: '#7dbb63' }} />
+        </div>
         <h1>Invoice</h1>
         <p>Session Completed</p>
       </div>
+
+      {emailStatus.sending && (
+        <div className="email-status sending">
+          <CircularProgress size={16} sx={{ color: '#fff' }} />
+          <span>Sending invoice to {user?.email}...</span>
+        </div>
+      )}
+      
+      {emailStatus.sent && (
+        <div className="email-status sent">
+          <Email sx={{ fontSize: 18 }} />
+          <span>Invoice sent to {user?.email}</span>
+        </div>
+      )}
+
+      {emailStatus.error && (
+        <div className="email-status error">
+          <span>Failed to send email</span>
+          <button onClick={handleResendEmail}>Retry</button>
+        </div>
+      )}
 
       {/* CHARGING DETAILS */}
       <div className="card">
@@ -440,7 +424,7 @@ const Invoice = () => {
 
       {/* BOTTOM BUTTON */}
       <div className="bottom-action">
-        <button onClick={() => navigate("/thank-you")}>
+        <button onClick={handleDone}>
           Done
         </button>
       </div>

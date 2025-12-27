@@ -1,7 +1,12 @@
 const API_CONFIG = {
 
   BASE_URL: import.meta.env.VITE_API_BASE_URL,
-  
+
+  EMAIL_CONFIG: {
+    SERVICE_ID: import.meta.env.VITE_EMAILJS_SERVICE_ID,
+    TEMPLATE_ID: import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+    PUBLIC_KEY: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+  },
 
   ENDPOINTS: {
     // LOGIN: '/api/user/login',
