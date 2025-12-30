@@ -18,7 +18,7 @@ const Invoice = () => {
     sent: false,
     error: null
   })
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' })
+  // const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' })
 
   useEffect(() => {
     loadSessionData()
@@ -26,7 +26,7 @@ const Invoice = () => {
 
   const loadSessionData = async () => {
     try {
-      const stored = sessionStorage.getItem("sessionCompletion")
+      const stored = CacheService.getSessionData()
       
       if (stored) {
         const parsed = JSON.parse(stored)
@@ -34,7 +34,6 @@ const Invoice = () => {
 
         setSessionData(completionData)
 
-        sessionStorage.removeItem("sessionCompletion")
         CacheService.clearPlanData()
         SessionService.clearSession()
 
@@ -53,7 +52,28 @@ const Invoice = () => {
   }
 
   const sendInvoiceEmail = async (data) => {
-    // setEmailStatus({ sending: true, sent: false, error: null })
+    
+    if (!EmailService.isAvailable) {
+      console.log('EmailJS not configured, skipping email')
+      setEmailStatus({
+        sending: false,
+        sent: false,
+        error: 'Email service not configured'
+      })
+      return
+    }
+    
+    if (!user.email) {
+      console.log('No user email available')
+      setEmailStatus({
+        sending: false,
+        sent: false,
+        error: 'User email not available'
+      })
+      return
+    }
+    
+    setEmailStatus({ sending: true, sent: false, error: null })
 
     try {
       const invoiceData = {
@@ -78,11 +98,11 @@ const Invoice = () => {
 
       if (result.success) {
         setEmailStatus({ sending: false, sent: true, error: null })
-        setSnackbar({
-          open: true,
-          message: `Invoice sent to ${user?.email}`,
-          severity: 'success'
-        })
+        // setSnackbar({
+        //   open: true,
+        //   message: `Invoice sent to ${user?.email}`,
+        //   severity: 'success'
+        // })
       } else {
         throw new Error(result.error)
       }
@@ -384,7 +404,7 @@ const Invoice = () => {
 
       {emailStatus.error && (
         <div className="email-status error">
-          <span>Failed to send email</span>
+          <span>Failed to send email: {emailStatus.error}</span>
           <button onClick={handleResendEmail}>Retry</button>
         </div>
       )}
@@ -393,6 +413,7 @@ const Invoice = () => {
       <div className="card">
         <h2 className="sub-heading">Charging Details</h2>
 
+        <Row label="Session ID" value={`#${sessionId}`} />
         <Row label="Station Name" value={stationName} />
         <Row label="Charger Type" value={chargerType} />
         <Row label="Duration" value={formatDuration(durationMin)} />
@@ -407,6 +428,7 @@ const Invoice = () => {
 
         <Row label="Payment Method" value={paymentMethod} />
         <Row label="Transaction ID" value={transactionId} />
+        <Row label="Completed At" value={formatDate(completedAt)} />
 
         <div className="row">
           <span>Status</span>
@@ -418,7 +440,7 @@ const Invoice = () => {
 
         <div className="row highlight-green">
           <span>Total Amount Paid</span>
-          <span>₹{totalCost}</span>
+          <span>₹{NUmber(totalCost).toFixed(2)}</span>
         </div>
       </div>
 

@@ -3,6 +3,7 @@ import API_CONFIG from '../config/api.config'
 import CacheService from './cache.service'
 import APP_CONFIG from '../config/app.config'
 import NotificationService from './notification.service'
+import { typeOf } from 'react-is'
 // import wsService from './websocket.service'
 
 class SessionService {
@@ -38,7 +39,8 @@ class SessionService {
 
       console.log('response session status: ',statusResponse)
 
-      if (statusResponse === 'FAILED') {
+      const normalizedStatus = String(statusResponse).toUpperCase()
+      if (normalizedStatus === 'FAILED') {
         return {
           success: false,
           error: 'Charging session failed to start',
@@ -77,7 +79,7 @@ class SessionService {
   }
 
   static async completeWarmup(sessionId) {
-    const session = this.activeSession || CacheService.getSessionData
+    const session = this.activeSession || CacheService.getSessionData()
     const sessionStatus = await this.getSessionStatus(sessionId)
 
     if (session) {
@@ -97,7 +99,7 @@ class SessionService {
 
   static async stopSession(sessionId) {
     try {
-      const id = sessionId || this.activeSession?.id
+      const id = sessionId || this.activeSession?.id || this.activeSession?.sessionId
       if (!id) {
         return {
           success: false,
@@ -152,7 +154,9 @@ class SessionService {
       const response = await ApiService.get(
         API_CONFIG.ENDPOINTS.GET_SESSION_STATUS(sessionId)
       )
-      return response
+
+      const status = typeof response === 'string' ? response : response?.status || 'unknown'
+      return status.toLowerCase()
     } catch (error) {
       console.error('Failed to get session status:', error)
       return { status: 'UNKNOWN', error: error.message }
@@ -162,14 +166,21 @@ class SessionService {
 
   static async getKwhUsed(sessionId) {
     try {
-      const id = sessionId || this.activeSession?.id
+      const id = sessionId || this.activeSession?.id || this.activeSession?.sessionId
       if (!id) {
         return 0
       }
 
       const response = await ApiService.get(API_CONFIG.ENDPOINTS.GET_ENERGY_USED(sessionId))
       console.log('KWH: ',response)
-      return response.kwhUsed || 0
+      
+      let energyUsed = 0
+      if (typeof response === 'number') {
+        energyUsed = response
+      } else if (typeof response === 'object') {
+        energyUsed = response.kwhUsed ?? response.energy ?? response.energyUsed ?? 0
+      }
+      return Number(energyUsed) || 0
     } catch (error) {
       console.error('Failed to get kWh used:', error)
       return this.activeSession?.kwhUsed || 0
@@ -200,7 +211,7 @@ class SessionService {
       console.error('Failed to fetch session data:', error)
       return {
         status: this.activeSession?.status || 'UNKNOWN',
-        energyUsed: this.activeSession?.kwhUsed || 0
+        energyUsed: this.activeSession?.energyUsed || 0
       }
     }
   }
@@ -217,7 +228,8 @@ class SessionService {
         this.onStatusUpdate(data)
       }
 
-      if (['COMPLETED', 'FAILED'].includes(data.status)) {
+      const normalizedStatus = String(data.status).toUpperCase()
+      if (['COMPLETED', 'FAILED'].includes(normalizedStatus)) {
         this.stopStatusPolling()
       }
     }
@@ -274,24 +286,24 @@ class SessionService {
     const session = this.getActiveSession()
     if (!session) return false
 
-    const validStatuses = ['ACTIVE', 'INITIATED']
-    return validStatuses.includes(String(session.status).toUpperCase())
+    const normalizedStatus = String(session.status).toUpperCase()
+    return ['ACTIVE', 'INITIATED'].includes(normalizedStatus)
   }
   
   
   // Simulate session progress (for demo purposes without WebSocket)
-  static simulateProgress(durationMin) {
-    const totalSeconds = durationMin * 60
-    const startTime = new Date(this.activeSession?.startTime || Date.now())
-    const elapsed = Math.floor((Date.now() - startTime.getTime()) / 1000)
-    const percentage = Math.min(100, (elapsed / totalSeconds) * 100)
+  // static simulateProgress(durationMin) {
+  //   const totalSeconds = durationMin * 60
+  //   const startTime = new Date(this.activeSession?.startTime || Date.now())
+  //   const elapsed = Math.floor((Date.now() - startTime.getTime()) / 1000)
+  //   const percentage = Math.min(100, (elapsed / totalSeconds) * 100)
     
-    return {
-      elapsed,
-      percentage,
-      remaining: Math.max(0, totalSeconds - elapsed)
-    }
-  }
+  //   return {
+  //     elapsed,
+  //     percentage,
+  //     remaining: Math.max(0, totalSeconds - elapsed)
+  //   }
+  // }
 
 }
 

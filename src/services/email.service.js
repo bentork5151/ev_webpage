@@ -87,14 +87,19 @@ class EmailService {
   static init() {
     if (this.isInitialized) return
 
-    if (!API_CONFIG.EMAIL_CONFIG.PUBLIC_KEY) {
+    const publicKey = API_CONFIG.EMAIL_CONFIG?.PUBLIC_KEY
+    if (!publicKey) {
       console.warn('EmailJS public key not configured')
       return
     }
 
-    emailjs.init(API_CONFIG.EMAIL_CONFIG.PUBLIC_KEY)
-    this.isInitialized = true
-    console.log('EmailJS initialized')
+    try {
+      emailjs.init(publicKey)
+      this.isInitialized = true
+      console.log('EmailJS initialized successfully')
+    } catch (error) {
+      console.error('Failed to initialized EmailJS: ', error)
+    }
   }
 
 
@@ -122,18 +127,14 @@ class EmailService {
     return `${m} minutes`
   }
 
-  /**
-   * Send Invoice Email
-   * @param {Object} invoiceData - Invoice details
-   * @returns {Promise<{success: boolean, error?: string}>}
-   */
+
   static async sendInvoiceEmail(invoiceData) {
 
     if (!this.isInitialized) {
       this.init()
     }
 
-    if (!API_CONFIG.EMAIL_CONFIG.SERVICE_ID || !API_CONFIG.EMAIL_CONFIG.TEMPLATE_ID) {
+    if (!this.isAvailable()) {
       console.error('EmailJS not properly configured')
       return {
         success: false,
@@ -146,6 +147,14 @@ class EmailService {
       return {
         success: false,
         error: 'No email address provided'
+      }
+    }
+
+    if (!this.isValidEmail(invoiceData.userEmail)) {
+      console.warn('Invalid email format: ', invoiceData.userEmail)
+      return {
+        success: false,
+        error: 'Invalid email address format'
       }
     }
 
@@ -202,11 +211,22 @@ class EmailService {
 
 
   static isAvailable() {
-    return !!(
-      API_CONFIG.EMAIL_CONFIG.SERVICE_ID && 
-      API_CONFIG.EMAIL_CONFIG.TEMPLATE_ID && 
-      API_CONFIG.EMAIL_CONFIG.PUBLIC_KEY
+    const config = API_CONFIG.EMAIL_CONFIG
+    const available = !!(
+      config?.SERVICE_ID &&
+      config?.TEMPLATE_ID &&
+      config?.PUBLIC_KEY
     )
+
+    if (!available) {
+      console.warn('EmailJS configuration missing: ', {
+        hasServiceId: !!config?.SERVICE_ID,
+        hasTemplateId: !!config?.TEMPLATE_ID,
+        hasPublicKey: !!config?.PUBLIC_KEY
+      })
+    }
+
+    return available
   }
 }
 
