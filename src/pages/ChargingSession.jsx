@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState} from "react"
 import {
   Container,
   Paper,
@@ -34,6 +34,7 @@ const ChargingSession = () => {
     isCompleted,
     notifyOnComplete,
     isSessionActive,
+    isNotificationDisabled,
 
     remainingTime,
     batteryHealth,
@@ -45,7 +46,7 @@ const ChargingSession = () => {
     setError
   } = useSession()
 
-  const [stopDialog, setStopDialog] = React.useState(false)
+  const [stopDialog, setStopDialog] = useState(false)
 
   useEffect(() => {
     initializeSession()
@@ -60,7 +61,7 @@ const ChargingSession = () => {
     await stopSession()
   }
 
-  if (isLoading) {
+  if (isLoading && !isInitializing) {
     return (
       <div className="loading">
         <CircularProgress />
@@ -221,12 +222,20 @@ const ChargingSession = () => {
           {/* <div className="notify-left"><NotificationsNone /><span>Notify when complete</span></div> */}
           <div className="notify-left"> 
             <img src={notifyIcon} alt="Notify" className="notify-icon" /> 
-            <span>Notify when complete</span>
+            <span>
+              Notify when complete
+              {isNotificationDisabled && (
+                <span style={{ fontSize: '10px', color: '#999', display: 'block' }}>
+                  (Permission denied in browser)
+                </span>
+              )}  
+            </span>
           </div>
           <Switch
             className="custom-switch"
             checked={notifyOnComplete}
             onChange={toggleNotification}
+            disabled={isNotificationDisabled}
           />
         </div>
 
@@ -251,7 +260,7 @@ const ChargingSession = () => {
           color="error"
           className="stop-btn"
           onClick={handleStopClick}
-          disabled={isStopping  || isCompleted  || !isSessionActive}
+          disabled={isStopping  || isCompleted  || !isSessionActive || isInitializing}
         >
           {isStopping  ? "Stopping..." : "Stop Charging"}
         </Button>

@@ -1,5 +1,5 @@
 class NotificationService {
-    static isSupported = 'Notification' in window
+    static isSupported = typeof window !== 'undefined' && 'Notification' in window
 
 
     static async requestPermission() {
@@ -7,6 +7,16 @@ class NotificationService {
             console.log('Browser notification not supported')
             return false
         }
+
+        if (Notification.permission === 'granted') {
+            return true
+        }
+
+        if (Notification.permission === 'denied') {
+            console.log('Notification permission previously denied')
+            return false
+        }
+
         try {
             const permission = await Notification.requestPermission()
             return permission === 'granted'
@@ -21,8 +31,13 @@ class NotificationService {
         return this.isSupported && Notification.permission === 'granted'
     }
 
+    static getPermissionStatus() {
+        if (!this.isSupported) return 'unsupported'
+        return Notification.permission
+    }
 
-    static async send (title, option = {}) {
+
+    static async send (title, options = {}) {
         if (!this.isSupported) {
             console.log('Notification is not supported')
             return null
@@ -41,7 +56,8 @@ class NotificationService {
                 icon: '/favicon.ico',
                 badge: '/favicon.ico',
                 vibrate: [200, 100, 200],
-                requireInteraction: false
+                requireInteraction: false,
+                ...options
             })
 
             setTimeout(() => {
@@ -62,7 +78,7 @@ class NotificationService {
             {
                 body: `Hello ${userName}, your charging session #${sessionId} is successfully completed.`,
                 tag: `session-completed-${sessionId}`,
-                icon: '/charging-completed-icon.png',
+                // icon: '/charging-completed-icon.png',
                 data: {sessionId}
             }
         )

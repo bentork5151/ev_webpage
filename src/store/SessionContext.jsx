@@ -44,10 +44,10 @@ export const SessionProvider = ({ children }) => {
     const messageRef = useRef(null)
     const lowTimeWarningShown = useRef(false)
     const sessionCompleteHandled = useRef(false)
+    const initializationStarted = useRef(false)
 
     const [session, setSession] = useState(null)
     const [plan, setPlan] = useState(null)
-    
     const [chargingData, setChargingData] = useState({
         energyUsed: 0,
         timeElapsed: 0,
@@ -63,15 +63,21 @@ export const SessionProvider = ({ children }) => {
     const [isStopping, setIsStopping] = useState(false)
     const [isCompleted, setIsCompleted] = useState(false)
     const [notifyOnComplete, setNotifyOnComplete] = useState(true)
+    const [notificationPermission, setNotificationPermission] = useState('default')
 
-    const isSessionActive = chargingData.status === 'ACTIVE'
+    const isSessionActive = useMemo(() => {
+      return ['active','initiated'].includes(chargerData.status)
+    }, [chargerData.status])
+
     const isOnSessionPage = location.pathname === '/charging-session'
 
     useEffect(() => {
         const savedPref = CacheService.getNotificationPreference()
         setNotifyOnComplete(savedPref)
 
-        NotificationService.requestPermission()
+        if (NotificationService.isSupported) {
+          setNotificationPermission(Notification.permission)
+        }
 
         return () => {
         cleanupAllIntervals()
@@ -109,7 +115,7 @@ export const SessionProvider = ({ children }) => {
 
 
     useEffect(() => {
-        if (isInitializing) {
+        if (isInitializing &&!isLoading) {
         messageRef.current = setInterval(() => {
             setMessageIndex((prev) => {
             const next = (prev + 1) % LOADING_MESSAGES.length
@@ -150,16 +156,25 @@ export const SessionProvider = ({ children }) => {
 
 
     const initializeSession = useCallback(async () => {
-        try {
-        setIsLoading(true)
+      if (initializationStarted.current) {
+        return { success: false, message: 'Already initializing' }
+      }
+      initializationStarted.current = true
+
+      try {
         setError('')
         sessionCompleteHandled.current = false
+        lowTimeWarningShown.current= false
+          
+        setIsLoading(false)
+        setIsInitializing(true)
 
         let activeSession = CacheService.getSessionData()
         let activePlan = CacheService.getPlanData()
 
         if (!activeSession || !(activeSession.sessionId || activeSession.id)) {
             console.warn('No active session found')
+            setIsInitializing(false)
             navigate('/config-charging')
             return { success: false }
         }
@@ -170,12 +185,11 @@ export const SessionProvider = ({ children }) => {
             setError('Failed to start charging session')
             CacheService.clearSessionData()
             CacheService.clearPlanData()
-            
+            setIsInitializing(false)
             setTimeout(() => {
             navigate('/config-charging')
             }, 2000)
             
-            setIsLoading(false)
             return { success: false, error: 'Session failed to start' }
         }
 
@@ -193,21 +207,20 @@ export const SessionProvider = ({ children }) => {
             }))
 
             if (activeSession.warmupCompletedAt || activeSession.status === 'ACTIVE') {
-            setIsInitializing(false)
-            startChargingTimers(activeSession, activePlan, savedTimer.timeElapsed)
-            } else {
-            await runWarmupSequence(activeSession, activePlan)
+              setIsInitializing(false)
+              startChargingTimers(activeSession, activePlan, savedTimer.timeElapsed)
+              } else {
+              await runWarmupSequence(activeSession, activePlan)
             }
         } else {
             await runWarmupSequence(activeSession, activePlan)
         }
 
-        setIsLoading(false)
         return { success: true }
-
         } catch (err) {
         console.error('Session initialization error:', err)
         setError('Failed to initialize session')
+        setIsInitializing(false)
         setIsLoading(false)
         return { success: false, error: err.message }
         }
@@ -236,6 +249,12 @@ export const SessionProvider = ({ children }) => {
         if (timerRef.current) clearInterval(timerRef.current)
         if (pollingRef.current) clearInterval(pollingRef.current)
 
+        setChargingData(prev => ({
+          ...prev,
+          timeElapsed: initialElapsed,
+          percentage: durationSeconds > 0 ? (initialElapsed / durationSeconds) * 100 : 0
+        }))
+
         timerRef.current = setInterval(() => {
         setChargingData(prev => {
             if (sessionCompleteHandled.current) return prev
@@ -249,20 +268,20 @@ export const SessionProvider = ({ children }) => {
 
             const remaining = durationSeconds - newElapsed
             if (remaining === APP_CONFIG.SESSION.LOW_TIME_WARNING && !lowTimeWarningShown.current) {
-            lowTimeWarningShown.current = true
-            if (notifyOnComplete) {
-                NotificationService.sendLowTimeWarning(5)
-            }
+              lowTimeWarningShown.current = true
+              if (notifyOnComplete && notificationPermission === 'granted') {
+                  NotificationService.sendLowTimeWarning(5)
+              }
             }
 
             if (newElapsed >= durationSeconds && durationSeconds > 0) {
-            handleSessionComplete({ status: 'COMPLETED' })
+              handleSessionComplete({ status: 'COMPLETED' })
             }
 
             return {
-            ...prev,
-            timeElapsed: newElapsed,
-            percentage: Math.min(100, percentage)
+              ...prev,
+              timeElapsed: newElapsed,
+              percentage: Math.min(100, percentage)
             }
         })
         }, 1000)
@@ -274,52 +293,55 @@ export const SessionProvider = ({ children }) => {
             
             setChargingData(prev => ({
                 ...prev,
-                energyUsed: data.energyUsed || prev.energyUsed,
-                status: data.status !== 'UNKNOWN' ? data.status : prev.status
+                energyUsed: typeof data.energyUsed === 'number' ? data.energyUsed : prev.energyUsed,
+                status: data.status || prev.status
             }))
 
-            if (['COMPLETED', 'FAILED'].includes(data.status)) {
-                handleSessionComplete({ status: data.status })
+            const normalizedPollStatus = String(data.status || '').toUpperCase()
+            if (['COMPLETED', 'FAILED'].includes(normalizedPollStatus)) {
+                handleSessionComplete({ status: normalizedPollStatus })
             }
             }, APP_CONFIG.SESSION.STATUS_POLL_INTERVAL)
 
             SessionService.fetchSessionData(sessionId).then(data => {
                 setChargingData(prev => ({
                     ...prev,
-                    energyUsed: data.energyUsed || 0
+                    energyUsed: typeof data.energyUsed === 'number' ? data.energyUsed : 0
             }))
         })
-    }, [notifyOnComplete])
+    }, [notifyOnComplete, notificationPermission])
 
 
     const stopSession = useCallback(async () => {
-    if (isStopping) return { success: false }
-
-    setIsStopping(true)
-    setError('')
-
-    try {
-      const sessionId = session?.sessionId || session?.id
-      const result = await SessionService.stopSession(sessionId)
-
-      if (result.success) {
-        handleSessionComplete({ 
-          status: 'STOPPED',
-          ...result.sessionData 
-        })
-        return { success: true }
-      } else {
-        setError(result.error || 'Failed to stop session')
-        return { success: false, error: result.error }
+      if (isStopping || sessionCompleteHandled.current) {
+        return { success: false } 
       }
 
-    } catch (err) {
-      console.error('Stop session error:', err)
-      setError('Failed to stop charging session')
-      return { success: false, error: err.message }
-    } finally {
-      setIsStopping(false)
-    }
+      setIsStopping(true)
+      setError('')
+
+      try {
+        const sessionId = session?.sessionId || session?.id
+        const result = await SessionService.stopSession(sessionId)
+
+        if (result.success) {
+          handleSessionComplete({ 
+            status: 'STOPPED',
+            ...result.sessionData 
+          })
+          return { success: true }
+        } else {
+          setError(result.error || 'Failed to stop session')
+          return { success: false, error: result.error }
+        }
+
+      } catch (err) {
+        console.error('Stop session error:', err)
+        setError('Failed to stop charging session')
+        return { success: false, error: err.message }
+      } finally {
+        setIsStopping(false)
+      }
   }, [session, isStopping])
 
 
@@ -348,7 +370,7 @@ export const SessionProvider = ({ children }) => {
       plan: plan,
       amountDebited: session?.amountDebited || plan?.walletDeduction,
       finalCost: session?.amountDebited || plan?.walletDeduction,
-      rate: plan?.rate || 0,
+      rate: chargerData?.rate || plan?.rate || 0,
       transactionId: session?.receiptId || session?.sessionId || session?.id,
       paymentMethod: 'Wallet',
       stationName: chargerData?.stationName || chargerData?.name,
@@ -357,12 +379,14 @@ export const SessionProvider = ({ children }) => {
       userEmail: user?.email
     }
 
+    console.log('Complete session data: ',completionData)
+
     sessionStorage.setItem('sessionCompletion', JSON.stringify({
       completionData,
       notifyOnComplete
     }))
 
-    if (notifyOnComplete) {
+    if (notifyOnComplete && notificationPermission === 'granted') {
       await NotificationService.sendSessionCompleted(
         completionData.sessionId,
         user?.name || 'User'
@@ -372,21 +396,37 @@ export const SessionProvider = ({ children }) => {
     setTimeout(() => {
       navigate('/invoice')
     }, 1500)
-  }, [chargingData, chargerData, user, notifyOnComplete, cleanupAllIntervals, navigate])
+  }, [chargingData,
+      chargerData,
+      plan,
+      session,
+      user,
+      notifyOnComplete,
+      notificationPermission,
+      cleanupAllIntervals,
+      navigate
+    ])
 
 
-  const toggleNotification = useCallback(() => {
-    setNotifyOnComplete(prev => {
-      const newValue = !prev
-      CacheService.saveNotificationPreference(newValue)
-      
-      if (newValue) {
-        NotificationService.requestPermission()
+  const toggleNotification = useCallback(async () => {
+    if (!notifyOnComplete) {
+      const granted = await NotificationService.requestPermission()
+      if (granted) {
+        setNotificationPermission('granted')
+        setNotifyOnComplete(true)
+        CacheService.saveNotificationPreference(true)
+      } else {
+        setNotificationPermission(Notification.permission)
+        setError('Notification permission denied')
+        setTimeout(() => 
+          setError('')
+        , 3000)
       }
-      
-      return newValue
-    })
-  }, [])
+    } else {
+      setNotifyOnComplete(false)
+      CacheService.saveNotificationPreference(false)
+    }
+  }, [notifyOnComplete])
 
 
   const formatTime = useCallback((seconds) => {
@@ -410,18 +450,23 @@ export const SessionProvider = ({ children }) => {
   }, [chargingData.percentage])
 
 
-  const sendInvoiceEmail = useCallback(async (invoiceData) => {
-    if (!user?.email) {
-      console.warn('No user email available')
-      return { success: false, error: 'No email address' }
-    }
+  const isNotificationDisabled = useMemo(() => {
+    return notificationPermission === 'denied'
+  }, [notificationPermission])
 
-    return await EmailService.sendInvoiceEmail({
-      ...invoiceData,
-      userName: user.name,
-      userEmail: user.email
-    })
-  }, [user])
+
+  // const sendInvoiceEmail = useCallback(async (invoiceData) => {
+  //   if (!user?.email) {
+  //     console.warn('No user email available')
+  //     return { success: false, error: 'No email address' }
+  //   }
+
+  //   return await EmailService.sendInvoiceEmail({
+  //     ...invoiceData,
+  //     userName: user.name,
+  //     userEmail: user.email
+  //   })
+  // }, [user])
 
 
   const value = useMemo(() => ({
@@ -438,6 +483,8 @@ export const SessionProvider = ({ children }) => {
     isCompleted,
     notifyOnComplete,
     isSessionActive,
+    notificationPermission,
+    isNotificationDisabled,
 
     loadingMessages: LOADING_MESSAGES,
     remainingTime: getRemainingTime(),
@@ -449,7 +496,7 @@ export const SessionProvider = ({ children }) => {
     formatTime,
     getRemainingTime,
     getBatteryHealth,
-    sendInvoiceEmail,
+    // sendInvoiceEmail,
     setError,
     cleanupAllIntervals
   }), [
@@ -465,13 +512,15 @@ export const SessionProvider = ({ children }) => {
     isCompleted,
     notifyOnComplete,
     isSessionActive,
+    notificationPermission,
+    isNotificationDisabled,
     getRemainingTime,
     getBatteryHealth,
     initializeSession,
     stopSession,
     toggleNotification,
     formatTime,
-    sendInvoiceEmail,
+    // sendInvoiceEmail,
     cleanupAllIntervals
   ])
 
