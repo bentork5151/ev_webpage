@@ -1,722 +1,472 @@
-import React, { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { useAuth } from "../store/AuthContext"
-import PaymentService from "../services/payment.service"
-import APP_CONFIG from "../config/app.config"
-import AuthService from "../services/auth.service"
-import Download from "../assets/images/download.svg";
-import Terms from "../assets/images/Terms.svg";
-import Privacy from "../assets/images/Privacy.svg";
-import About from "../assets/images/About.svg";
-import Help from "../assets/images/Help.svg";
-import ProfileIcon from "../assets/images/profile.svg";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../store/AuthContext";
+import PaymentService from "../services/payment.service";
+import AuthService from "../services/auth.service";
+import APP_CONFIG from "../config/app.config";
+
 import WalletIcon from "../assets/images/wallet.svg";
 import ArrowUp from "../assets/images/ArrowUp.svg";
 import ArrowDown from "../assets/images/ArrowDown.svg";
-
-import logoutIcon from "../assets/images/Logout.svg";
-
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
+import ProfileIcon from "../assets/images/profile.svg";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const { user, transactionData, userByEmail, transactionHistory } = useAuth();
 
-  const navigate = useNavigate()
-  const { user, transactionData, userByEmail, transactionHistory } = useAuth()
-
-  const [transactions, setTransactions] = useState([])
-  const [showDialog, setShowDialog] = useState(false)
-  const [amount, setAmount] = useState("")
-  const [totalAmount, setTotalAmount] = useState(0)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
-  const [isVerifying, setIsVerifying] = useState(false)
-
-  
-  const [showTerms, setShowTerms] = useState(false);
-const [showPrivacy, setShowPrivacy] = useState(false);
+  const [transactions, setTransactions] = useState([]);
+  const [showDialog, setShowDialog] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/login")
-      return
-    }
+    if (!user) navigate("/login");
+    if (Array.isArray(transactionData)) setTransactions(transactionData);
+  }, [user, transactionData, navigate]);
 
-    if (Array.isArray(transactionData)) {
-      setTransactions(transactionData);
-    }
-  }, [user, transactionData, navigate])
+useEffect(() => {
+  const baseAmount = parseFloat(amount) || 0
 
-  useEffect(() => {
-    const baseAmount = parseFloat(amount) || 0
-
-    if(baseAmount > 0){
-      const gst = baseAmount * (APP_CONFIG.TAX.GST_RATE || 0)
-      const pst = baseAmount * (APP_CONFIG.TAX.SXT_RATE || 0)
-      setTotalAmount((baseAmount + gst + pst).toFixed(2));
-    } else {
-      setTotalAmount(0);
-    }
-  }, [amount]);
-
+  if (baseAmount > 0) {
+    const gst = baseAmount * (APP_CONFIG.TAX.GST_RATE || 0)
+    const total = baseAmount + gst
+    setTotalAmount(total.toFixed(2));
+  } else {
+    setTotalAmount(0);
+  }
+}, [amount]);
 
   const handleRecharge = async () => {
-    if (!totalAmount || totalAmount <= 0) {
-      setError("Enter valid amount");
-      return
-    }
-
-    setLoading(true);
-    setError("");
+    if (!totalAmount || totalAmount <= 0) return setError("Enter valid amount");
+    setLoading(true); setError("");
 
     try {
-      const orderResult = await PaymentService.createOrder(totalAmount)
-
-      PaymentService.processPayment(
-        orderResult,
-        user,
-        handleSuccess,
-        handleFailure
-      )
-
-    } catch (error) {
-      setError("Recharge failed");
-      setLoading(false);
+      const orderResult = await PaymentService.createOrder(totalAmount);
+      PaymentService.processPayment(orderResult, user, handleSuccess, handleFailure);
+    } catch {
+      setError("Recharge failed"); setLoading(false);
     }
-  }
+  };
 
   const handleSuccess = () => {
-    setSuccess("Payment Successful");
-    setLoading(false);
-    setIsVerifying(true);
-    reloadData();
-  }
+    setSuccess("Payment Successful"); setLoading(false); setIsVerifying(true); reloadData();
+  };
+
+  //const handleSuccess = () => {
+  // setSuccess("Payment Successful");
+  // setLoading(false);
+  // setIsVerifying(true);
+
+  // Update wallet with actual recharge amount (without GST)
+//   AuthService.addToWallet(user.id, parseFloat(amount))  // ⚡ Add baseAmount
+//     .then(() => reloadData())
+//     .catch(() => setError("Failed to update wallet"));
+// };
 
   const handleFailure = (err) => {
-    setError(err || "Payment Failed");
-    setLoading(false);
-    setIsVerifying(false);
-  }
+    setError(err || "Payment Failed"); setLoading(false); setIsVerifying(false);
+  };
 
   const reloadData = async () => {
-    try{
-      console.info('First')
-      const userReload = await userByEmail(user.email)
-      console.debug('Second')
-      if(!userReload.success && !userReload.updatedUser) {
-        setError('Failed to fetch User')
-        return
-      }
-      console.debug('third')
-
-      const transactionReload  = await AuthService.loadTransaction(user.id, 10);
-      setTransactions(transactionReload);
-      transactionHistory(transactionReload);
-
+    try {
+      const userReload = await userByEmail(user.email);
+      if (!userReload?.success && !userReload?.updatedUser) return setError("Failed to fetch user");
+      const transactionReload = await AuthService.loadTransaction(user.id, 10);
+      setTransactions(transactionReload); transactionHistory(transactionReload);
       setTimeout(() => {
         setSuccess("Verification Completed");
-        setTimeout(() => {
-          setShowDialog(false);
-          setSuccess("");
-          setAmount("");
-          setError("");
-          setIsVerifying(false);
-        }, 500)
-      }, 1000)
-      
-    } catch (error){
-      setError("Failed while loading user or while loading transaction");
-      setIsVerifying(false);
-      setLoading(false)
+        setTimeout(() => { setShowDialog(false); setSuccess(""); setAmount(""); setError(""); setIsVerifying(false); }, 500);
+      }, 1000);
+    } catch {
+      setError("Failed while reloading data"); setIsVerifying(false); setLoading(false);
     }
-  }
-
+  };
 
   return (
     <div className="dashboard">
 
-      {/* ==== INTERNAL CSS ==== */}
       <style>{`
-        body{
-          background:#f6f6f6;
-          font-family:Arial;
+        body {
+          margin: 0;
+          font-family: Arial, sans-serif;
+          background: #212121;
+          color: #fff;
         }
-        .dashboard{
-          padding:20px;
-          max-width:420px;
-          margin:auto;
+
+        .dashboard {
+          padding: 16px;
+          max-width: 480px;
+          margin: auto;
         }
-          .title-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 
-}
-
-.main-title {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 400;
-   
-}
-
-.logout-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 28px;
-  background-color: #F2B8B5; /* light pink like image */
-  color: #852221;
-  font-size: 8px;
-  cursor: pointer;
-}
-
-
-
-.logout-icon {
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
-}
-
-
-          .profile-name{
-          font-size:18px;
-          font-weight:400;
-          }
-        .card{
-          background:white;
-          padding:20px;
-          border-radius:16px;
-          margin-bottom:20px;
+        .title-bar {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 8px 0;
         }
-          .card-1{
-          background:#303030;
-          padding:10px;
-          border-radius:12px;
-           border:1px solid #eee;
-           color: #ffffffff;
-         
+
+        .back-btn {
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
-       .small-font{
-            font-size:12px;
-          
-       }
-          .profile-photo{
-  width:90px;
-  height:90px;
-  border-radius:20px;
-  border:1px solid #eee;
-  margin:0 auto 13px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:#FFFFFF;
-}
-  .profile-img{
-  width:60px;
-  height:60px;
-  object-fit:contain;
-}
-        .center{text-align: center}
-        .menu {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  margin-top: 15px;
-}
 
-.menu-item {
-  text-align: center;
-  cursor: pointer;
-}
-
-.menu-item:hover .circle {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.menu-item:hover .menu-text {
-  color: #6DB85B;
-}
-
-.menu-text {
-  font-family: "Lexend", sans-serif;
-  font-size: 8px;
-  font-weight: 400;
-  opacity: 0.75;
-  display: block;
-}
-  
-         .small-font available-text{
-          margin-top: 20px;
-          
-          }
-           .small-font{
-           font-size:12px;
-           font-weight:400;
-
-           }
-        .menu div{
-          text-align:center;
-          font-size:10px;
-           font-weight:400;
+        .main-title {
+          font-size: 20px;
+          font-weight: 500;
         }
-        .circle{
-          width:46px;
-          height:46px;
-          border-radius:12px;
-          border:1px solid #eee;
-          margin:auto auto 8px;
-          display:flex;
-           padding:12px;
-          align-items:center;
-           gap: 10px;
-          justify-content:center;
+
+        .card-1 {
+          margin-top: 16px;
+          padding: 16px;
+          border-radius: 16px;
+          background: linear-gradient(82deg, rgba(48,48,48,0.5) 2%, rgba(0,0,0,0.5) 54%);
+          backdrop-filter: blur(10px);
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
         }
-          .circle img{
-  display:block;
-}
 
-        .wallet-row{
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
+        .wallet-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
         }
-         .wallet-title{
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-  .tx-right {
-  text-align: right;
-}
 
-.tx-status {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 12px;
-  background: #dff5cc;
-  color: #2e7d32;
-  display: inline-block;
-  margin-bottom: 4px;
-}
-
-.tx-amount {
-  font-size: 12px;
-  font-weight: 400;
-}
-
-.tx-amount.green {
-  color: #2e7d32;
-}
-
-.tx-amount.red {
-  color: #000000ff;
-}
-      
-       
-        .btn{
-          padding:8px 15px;
-          border-radius:28px;
-          border:none;
-          background:#FFFFFF;
-          color:#000000;
-          font-weight:500;
-          cursor:pointer;
-            font-size:12px;
+        .wallet-title {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 14px;
+          font-weight: 500;
         }
-        .amount{
-          font-size:18px;
-          font-weight:400;
-          margin-top:12px;
+
+        .amount {
+          font-size: 26px;
+          font-weight: 600;
         }
-          .transactions-scroll {
-  max-height: 260px;       /* control visible height */
-  overflow-y: auto;        /* enable vertical scroll */
-  padding-right: 4px;
-}
-  /* Smooth scrolling */
-.transactions-scroll {
-  scroll-behavior: smooth;
-}
 
-/* Optional: hide scrollbar (mobile look) */
-.transactions-scroll::-webkit-scrollbar {
-  width: 4px;
-}
+        .small-font {
+          font-size: 12px;
+          color: rgba(255,255,255,0.7);
+        }
 
-.transactions-scroll::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 10px;
-}
-          .transactions-title {
-  font-size: 18px;
-  font-weight: 400;
- 
-  padding:12px;
-}
+        .transactions-title {
+          font-size: 18px;
+          font-weight: 500;
+          margin: 16px 0 8px 0;
+        }
+
+        .transactions-scroll {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          max-height: 630px;
+          overflow-y: auto;
+        }
+
+        .transactions-scroll::-webkit-scrollbar {
+          width: 4px;
+        }
+        .transactions-scroll::-webkit-scrollbar-thumb {
+          background: #555;
+          border-radius: 8px;
+        }
+
         .transaction-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f7f7f5;
-  border-radius: 12px;
-    border:0.25px solid #00000045;
-  padding: 14px 16px;
-  margin-bottom: 12px;
-}
-  .tx-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.tx-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.tx-icon img {
-  width: 16px;
-  height: 16px;
-}
-
-.tx-icon.credit {
-  background: #dff5cc;
-}
-
-.tx-icon.debit {
-  background: #ffe1cc;
-}
-
-
-.tx-title {
-  font-size: 16px;
-  font-weight: 400;
-}
-
-.tx-sub {
-  font-size: 12px;
-  color: #777;
-}
-    
-
-
-
-        .green{color:#000000;
-         font-size:12px;
-        }  
-        .start-btn{
-          position:fixed;
-          left:0;
-          right:0;
-          bottom:15px;
-          padding:15px;
-          background:#6DB85B;
-          color:white;
-          border-radius:15px;
-          font-weight:bold;
-          border:none;
-          width:90%;
-          margin:auto;
-          display:block;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: #303030;
+          border-radius: 12px;
+          padding: 12px;
         }
-        .dialog-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
-        .dialog{
-          background:white;
-          width:90%;
-          padding:20px;
-          border-radius:15px;
+
+        .tx-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
         }
-        input{
-          width:100%;
-          padding:10px;
-          margin-top:10px;
-          margin-bottom:10px;
-          border-radius:8px;
-          border:1px solid #ccc;
+
+        .tx-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
-        .loading-bar-container{
-          width:100%;
-          background-color:#f3f3f3;
-          border-redius:4px;
-          overflow:hidden;
-          margin-top:15px;
+
+        .tx-icon.credit { background: #39E29B; }
+        .tx-icon.debit { background: #F9DEDC; }
+
+        .tx-title { font-size: 16px; font-weight: 500; }
+        .tx-sub { font-size: 12px; color: rgba(255,255,255,0.6); }
+
+        .tx-right { text-align: right; }
+        .tx-amount { font-size: 16px; font-weight: 500; color: #fff; }
+        .tx-status { font-size: 10px; background: #39E29B; color: #091f1a; padding: 2px 6px; border-radius: 12px; display: inline-block; margin-top: 4px; }
+
+        .btn {
+          padding: 8px 14px;
+          border-radius: 24px;
+          font-size: 14px;
+          font-weight: 500;
+          border: none;
+          cursor: pointer;
+          background: rgba(48,48,48,0.8);
+          color: #fff;
         }
-        .loading-bar {
-          height: 8px;
-          width: 100%; /* Start at 0, animation will change this */
-          background-color: #4CAF50;
-          animation: progress-bar 2s infinite linear;
+
+        /* Dialog */
+           .dialog-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.6);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 999;
+          animation: fadeIn 0.3s ease;
         }
-        @keyframes progress-bar {
-          0% { transform: translateX(-100%) }
-          100% { transform: translateX(100%) }
+
+        .dialog {
+          background: #1c1c1c;
+          width: 90%;
+          max-width: 400px;
+          padding: 24px 20px;
+          border-radius: 20px;
+          color: #fff;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+          animation: slideUp 0.4s ease;
+          font-family: 'Arial', sans-serif;
         }
-        .error{color:red;margin-top:10px}
-        .success{color:green;margin-top:10px}
-        .spacing{font-size:0.7rem;margin-bottom:16px}
+
+        @keyframes slideUp {
+          0% { transform: translateY(100px); opacity: 0; }
+          100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+          0% { opacity: 0; }
+          100% { opacity: 1; }
+        }
+
+        h3 {
+          text-align: center;
+          margin-bottom: 20px;
+          font-size: 20px;
+          font-weight: 500;
+        }
+
+        .invoice-row label {
+          display: block;
+          font-size: 14px;
+          margin-bottom: 6px;
+          color: #ccc;
+        }
+
+        input {
+          width: 100%;
+          padding: 12px 14px;
+          margin-bottom: 20px;
+          border-radius: 12px;
+          border: 1px solid #444;
+          background: #2a2a2a;
+          color: #fff;
+          font-size: 16px;
+        }
+
+        .invoice-summary {
+          background: #2a2a2a;
+          padding: 16px 20px;
+          border-radius: 16px;
+          margin-bottom: 20px;
+        }
+
+        .invoice-summary .row {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 10px;
+          font-size: 14px;
+          color: #ccc;
+        }
+
+        .invoice-summary .row.total {
+          font-weight: 600;
+          font-size: 16px;
+          color: #fff;
+          border-top: 1px dashed #444;
+          padding-top: 10px;
+        }
+
+        .btn-primary, .btn-secondary {
+          width: 100%;
+          padding: 12px 0;
+          border-radius: 12px;
+          font-weight: 600;
+          font-size: 16px;
+          cursor: pointer;
+          border: none;
+          transition: all 0.25s ease;
+          margin-bottom: 10px;
+        }
+
+        .btn-primary {
+          background: linear-gradient(135deg, #ffffffff, #ffffffff);
+          color: #000;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+
+        .btn-secondary {
+          background: #2a2a2a;
+          color: #fff;
+          border: 1px solid #444;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+          background: #3a3a3a;
+        }
+
+        .btn-primary.loading {
+          pointer-events: none;
+          color: transparent;
+          position: relative;
+        }
+
+        .loader {
+          width: 24px;
+          height: 24px;
+          border: 3px solid #fff;
+          border-top: 3px solid #39E29B;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        .error { color: #ff4d4f; margin: 8px 0; text-align:center;}
+        .success { color: #4caf50; margin: 8px 0; text-align:center;}
 
 
-        /* Common button styles */
-.btn-primary,
-.btn-secondary {
-  padding: 10px 18px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  min-width: 120px;
-}
-
-/* Primary Pay Button */
-.btn-primary {
-  background: linear-gradient(135deg, #000000ff, #000000ff);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-
-}
-
-/* Secondary Cancel Button */
-.btn-secondary {
-  margin-left: 10px;
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: #e5e7eb;
-}
-
-/* Disabled State */
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
+        
       `}</style>
 
-      {/* TITLE */}
-      {/* TITLE BAR */}
-<div className="title-bar">
-  <h2 className="main-title">Wallet</h2>
-
-  <button className="logout-btn">
-    Logout
-    <img src={logoutIcon} alt="logout" className="logout-icon" />
-  </button>
-</div>
-
-
-<br />
-      {/* PROFILE */}
-      <div className="card center">
-      <div className="profile-photo">
-  <img
-    src={user?.profileImage || ProfileIcon}
-    alt="Profile"
-    className="profile-img"
-  />
-</div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-  <p className="profile-name">{user?.name || "User"}</p>
-  <p className="small-font">{user?.email}</p>
-</div>
-
-{/* 
-        <div className="menu">
-          {["Download","Terms","Privacy","About"].map((i,k)=>(
-            <div key={k}>
-              <div className="circle">⬇️</div>
-              {i}
-            </div>
-          ))}
-        </div> */}
-<div className="menu">
-  {[
-    { name: "Download App", icon: Download },
-    { name: "Terms & Conditions", icon: Terms },
-    { name: "Privacy Policy", icon: Privacy },
-    { name: "Help", icon: Help },
-    { name: "About", icon: About },
-  ].map((item, k) => (
-    <div
-      key={k}
-      className="menu-item"
-      onClick={() => {
-        if (item.name === "Terms & Conditions") setShowTerms(true);
-        else if (item.name === "Privacy Policy") setShowPrivacy(true);
-        else if (item.name === "Help") navigate("/help");
-        else if (item.name === "About") navigate("/about");
-      }}
-    >
-      <div className="circle">
-        <img src={item.icon} alt={item.name} width="22" height="22" />
+      {/* Header */}
+      <div className="title-bar">
+        <button className="back-btn" onClick={() => navigate("/config-charging")}>
+          <ArrowBackIosNewIcon sx={{ fontSize: 20, color: "#fff" }} />
+        </button>
+        <h2 className="main-title">Wallet</h2>
       </div>
 
-      <span className="menu-text">{item.name}</span>
-    </div>
-  ))}
-</div>
-
-
-
-      </div>
-
-      {/* WALLET */}
-    <div className="card-1">
-  <div className="wallet-row">
-    <div className="wallet-title">
-      <img src={WalletIcon} alt="Wallet" width="14" height="14" />
-      <h6 className="small-font">Wallet Balance</h6>
-    </div>
-
-    <button className="btn" onClick={() => setShowDialog(true)}>
-      Add balance
-    </button>
-  </div>
-
- <div className="amount">
-  ₹{Number(user?.walletBalance ?? 0).toLocaleString("en-IN")}
-</div>
-
-<br />
-  <p className="small-font available-text">
-    Available for charging
-  </p>
-</div>
-
-
-      {/* TRANSACTIONS */}
-   <p className="transactions-title">Transactions</p>
-
-<div className="transactions-scroll">
-  {transactions?.map((t, i) => {
-    const isCredit = t?.type === "credit";
-
-    return (
-      <div className="transaction-card" key={i}>
-        {/* LEFT */}
-        <div className="tx-left">
-          <div className={`tx-icon ${isCredit ? "credit" : "debit"}`}>
-            <img
-              src={isCredit ? ArrowDown : ArrowUp}
-              alt={isCredit ? "Credit" : "Debit"}
-            />
+      {/* Wallet Card */}
+      <div className="card-1">
+        <div className="wallet-row">
+          <div className="wallet-title">
+            <img src={WalletIcon} alt="Wallet" width="16" height="16" /> Wallet Balance
           </div>
-
-          <div>
-            <div className="tx-title">
-              {isCredit ? "Credited" : "Debited"}
-            </div>
-            <div className="tx-sub">
-              via {t?.method || "Wallet"}
-            </div>
-          </div>
+          <button className="btn" onClick={() => setShowDialog(true)}>Add balance</button>
         </div>
-
-        {/* RIGHT */}
-        <div className="tx-right">
-          <div className={`tx-amount ${isCredit ? "green" : "red"}`}>
-            {isCredit ? "+" : "-"}₹{t?.amount}
-          </div>
-          <span className="tx-status">Completed</span>
-        </div>
+        <div className="amount">₹{Number(user?.walletBalance ?? 0).toLocaleString("en-IN")}</div>
+        <p className="small-font">Available for charging</p>
       </div>
-    );
-  })}
-</div>
 
-
-
-
-      {/* START CHARGING */}
-      <button className="start-btn" onClick={()=>navigate("/config-charging")}>
-        Start 
-      </button>
-
-
-      {/* DIALOG */}
-      {showDialog && (
-        <div className="dialog-backdrop">
-          <div className="dialog">
-            <h3>Recharge Wallet</h3>
-
-            {isVerifying ? (
-              <div style={{ textAlign: 'center', padding: '30px 0' }}>
-                <h4 style={{ color: 'green' }}>{success || "Verifying Payment..."}</h4>
-                <p>Please wait, updating your wallet balance.</p>
-                <div className="loading-bar-container">
-                    <div className="loading-bar"></div>
+      {/* Transactions */}
+      <p className="transactions-title">Transactions</p>
+      <div className="transactions-scroll">
+        {transactions?.map((t, i) => {
+          const isCredit = t?.type === "credit";
+          return (
+            <div className="transaction-card" key={i}>
+              <div className="tx-left">
+                <div className={`tx-icon ${isCredit ? "credit" : "debit"}`}>
+                  <img src={isCredit ? ArrowDown : ArrowUp} alt="" />
+                </div>
+                <div>
+                  <div className="tx-title">{isCredit ? "Credited" : "Debited"}</div>
+                  <div className="tx-sub">via {t?.method || "Wallet"}</div>
                 </div>
               </div>
+              <div className="tx-right">
+                <div className="tx-amount">{isCredit ? "+" : "-"}₹{t?.amount}</div>
+                <span className="tx-status">Completed</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
-            ) : (
-              <>
-                {error && <p className="error">{error}</p>}
-                {success && <p className="success">{success}</p>}
+      {/* Dialog */}
+     {showDialog && (
+  <div className="dialog-backdrop" onClick={() => !loading && setShowDialog(false)}>
+    <div className="dialog" onClick={(e) => e.stopPropagation()}>
+      <h3>Recharge Wallet</h3>
 
-                <input
-                  type="number"
-                  placeholder="Enter amount"
-                  value={amount}
-                  onChange={(e)=>{
-                    setAmount(e.target.value)
-                    setError("")
-                  }}
-                  disabled={loading}
-                />
+      {/* Amount Input */}
+      <div className="invoice-row">
+        <label>Amount</label>
+        <input
+          type="number"
+          placeholder="Enter amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          disabled={loading}
+        />
+      </div>
 
-                <p className="spacing">This will also include GST(18%) and PST(18%) of the Amount </p>
+      {/* GST & Total */}
+      <div className="invoice-summary">
+        <div className="row">
+          <span>GST (18%)</span>
+          <span>₹{((parseFloat(amount) || 0) * 0.18).toFixed(2)}</span>
+        </div>
+        <div className="row total">
+          <span>Total Payable</span>
+          <span>₹{totalAmount || 0}</span>
+        </div>
+      </div>
 
-                <button
-  className="btn-primary"
-  onClick={handleRecharge}
-  disabled={loading || parseFloat(totalAmount) <= 0}
->
-  {loading ? "Processing..." : `Pay ₹${totalAmount || 0}`}
-</button>
+      {error && <p className="error">{error}</p>}
+      {success && <p className="success">{success}</p>}
 
-<button
-  className="btn-secondary"
-  onClick={() => {
-    if (!loading) setShowDialog(false)
-  }}
-  disabled={loading}
->
-  Cancel
-</button>
+      {/* Buttons */}
+      <button
+        className={`btn-primary ${loading ? "loading" : ""}`}
+        onClick={handleRecharge}
+        disabled={loading || parseFloat(totalAmount) <= 0}
+      >
+        {loading ? <div className="loader"></div> : `Pay ₹${totalAmount || 0}`}
+      </button>
 
-              </>
-            )}
-          </div>
+      <button
+        className="btn-secondary"
+        onClick={() => !loading && setShowDialog(false)}
+        disabled={loading}
+      >
+        Cancel
+      </button>
+    </div>
         </div>
       )}
-
     </div>
-  )
+  );
 }
-
-
