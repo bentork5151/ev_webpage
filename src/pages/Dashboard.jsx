@@ -29,17 +29,17 @@ export default function Dashboard() {
     if (Array.isArray(transactionData)) setTransactions(transactionData);
   }, [user, transactionData, navigate]);
 
-useEffect(() => {
-  const baseAmount = parseFloat(amount) || 0
+  useEffect(() => {
+    const baseAmount = parseFloat(amount) || 0
 
-  if (baseAmount > 0) {
-    const gst = baseAmount * (APP_CONFIG.TAX.GST_RATE || 0)
-    const total = baseAmount + gst
-    setTotalAmount(total.toFixed(2));
-  } else {
-    setTotalAmount(0);
-  }
-}, [amount]);
+    if (baseAmount > 0) {
+      const gst = baseAmount * (APP_CONFIG.TAX.GST_RATE || 0)
+      const total = baseAmount + gst
+      setTotalAmount(total.toFixed(2));
+    } else {
+      setTotalAmount(0);
+    }
+  }, [amount]);
 
   const handleRecharge = async () => {
     if (!totalAmount || totalAmount <= 0) return setError("Enter valid amount");
@@ -63,10 +63,10 @@ useEffect(() => {
   // setIsVerifying(true);
 
   // Update wallet with actual recharge amount (without GST)
-//   AuthService.addToWallet(user.id, parseFloat(amount))  // ⚡ Add baseAmount
-//     .then(() => reloadData())
-//     .catch(() => setError("Failed to update wallet"));
-// };
+  //   AuthService.addToWallet(user.id, parseFloat(amount))  // ⚡ Add baseAmount
+  //     .then(() => reloadData())
+  //     .catch(() => setError("Failed to update wallet"));
+  // };
 
   const handleFailure = (err) => {
     setError(err || "Payment Failed"); setLoading(false); setIsVerifying(false);
@@ -121,7 +121,7 @@ useEffect(() => {
         }
 
         .main-title {
-          font-size: 20px;
+          font-size: 16px;
           font-weight: 500;
         }
 
@@ -129,11 +129,15 @@ useEffect(() => {
           margin-top: 16px;
           padding: 16px;
           border-radius: 16px;
-          background: linear-gradient(82deg, rgba(48,48,48,0.5) 2%, rgba(0,0,0,0.5) 54%);
+          background: linear-gradient(62deg, rgba(48,48,48,0.5) 2%, rgba(0,0,0,0.5) 54%);
           backdrop-filter: blur(10px);
           display: flex;
           flex-direction: column;
           gap: 12px;
+          cursor: pointer;
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.25);
         }
 
         .wallet-row {
@@ -146,23 +150,24 @@ useEffect(() => {
           display: flex;
           align-items: center;
           gap: 6px;
-          font-size: 14px;
-          font-weight: 500;
+          font-size: 12px;
+          font-weight: var(--font-weight-medium);
         }
 
         .amount {
-          font-size: 26px;
-          font-weight: 600;
+          font-size: 24px;
+          font-weight: var(--font-weight-medium);
         }
 
         .small-font {
-          font-size: 12px;
-          color: rgba(255,255,255,0.7);
+          font-size: 10px;
+          font-weight: var(--font-weight-regular);
+          color: rgba(255,255,255,0.6);
         }
 
         .transactions-title {
-          font-size: 18px;
-          font-weight: 500;
+          font-size: 14px;
+          font-weight: var(--font-weight-medium);
           margin: 16px 0 8px 0;
         }
 
@@ -217,15 +222,26 @@ useEffect(() => {
         .tx-status { font-size: 10px; background: #39E29B; color: #091f1a; padding: 2px 6px; border-radius: 12px; display: inline-block; margin-top: 4px; }
 
         .btn {
-          padding: 8px 14px;
+          padding: 8px 24px;
           border-radius: 24px;
-          font-size: 14px;
-          font-weight: 500;
-          border: none;
+          font-size: 12px;
+          font-weight: var(--font-weight-regular);
           cursor: pointer;
-          background: rgba(48,48,48,0.8);
-          color: #fff;
+          background: rgba(255, 255, 255, 0.12);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.25);
+          color: var(--color-white);
+  transition: background 0.2s ease, transform 0.2s ease;
         }
+  .btn:hover {
+  transform: scale(0.97);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
 
         /* Dialog */
            .dialog-backdrop {
@@ -373,7 +389,7 @@ useEffect(() => {
       {/* Header */}
       <div className="title-bar">
         <button className="back-btn" onClick={() => navigate("/config-charging")}>
-          <ArrowBackIosNewIcon sx={{ fontSize: 20, color: "#fff" }} />
+          <ArrowBackIosNewIcon sx={{ fontSize: 16, color: "#fff" }} />
         </button>
         <h2 className="main-title">Wallet</h2>
       </div>
@@ -416,55 +432,55 @@ useEffect(() => {
       </div>
 
       {/* Dialog */}
-     {showDialog && (
-  <div className="dialog-backdrop" onClick={() => !loading && setShowDialog(false)}>
-    <div className="dialog" onClick={(e) => e.stopPropagation()}>
-      <h3>Recharge Wallet</h3>
+      {showDialog && (
+        <div className="dialog-backdrop" onClick={() => !loading && setShowDialog(false)}>
+          <div className="dialog" onClick={(e) => e.stopPropagation()}>
+            <h3>Recharge Wallet</h3>
 
-      {/* Amount Input */}
-      <div className="invoice-row">
-        <label>Amount</label>
-        <input
-          type="number"
-          placeholder="Enter amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          disabled={loading}
-        />
-      </div>
+            {/* Amount Input */}
+            <div className="invoice-row">
+              <label>Amount</label>
+              <input
+                type="number"
+                placeholder="Enter amount"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                disabled={loading}
+              />
+            </div>
 
-      {/* GST & Total */}
-      <div className="invoice-summary">
-        <div className="row">
-          <span>GST (18%)</span>
-          <span>₹{((parseFloat(amount) || 0) * 0.18).toFixed(2)}</span>
-        </div>
-        <div className="row total">
-          <span>Total Payable</span>
-          <span>₹{totalAmount || 0}</span>
-        </div>
-      </div>
+            {/* GST & Total */}
+            <div className="invoice-summary">
+              <div className="row">
+                <span>GST (18%)</span>
+                <span>₹{((parseFloat(amount) || 0) * 0.18).toFixed(2)}</span>
+              </div>
+              <div className="row total">
+                <span>Total Payable</span>
+                <span>₹{totalAmount || 0}</span>
+              </div>
+            </div>
 
-      {error && <p className="error">{error}</p>}
-      {success && <p className="success">{success}</p>}
+            {error && <p className="error">{error}</p>}
+            {success && <p className="success">{success}</p>}
 
-      {/* Buttons */}
-      <button
-        className={`btn-primary ${loading ? "loading" : ""}`}
-        onClick={handleRecharge}
-        disabled={loading || parseFloat(totalAmount) <= 0}
-      >
-        {loading ? <div className="loader"></div> : `Pay ₹${totalAmount || 0}`}
-      </button>
+            {/* Buttons */}
+            <button
+              className={`btn-primary ${loading ? "loading" : ""}`}
+              onClick={handleRecharge}
+              disabled={loading || parseFloat(totalAmount) <= 0}
+            >
+              {loading ? <div className="loader"></div> : `Pay ₹${totalAmount || 0}`}
+            </button>
 
-      <button
-        className="btn-secondary"
-        onClick={() => !loading && setShowDialog(false)}
-        disabled={loading}
-      >
-        Cancel
-      </button>
-    </div>
+            <button
+              className="btn-secondary"
+              onClick={() => !loading && setShowDialog(false)}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
     </div>
