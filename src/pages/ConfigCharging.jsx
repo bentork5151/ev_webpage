@@ -10,7 +10,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 
 
-
+import "../assets/styles/global.css";
 
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
@@ -36,7 +36,7 @@ const sidebarConfig = {
       section: "primary",
       items: [
         { label: "My Wallet", icon: <AccountBalanceWalletIcon /> },
-        
+
       ]
     },
     {
@@ -67,7 +67,7 @@ const sidebarConfig = {
 
 
 const ConfigCharging = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const {
     plans,
     selectedPlan,
@@ -79,9 +79,9 @@ const ConfigCharging = () => {
     updatePowerValue
   } = useCharging()
 
-   // 🔐 SAFE last used plan
+  // 🔐 SAFE last used plan
   const lastUsed = selectedPlan || plans[0];
-const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // 🔹 Quick plans only
   const quickPlans = plans.filter(p => p.type === "QUICK");
@@ -93,32 +93,31 @@ const [drawerOpen, setDrawerOpen] = useState(false);
         margin: 0;
         padding: 0;
         height: 100%;
-          overflow-y: auto;
+        overflow-y: auto;
         font-family: Arial, sans-serif;
-     
       }
 
        /* ===== PAGE ===== */
 .config-page {
-   min-height: 100vh;
+  min-height: 100vh;
   background: #303030;
   color: #fff;
-  padding-top: 92px;  
+  padding-top: 68px;
   padding-bottom: 100px;
   font-family: Roboto, sans-serif;
 }
 
 /* ===== TOP BAR ===== */
 .topbar {
- position: fixed;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 92px;
+  height: 62px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
+  padding: 18px;
   background: #212121;
 
   
@@ -132,24 +131,26 @@ const [drawerOpen, setDrawerOpen] = useState(false);
 
 .menu {
   font-size: 40px;
-       font-weight: 400;
+  font-weight: var(--font-weight-regular);
 }
 
 .top-logo {
-  height: 72px;
-   width: 138px;
-} 
+  height: 68px;
+  width: 128px;
+}
 
 .wallet-pill {
   display: flex;
   align-items: center;
   gap: 10px;
-   font-weight: 600;
   padding: 8px 12px;
   background:#303030;
   border-radius: 16px;
   border: none;
   color: #fff;
+  font-size: 12px;
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-medium);
 }
 
 /* ===== MENU ICON ===== */
@@ -178,7 +179,7 @@ const [drawerOpen, setDrawerOpen] = useState(false);
 
 .drawer-box {
   margin: 16px;
-  background: #1f1f1f;
+  background: var(--color-matte-black);
   border-radius: 22px;
   overflow: hidden;
 }
@@ -190,17 +191,17 @@ const [drawerOpen, setDrawerOpen] = useState(false);
   top: 0;
   left: 0;
   height: 100vh;
-  width: 82%;
+  width: 90%;
   max-width: 347px;
   background: #212121;
   transform: translateX(-100%);
   transition: transform 0.35s ease;
   z-index: 10;
-  border-radius: 28px;
+  border-radius: 0 28px 28px 0;
   display: flex;
   flex-direction: column;
-   padding-left: 20px;
-     gap: 18px;
+  padding-left: 0px;
+  gap: 18px;
 
 }
 
@@ -212,13 +213,13 @@ const [drawerOpen, setDrawerOpen] = useState(false);
 }
 /* OPEN STATE */
 .side-drawer.open {
-  transform: translateX(0);
+  transform: translateX(0%);
 }
 
 
 /* ===== HEADER ===== */
 .drawer-header {
-  padding: 20px;
+  padding: 20px 8px 0 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -249,107 +250,108 @@ const [drawerOpen, setDrawerOpen] = useState(false);
   cursor: pointer;
 }
 
+
 /* ===== MENU ===== */
-
-
-
 .drawer-menu .item {
-  padding: 14px 0;
-  font-size: 15px;
+  padding: 8px 0;
+  font-size: 12px;
   display: flex;
   align-items: center;
-  gap: 14px;
-  color: #fff;
+  gap: 12px;
+  color: var(--color-white);
 }
 
 .drawer-menu .item svg {
-  font-size: 22px;
+  margin-top: 6px;
+  font-size: 18px;
   opacity: 0.85;
 }
 
 .avatar svg {
+  border-radius: 25%;
   font-size: 42px;
   opacity: 0.9;
 }
 
 /* ===== LOGOUT ===== */
 .logout-btn {
-  margin: 20px;
-  padding: 14px;
+  position: absolute;
+  bottom: 0;
+  width: 88%;
+  margin: 18px 0px;
+  padding: 12px 10px;
   background: #7b2c2c;
   color: #fff;
   border: none;
   border-radius: 14px;
-  font-size: 16px;
+  font-size: 12px;
 }
-
-
-
 
 
 /* ===== CHARGER CARD ===== */
 .charger-card {
-  margin: 16px;
+  margin: 8px;
   background: #212121;
   border-radius: 12px;
-  padding: 20px;
+  padding: 12px 18px;
   display: flex;
   justify-content: space-between;
-   height: 220px;
+  height: fit-content;
     
 }
 
 .charger-info h1 {
-  font-size: 36px;
-  font-weight: 300;
+  font-size: 24px;
+  font-weight: var(--font-weight-medium);
 }
 
 .charger-info h2 {
-  font-size: 22px;
-  font-weight: 300;
+  margin-top:-10px;
+  font-size: 18px;
+  font-weight: var(--font-weight-regular);
 }
 
 .charger-name {
-  margin-top: 16px;
-  font-weight: 600;
+  margin-top: 40%;
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
 }
 
 .charger-meta {
-margin-top:10px;
-  font-size: 16px;
-
-    font-weight: 400;
+  margin-top:2px;
+  font-size: 12px;
+  font-weight: var(--font-weight-regular);
 }
 
 .charger-img {
   height: 200px;
-     width: 130px;
+  width: 130px;
 }
 
 /* ===== SLIDER ===== */
 .label {
-          font-weight: 400;
-          margin: 20px 0 8px;
-           font-size: 14px; 
-            padding: 0px 16px;
-        }
+  font-weight: var(--font-weight-regular);
+  margin: 18px 0 6px;
+  font-size: 12px;
+  padding: 0px 16px;
+}
 
-        md-slider {
-          width: 100%;
-          --md-sys-color-primary: #00A000;
-          --md-sys-color-secondary: #d6efbf;
-          --md-slider-active-track-height: 20px;
-          --md-slider-inactive-track-height: 20px;
-          --md-slider-active-track-color: #5cc554ff;
-          --md-slider-inactive-track-color: #d6efbf;
-          --md-slider-handle-width: 4px;
-          --md-slider-handle-height: 40px;
-          --md-slider-handle-shape: 4px;
-          --md-slider-tick-color: #4b4b4b;
-          --md-slider-tick-active-color: #4caf50;
-          --md-slider-tick-size: 7px;
-            transition: all 0.3s ease;
-        }
+md-slider {
+  width: 100%;
+  --md-sys-color-primary: var(--color-primary-container);
+  --md-sys-color-secondary: var(--color-on-primary-container);
+  --md-slider-active-track-height: 20px;
+  --md-slider-inactive-track-height: 20px;
+  --md-slider-active-track-color: var(--color-primary-container);
+  --md-slider-inactive-track-color: var(--color-on-primary-container);
+  --md-slider-handle-width: 4px;
+  --md-slider-handle-height: 40px;
+  --md-slider-handle-shape: 4px;
+  --md-slider-tick-color: var(--color-on-primary-container);
+  --md-slider-tick-active-color: var(--color-primary-container);
+  --md-slider-tick-size: 7px;
+  transition: all 0.3s ease;
+}
 
 
 /* ===== PLANS ===== */
@@ -358,15 +360,15 @@ margin-top:10px;
   justify-content: space-between;
   align-items: center;
   margin: 20px 16px 10px;
-  
 }
 
 .last-used-pill {
-  padding: 6px 12px;
-  border: 1px solid #39E29B;
-  border-radius: 999px;
-  color: #39E29B;
+  padding: 6px 18px;
+  border: 1px solid var(--color-primary-container);
+  border-radius: 99px;
+  color: var(--color-primary-container);
   font-size: 12px;
+  font-weight: var(--font-weight-regular);
 }
 
 .plans {
@@ -380,14 +382,11 @@ margin-top:10px;
   background: #212121;
   padding: 6px 28px;
   border-radius: 28px;
-    border: 1px solid #00000024;
+  border: 1px solid var(--color-on-primary-container);
   display: flex;
-    height: 101px;
-    
+  height: 101px;
   justify-content: space-between;
   align-items: center;
-
-  
 }
 .plan strong{
   font-size: 24px;
@@ -419,187 +418,186 @@ margin-top:10px;
   transform: translateX(-50%);
   width: 90%;
   max-width: 420px;
-  padding: 18px;
-  background: #fff;
-  color: #111;
-  border-radius: 24px;
-  font-size: 18px;
-  font-weight: 600;
+  padding: 14px 24px;
+  background: #ffffffe0;
+  color: var(--color-matte-black);
+  border-radius: 18px;
+  font-size: 14px;
+  font-family: var(--font-primary);
+  font-weight: var(--font-weight-semibold);
   border: none;
 }
+`}</style>
 
-      
-      `}</style>
+      <div className="config-page">
 
-       <div className="config-page">
+        {/* ===== TOP BAR ===== */}
+        <div className="topbar">
+          <div className="topbar-left">
+            <MenuIcon
+              className="menu-icon"
+              onClick={() => setDrawerOpen(true)}
+            />
 
-      {/* ===== TOP BAR ===== */}
-      <div className="topbar">
-        <div className="topbar-left">
-     <MenuIcon
-  className="menu-icon"
-  onClick={() => setDrawerOpen(true)}
-/>
+            <img src={Logo} className="top-logo" />
+          </div>
 
-          <img src={Logo} className="top-logo" />
+          <button
+            className="wallet-pill"
+            onClick={() => navigate("/dashboard")}
+          >
+            <img src={WalletIcon} alt="Wallet" />
+            ₹29.30
+          </button>
+
         </div>
 
-        <button
-  className="wallet-pill"
-  onClick={() => navigate("/dashboard")}
->
-  <img src={WalletIcon} alt="Wallet" />
-  ₹29.30
-</button>
 
-      </div>
+        {/* ===== OVERLAY ===== */}
+        {/* ===== OVERLAY ===== */}
+        <div
+          className={`drawer-overlay ${drawerOpen ? "show" : ""}`}
+          onClick={() => {
+            // Check if the clicked item is "MW Wallet"
+            const walletItem = sidebarConfig.menu
+              .flatMap(group => group.items)
+              .find(item => item.label === "MW Wallet");
 
+            if (walletItem) {
+              navigate("/dashboard"); // Go to dashboard page
+            }
+            setDrawerOpen(false); // Close drawer anyway
+          }}
+        />
 
-{/* ===== OVERLAY ===== */}
-{/* ===== OVERLAY ===== */}
-<div
-  className={`drawer-overlay ${drawerOpen ? "show" : ""}`}
-  onClick={() => {
-    // Check if the clicked item is "MW Wallet"
-    const walletItem = sidebarConfig.menu
-      .flatMap(group => group.items)
-      .find(item => item.label === "MW Wallet");
-    
-    if (walletItem) {
-      navigate("/dashboard"); // Go to dashboard page
-    }
-    setDrawerOpen(false); // Close drawer anyway
-  }}
-/>
+        {/* ===== SIDE DRAWER ===== */}
+        <div className={`side-drawer ${drawerOpen ? "open" : ""}`}>
+          <div className="drawer-box" onClick={(e) => e.stopPropagation()}>
+            {/* USER HEADER */}
+            <div className="drawer-header">
+              <div className="user-info">
+                <div className="avatar">{sidebarConfig.user.avatar}</div>
+                <div>
+                  <strong className="text-semibold">{sidebarConfig.user.name}</strong>
+                  <p className="text-regular">{sidebarConfig.user.email}</p>
+                </div>
+              </div>
+              <CloseIcon
+                className="close-icon"
+                onClick={() => setDrawerOpen(false)}
+              />
+            </div>
 
-{/* ===== SIDE DRAWER ===== */}
-<div className={`side-drawer ${drawerOpen ? "open" : ""}`}>
-  <div className="drawer-box" onClick={(e) => e.stopPropagation()}>
-    {/* USER HEADER */}
-    <div className="drawer-header">
-      <div className="user-info">
-        <div className="avatar">{sidebarConfig.user.avatar}</div>
-        <div>
-          <strong>{sidebarConfig.user.name}</strong>
-          <p>{sidebarConfig.user.email}</p>
-        </div>
-      </div>
-      <CloseIcon
-        className="close-icon"
-        onClick={() => setDrawerOpen(false)}
-      />
-    </div>
+            <hr />
 
-    <hr />
+            {/* MENU */}
+            <div className="drawer-menu">
+              {sidebarConfig.menu.map((group, index) => (
+                <div key={index}>
+                  {group.items.map((item, i) => (
+                    <div
+                      className="item"
+                      key={i}
+                      onClick={() => {
+                        setDrawerOpen(false); // close drawer
+                        if (item.label === "My Wallet") {
+                          navigate("/dashboard");
+                        } else if (item.label === "Terms & Conditions") {
+                          navigate("/terms");
+                        }
+                      }}
+                    >
+                      <span className="icon">{item.icon}</span>
+                      <span>{item.label}</span>
+                    </div>
+                  ))}
 
-    {/* MENU */}
-  <div className="drawer-menu">
-  {sidebarConfig.menu.map((group, index) => (
-    <div key={index}>
-     {group.items.map((item, i) => (
-  <div
-    className="item"
-    key={i}
-    onClick={() => {
-      setDrawerOpen(false); // close drawer
-      if (item.label === "My Wallet") {
-        navigate("/dashboard");
-      } else if (item.label === "Terms & Conditions") {
-        navigate("/terms");
-      }
-    }}
-  >
-    <span className="icon">{item.icon}</span>
-    <span>{item.label}</span>
-  </div>
-))}
-
-      {index !== sidebarConfig.menu.length - 1 && <hr />}
-    </div>
-  ))}
-</div>
+                  {index !== sidebarConfig.menu.length - 1 && <hr />}
+                </div>
+              ))}
+            </div>
 
 
-    {/* LOGOUT */}
-    <button className="logout-btn" onClick={() => console.log("Log Out")}>
-      Log Out
-    </button>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-      {/* ===== CHARGER CARD ===== */}
-      <div className="charger-card">
-        <div className="charger-info">
-          <h1>Configure</h1>
-          <h2>Charger</h2>
-<br />
-          <p className="charger-name">
-            {chargerData?.name || "Bentork Charger"}
-          </p>
-          <p className="charger-meta">
-            Type: {chargerData?.connectorType || "CSS2"}<br/>
-            Power: {chargerData?.chargerType || "AC"}
-          </p>
+            {/* LOGOUT */}
+            <button className="logout-btn" onClick={() => console.log("Log Out")}>
+              Log Out
+            </button>
+          </div>
         </div>
 
-        <img src={StationImg} className="charger-img" />
-      </div>
 
-      {/* ===== SLIDER ===== */}
-   <div className="label">Custom Power Range</div>
+
+
+
+
+
+
+
+
+
+        {/* ===== CHARGER CARD ===== */}
+        <div className="charger-card">
+          <div className="charger-info">
+            <h1>Configure</h1>
+            <h2>Charger</h2>
+            <br />
+            <p className="charger-name">
+              {chargerData?.name || "Bentork Charger"}
+            </p>
+            <p className="charger-meta">
+              • Type: {chargerData?.connectorType || "CSS2"}<br />
+              • Power: {chargerData?.chargerType || "AC"}
+            </p>
+          </div>
+
+          <img src={StationImg} className="charger-img" />
+        </div>
+
+        {/* ===== SLIDER ===== */}
+        <div className="label">Custom Power Range</div>
         <md-slider
           labeled
           min="0"
           max="1"
           step="0.1"
-          value={powerValue}  
-         onInput={(e) => updatePowerValue(Number(e.target.value))}
+          value={powerValue}
+          onInput={(e) => updatePowerValue(Number(e.target.value))}
         ></md-slider>
 
 
-      {/* ===== PLANS ===== */}
-      <div className="plans-header">
-        <h3>Plans</h3>
-        <span className="last-used-pill">Last used</span>
-      </div>
+        {/* ===== PLANS ===== */}
+        <div className="plans-header">
+          <h3>Plans</h3>
+          <span className="last-used-pill">Last used</span>
+        </div>
 
-      <div className="plans">
-        {plans.map((plan) => (
-          <div
-            key={plan.id}
-            className={`plan ${selectedPlan?.id === plan.id ? "active" : ""}`}
-            onClick={() => selectPlan(plan)}
-          >
-            <div>
-              <strong>{plan.planName}</strong>
-              <br />
-              <span>{plan.durationMin} mins</span>
+        <div className="plans">
+          {plans.map((plan) => (
+            <div
+              key={plan.id}
+              className={`plan ${selectedPlan?.id === plan.id ? "active" : ""}`}
+              onClick={() => selectPlan(plan)}
+            >
+              <div>
+                <strong>{plan.planName}</strong>
+                <br />
+                <span>{plan.durationMin} mins</span>
+              </div>
+              <span className="price">₹{plan.walletDeduction}</span>
+
             </div>
-            <span className="price">₹{plan.walletDeduction}</span>
-            
-          </div>
-        ))}
+          ))}
+        </div>
+
+        {/* ===== PAY BUTTON ===== */}
+        <button className="pay-btn" onClick={openReceipt}>
+          Pay ₹{selectedPlan?.walletDeduction || 0}
+        </button>
+
+        <Outlet />
       </div>
-
-      {/* ===== PAY BUTTON ===== */}
-      <button className="pay-btn" onClick={openReceipt}>
-        Pay ₹{selectedPlan?.walletDeduction || 0}
-      </button>
-
-      <Outlet/>
-    </div>
-  </>
-)
+    </>
+  )
 };
 
 export default ConfigCharging;
