@@ -15,8 +15,8 @@ import ApiService from '../services/api.service'
 import API_CONFIG from '../config/api.config'
 import CacheService from '../services/cache.service'
 import AuthService from '../services/auth.service'
-import Logo from "../assets/images/logo.png";
-import Onboarding from "../assets/images/onboarding.png";
+import Logo from "../assets/images/logo-1.png";
+import LoginImg from "../assets/images/car.png";
 import BottomImg from "../assets/images/BottomImg.png";
 import "../assets/styles/Login.css";
 import TopRightBg from "../assets/images/tr.png";
@@ -94,51 +94,43 @@ const Login = () => {
   }
   
   return (
-    <div className={`login-container ${animate ? "fade-in" : ""}`}>
-       <img
-  src={TopRightBg}
-  alt="Background decoration"
-  className="top-right-image"
-/>
-      <img
-  src={BottomImg}
-  alt="Bottom decoration"
-  className="bottom-image"
-/>
-      <img
-    src={Logo}
-    alt="Bentork Logo"
-    className="login-logo"
-  />
-<div className='card-2'>
-     
-      <div className="onboarding-container">
-      <img
-        src={Onboarding}
-        alt="Onboarding"
-        className="onboarding-img"
-      />
+  <div className={`login-container-dark ${animate ? "slide-up" : ""}`}>
+    
+    <div className="screen-content">
+
+      {/* Brand */}
+      <div className="brand-section">
+        <img src={Logo} alt="Bentork Logo" className="brand-logo" />
+       
       </div>
 
-      <div className="text-section">
-        <h1 className="welcome-text">Welcome</h1>
-        <p className="subtitle-text">One-Tap Login</p>
+      {/* Hero */}
+      <div className="hero-section">
+        <img src={LoginImg} alt="EV Charging" className="hero-image" />
       </div>
 
-      <button className="google-btn" onClick={handleGoogleSuccess}>
-        <img
-          src="https://developers.google.com/identity/images/g-logo.png"
-          alt="Google Logo"
-          className="google-icon"
-        />
-        SignIn with Google
+      {/* Text */}
+      <div className="text-section-dark">
+        <h1 className="welcome-text-dark">Welcome</h1>
+        <p className="subtitle-dark">Let’s get you started</p>
+      </div>
+
+      {/* Button */}
+      <button className="google-btn-dark" onClick={handleGoogleSuccess}>
+        
+        Sign in with Google
       </button>
-       <p className="subtitle-text-1">Start charging smarter today</p>
-      </div>
 
-      <p className='fotter-text'>Connect Your Charger • Follow Simple Steps</p>
     </div>
-  )
+
+    {/* Footer always bottom */}
+    <p className="footer-dark">
+      Connect Your Charger • Follow Simple Steps
+    </p>
+
+  </div>
+)
+
 }
 
 export default Login
