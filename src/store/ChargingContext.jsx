@@ -39,9 +39,10 @@ export const ChargingProvider = ({ children }) => {
 
     const pricing = useMemo(() => {
         const baseAmount = Number(selectedPlan?.walletDeduction || 0)
+        const totalAmount = baseAmount
         return {
             baseAmount,
-            totalAmount: baseAmount,
+            totalAmount,
             formattedBaseAmount: baseAmount.toFixed(2),
             formattedTotalAmount: totalAmount.toFixed(2)
         }
@@ -136,7 +137,7 @@ export const ChargingProvider = ({ children }) => {
         const newStatus = Notification.permission
         setNotificationStatus(newStatus)
         return { granted, status: newStatus }
-    })
+    }, [])
 
     const processPayment = useCallback(async () => {
 
