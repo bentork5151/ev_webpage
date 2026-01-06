@@ -31,12 +31,12 @@ const Receipt = () => {
         .receipt-backdrop {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.0);
+          background: rgba(0, 0, 0, 0.5);
           display: flex;
           justify-content: center;
           align-items: center;
           z-index: 1001;
-          backdrop-filter: blur(2px);
+          backdrop-filter: blur(3px);
           animation: fadeIn 0.2s ease;
         }
 
@@ -46,7 +46,7 @@ const Receipt = () => {
         }
         
         .receipt-dialog {
-          background: #212121;
+          background: #fff;
           width: 90%;
           max-width: 400px;
           border-radius: 20px;
@@ -80,7 +80,7 @@ const Receipt = () => {
           font-size: 18px;
           font-weight: 600;
           margin: 0;
-          color: #ffffffff;
+          color: #111;
         }
 
         .receipt-close-btn {
@@ -108,17 +108,18 @@ const Receipt = () => {
         }
 
         .receipt-section-default {
-        
-          background: #303030;;
+          border: 1px solid #e5e5e5;
+          background: #fafafa;
         }
         
-        .receipt-blue { background: #303030;  }
-        .receipt-green { background: #212121;   }
+        .receipt-blue { background: #f0f7ff; border: 1px solid #d0e3ff; }
+        .receipt-green { background: #f0fff4; border: 1px solid #c6f6d5; }
+        .receipt-red { background: #fef2f2; border: 1px solid #fecaca; }
 
         .receipt-section-title {
           font-size: 14px;
           font-weight: 600;
-          color: #ffffffff;
+          color: #333;
           margin-bottom: 10px;
           display: block;
         }
@@ -128,12 +129,11 @@ const Receipt = () => {
           justify-content: space-between;
           align-items: center;
           padding: 6px 0;
-          
           font-size: 13px;
         }
 
-        .receipt-row-label { color: #fff8f8ff;  }
-        .receipt-row-value { font-weight: 500; color: #ffffffff; }
+        .receipt-row-label { color: #666; }
+        .receipt-row-value { font-weight: 500; color: #333; }
         
         .receipt-divider {
           margin: 12px 0;
@@ -145,7 +145,7 @@ const Receipt = () => {
         .receipt-row-total .receipt-row-label,
         .receipt-row-total .receipt-row-value {
           font-weight: 700;
-          color: #ffffffff;
+          color: #111;
         }
 
         .receipt-error-text {
@@ -166,8 +166,8 @@ const Receipt = () => {
         }
         
         .receipt-pay-btn {
-          background: #FFFFFF;
-          color: #000000ff;
+          background: #111;
+          color: #fff;
           padding: 16px;
           border-radius: 14px;
           text-align: center;

@@ -19,6 +19,7 @@ class SessionService {
           error: 'Charger ID and Plan ID are required'
         }
       }
+      this.clearSession()
       console.log('Starting session:', { chargerId, planId, boxId })
 
       const response = await ApiService.post(API_CONFIG.ENDPOINTS.START_SESSION, {

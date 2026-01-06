@@ -12,7 +12,7 @@ import { useAuth } from './AuthContext'
 import SessionService from '../services/session.service'
 import CacheService from '../services/cache.service'
 import NotificationService from '../services/notification.service'
-import EmailService from '../services/email.service'
+// import EmailService from '../services/email.service'
 import APP_CONFIG from '../config/app.config'
 
 const SessionContext = createContext(null)
@@ -46,6 +46,15 @@ export const SessionProvider = ({ children }) => {
     const sessionCompleteHandled = useRef(false)
     const initializationStarted = useRef(false)
 
+    const sessionRef = useRef(null)
+    const planRef = useRef(null)
+    const chargingDataRef= useRef({
+        energyUsed: 0,
+        timeElapsed: 0,
+        percentage: 0,
+        status: 'INITIALIZING'
+    })
+
     const [session, setSession] = useState(null)
     const [plan, setPlan] = useState(null)
     const [chargingData, setChargingData] = useState({
@@ -65,9 +74,24 @@ export const SessionProvider = ({ children }) => {
     const [notifyOnComplete, setNotifyOnComplete] = useState(true)
     const [notificationPermission, setNotificationPermission] = useState('default')
 
+    useEffect(() => {
+      sessionRef.current = session
+    }, [session])
+
+    useEffect(() => {
+      planRef.current = plan
+    }, [plan])
+
+    useEffect(() => {
+      chargingDataRef.current = chargingData
+    }, [chargerData])
+
     const isSessionActive = useMemo(() => {
-      return ['active','initiated'].includes(chargerData.status)
-    }, [chargerData.status])
+      const status = String(chargingData.status || '').toLowerCase()
+      const active = ['active','initiated'].includes(status)
+      console.log('isSessionActive check: ', {status, active})
+      return active
+    }, [chargingData.status])
 
     const isOnSessionPage = location.pathname === '/charging-session'
 
@@ -115,7 +139,7 @@ export const SessionProvider = ({ children }) => {
 
 
     useEffect(() => {
-        if (isInitializing &&!isLoading) {
+        if (isInitializing) {
         messageRef.current = setInterval(() => {
             setMessageIndex((prev) => {
             const next = (prev + 1) % LOADING_MESSAGES.length
@@ -179,7 +203,11 @@ export const SessionProvider = ({ children }) => {
             return { success: false }
         }
 
-        const sessionStatus = String(activeSession.status || '').toUpperCase()
+        const sessionId = activeSession?.sessionId || activeSession?.id
+        const currentStatus = await SessionService.getSessionStatus(sessionId)
+        console.log('Current session ID from API: ',currentStatus)
+
+        const sessionStatus = String(currentStatus || '').toUpperCase()
         if (sessionStatus === 'FAILED') {
             console.error('Session status is FAILED, redirecting back')
             setError('Failed to start charging session')
@@ -193,11 +221,15 @@ export const SessionProvider = ({ children }) => {
             return { success: false, error: 'Session failed to start' }
         }
 
+        activeSession.status = sessionStatus
+
         setSession(activeSession)
         setPlan(activePlan)
+        sessionRef.current = activeSession
+        planRef.current = activePlan
 
         const savedTimer = CacheService.getSessionTimer()
-        if (savedTimer && savedTimer.sessionId === (activeSession.sessionId || activeSession.id)) {
+        if (savedTimer && savedTimer.sessionId === (activeSession.sessionId) && activeSession.warmupCompletedAt) {
             setChargingData(prev => ({
             ...prev,
             timeElapsed: savedTimer.timeElapsed,
@@ -210,139 +242,162 @@ export const SessionProvider = ({ children }) => {
               setIsInitializing(false)
               startChargingTimers(activeSession, activePlan, savedTimer.timeElapsed)
               } else {
-              await runWarmupSequence(activeSession, activePlan)
-            }
-        } else {
-            await runWarmupSequence(activeSession, activePlan)
-        }
-
-        return { success: true }
-        } catch (err) {
-        console.error('Session initialization error:', err)
-        setError('Failed to initialize session')
-        setIsInitializing(false)
-        setIsLoading(false)
-        return { success: false, error: err.message }
-        }
-    }, [navigate])
-
-
-    const runWarmupSequence = useCallback(async (activeSession, activePlan) => {
-        setIsInitializing(true)
-        setChargingData(prev => ({ ...prev, status: 'INITIALIZING' }))
-
-        await new Promise(resolve => setTimeout(resolve, APP_CONFIG.SESSION.WARMUP_DURATION))
-
-        await SessionService.completeWarmup(activeSession.sessionId || activeSession.id)
-        
-        setIsInitializing(false)
-        setChargingData(prev => ({ ...prev, status: 'ACTIVE' }))
-
-        startChargingTimers(activeSession, activePlan, 0)
-    }, [])
-
-
-    const startChargingTimers = useCallback((activeSession, activePlan, initialElapsed = 0) => {
-        const sessionId = activeSession.sessionId || activeSession.id
-        const durationSeconds = (activePlan?.durationMin || 0) * 60
-
-        if (timerRef.current) clearInterval(timerRef.current)
-        if (pollingRef.current) clearInterval(pollingRef.current)
-
-        setChargingData(prev => ({
-          ...prev,
-          timeElapsed: initialElapsed,
-          percentage: durationSeconds > 0 ? (initialElapsed / durationSeconds) * 100 : 0
-        }))
-
-        timerRef.current = setInterval(() => {
-        setChargingData(prev => {
-            if (sessionCompleteHandled.current) return prev
-
-            const newElapsed = prev.timeElapsed + 1
-            const percentage = durationSeconds > 0 
-            ? (newElapsed / durationSeconds) * 100 
-            : 0
-
-            SessionService.updateTimerState(newElapsed, percentage)
-
-            const remaining = durationSeconds - newElapsed
-            if (remaining === APP_CONFIG.SESSION.LOW_TIME_WARNING && !lowTimeWarningShown.current) {
-              lowTimeWarningShown.current = true
-              if (notifyOnComplete && notificationPermission === 'granted') {
-                  NotificationService.sendLowTimeWarning(5)
+                CacheService.clearSessionTimer()
+                await runWarmupSequence(activeSession, activePlan)
               }
+          } else {
+              await runWarmupSequence(activeSession, activePlan)
+          }
+
+          return { success: true }
+          } catch (err) {
+          console.error('Session initialization error:', err)
+          setError('Failed to initialize session')
+          setIsInitializing(false)
+          setIsLoading(false)
+          return { success: false, error: err.message }
+          }
+      }, [navigate])
+
+
+      const runWarmupSequence = useCallback(async (activeSession, activePlan) => {
+          setIsInitializing(true)
+          setChargingData(prev => ({ ...prev, status: 'INITIALIZING' }))
+
+          await new Promise(resolve => setTimeout(resolve, APP_CONFIG.SESSION.WARMUP_DURATION))
+
+          const updatedSession = await SessionService.completeWarmup(activeSession.sessionId || activeSession.id)
+
+          if (updatedSession) {
+            setSession(updatedSession)
+            sessionRef.current = updatedSession
+          }
+          
+          setIsInitializing(false)
+          setChargingData(prev => ({ ...prev, status: 'ACTIVE' }))
+
+          startChargingTimers(activeSession, activePlan, 0)
+      }, [])
+
+
+      const startChargingTimers = useCallback((activeSession, activePlan, initialElapsed = 0) => {
+          const sessionId = activeSession.sessionId || activeSession.id
+          const durationSeconds = (activePlan?.durationMin || 0) * 60
+
+          if (timerRef.current) clearInterval(timerRef.current)
+          if (pollingRef.current) clearInterval(pollingRef.current)
+
+          setChargingData(prev => ({
+            ...prev,
+            timeElapsed: initialElapsed,
+            percentage: durationSeconds > 0 ? (initialElapsed / durationSeconds) * 100 : 0
+          }))
+
+          timerRef.current = setInterval(() => {
+            if (sessionCompleteHandled.current) {
+              console.log('Session already completed, stopping timer')
+              return
             }
 
-            if (newElapsed >= durationSeconds && durationSeconds > 0) {
-              handleSessionComplete({ status: 'COMPLETED' })
-            }
+            setChargingData(prev => {
+              const newElapsed = prev.timeElapsed + 1
+              const percentage = durationSeconds > 0 
+              ? (newElapsed / durationSeconds) * 100 
+              : 0
 
-            return {
-              ...prev,
-              timeElapsed: newElapsed,
-              percentage: Math.min(100, percentage)
-            }
-        })
-        }, 1000)
-
-        pollingRef.current = setInterval(async () => {
-
-            if (sessionCompleteHandled.current) return
-            const data = await SessionService.fetchSessionData(sessionId)
-            
-            setChargingData(prev => ({
+            const updated = {
                 ...prev,
-                energyUsed: typeof data.energyUsed === 'number' ? data.energyUsed : prev.energyUsed,
-                status: data.status || prev.status
-            }))
+                timeElapsed: newElapsed,
+                percentage: Math.min(100, percentage),
+                status: 'ACTIVE'
+              }
 
-            const normalizedPollStatus = String(data.status || '').toUpperCase()
-            if (['COMPLETED', 'FAILED'].includes(normalizedPollStatus)) {
-                handleSessionComplete({ status: normalizedPollStatus })
-            }
-            }, APP_CONFIG.SESSION.STATUS_POLL_INTERVAL)
+              chargingDataRef.current = updated
 
-            SessionService.fetchSessionData(sessionId).then(data => {
+              SessionService.updateTimerState(newElapsed, percentage)
+
+              const remaining = durationSeconds - newElapsed
+              if (remaining === APP_CONFIG.SESSION.LOW_TIME_WARNING && !lowTimeWarningShown.current) {
+                lowTimeWarningShown.current = true
+                if (notifyOnComplete && notificationPermission === 'granted') {
+                    NotificationService.sendLowTimeWarning(5)
+                }
+              }
+
+              if (newElapsed >= durationSeconds && durationSeconds > 0 && !sessionCompleteHandled.current) {
+                console.log('Timer completed, triggering session completed')
+                setTimeout(() => handleSessionComplete({ status: 'COMPLETED' }), 0)
+              }
+
+              return updated
+          })
+          }, 1000)
+
+            pollingRef.current = setInterval(async () => {
+              if (sessionCompleteHandled.current) return
+              
+              try{
+                const data = await SessionService.fetchSessionData(sessionId)
+              
                 setChargingData(prev => ({
                     ...prev,
-                    energyUsed: typeof data.energyUsed === 'number' ? data.energyUsed : 0
-            }))
-        })
-    }, [notifyOnComplete, notificationPermission])
+                    energyUsed: typeof data.energyUsed === 'number' && data.energyUsed > 0.001 ? data.energyUsed : prev.energyUsed,
+                    status: data.status || prev.status
+                }))
 
+                const normalizedPollStatus = String(data.status || '').toUpperCase()
+                if (['COMPLETED', 'FAILED'].includes(normalizedPollStatus) && !sessionCompleteHandled.current) {
+                    handleSessionComplete({ status: normalizedPollStatus })
+                }
+                } catch (error) {
+                  console.error('Polling error: ',error)
+                }
+              }, APP_CONFIG.SESSION.STATUS_POLL_INTERVAL)
 
-    const stopSession = useCallback(async () => {
-      if (isStopping || sessionCompleteHandled.current) {
-        return { success: false } 
-      }
-
-      setIsStopping(true)
-      setError('')
-
-      try {
-        const sessionId = session?.sessionId || session?.id
-        const result = await SessionService.stopSession(sessionId)
-
-        if (result.success) {
-          handleSessionComplete({ 
-            status: 'STOPPED',
-            ...result.sessionData 
+              SessionService.fetchSessionData(sessionId).then(data => {
+                  setChargingData(prev => {
+                    const updated = {
+                      ...prev,
+                      energyUsed: typeof data.energyUsed === 'number' ? data.energyUsed : 0
+                    }
+                    chargingDataRef.current = updated
+                    return updated
+              })
           })
-          return { success: true }
-        } else {
-          setError(result.error || 'Failed to stop session')
-          return { success: false, error: result.error }
+      }, [notifyOnComplete, notificationPermission])
+
+
+      const stopSession = useCallback(async () => {
+        if (isStopping || sessionCompleteHandled.current) {
+          return { success: false } 
         }
 
-      } catch (err) {
-        console.error('Stop session error:', err)
-        setError('Failed to stop charging session')
-        return { success: false, error: err.message }
-      } finally {
-        setIsStopping(false)
-      }
-  }, [session, isStopping])
+        setIsStopping(true)
+        setError('')
+
+        try {
+          const sessionId = session?.sessionId || session?.id
+          const result = await SessionService.stopSession(sessionId)
+
+          if (result.success) {
+            handleSessionComplete({ 
+              status: 'STOPPED',
+              ...result.sessionData 
+            })
+            return { success: true }
+          } else {
+            setError(result.error || 'Failed to stop session')
+            return { success: false, error: result.error }
+          }
+
+        } catch (err) {
+          console.error('Stop session error:', err)
+          setError('Failed to stop charging session')
+          return { success: false, error: err.message }
+        } finally {
+          setIsStopping(false)
+        }
+      }, [session, isStopping])
 
 
   const handleSessionComplete = useCallback(async (data) => {
@@ -359,32 +414,39 @@ export const SessionProvider = ({ children }) => {
     setChargingData(prev => ({ ...prev, status: data.status }))
     setIsCompleted(true)
 
+    const currentSession = sessionRef.current
+    const currentPlan = planRef.current
+    const currentChagingData = chargingDataRef.current
+
+    console.log('Building completion data with ', {currentSession, currentPlan, currentChagingData})
+
     const completionData = {
-      sessionId: session?.sessionId || session?.id,
-      receiptId: session?.receiptId,
+      sessionId: currentSession?.sessionId || currentSession?.id,
+      receiptId: currentSession?.receiptId,
       status: data.status,
-      startTime: session?.startTime,
+      startTime: currentSession?.startTime,
       endTime: new Date().toISOString(),
-      duration: Math.floor(chargingData.timeElapsed / 60),
-      energyUsed: chargingData.energyUsed || 0,
-      plan: plan,
-      amountDebited: session?.amountDebited || plan?.walletDeduction,
-      finalCost: session?.amountDebited || plan?.walletDeduction,
-      rate: chargerData?.rate || plan?.rate || 0,
+      duration: Math.floor((currentChagingData.timeElapsed || 0) / 60),
+      energyUsed: currentChagingData.energyUsed || 0,
+      plan: currentPlan,
+      amountDebited: currentSession?.amountDebited || currentPlan?.walletDeduction,
+      finalCost: currentSession?.amountDebited || currentPlan?.walletDeduction,
+      rate: currentChagingData?.rate || currentPlan?.rate || 0,
       transactionId: session?.receiptId || session?.sessionId || session?.id,
       paymentMethod: 'Wallet',
-      stationName: chargerData?.stationName || chargerData?.name,
-      chargerType: chargerData?.chargerType,
+      stationName: currentChagingData?.stationName || currentChagingData?.name,
+      chargerType: currentChagingData?.chargerType,
       userName: user?.name,
       userEmail: user?.email
     }
 
     console.log('Complete session data: ',completionData)
 
-    sessionStorage.setItem('sessionCompletion', JSON.stringify({
+    const dataToSave = {
       completionData,
       notifyOnComplete
-    }))
+    }
+    CacheService.saveSessionData(dataToSave)
 
     if (notifyOnComplete && notificationPermission === 'granted') {
       await NotificationService.sendSessionCompleted(
