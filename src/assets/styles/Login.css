@@ -1,0 +1,197 @@
+/* ===== RESET ===== */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: "Roboto", sans-serif;
+}
+
+
+/* --- Base Layout --- */
+.login-container {
+  background-color: #ffffff;
+
+  min-height: 100vh; 
+    display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* justify-content: center; */
+  padding: 00px 20px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s ease-in-out;
+    position: relative;    /* ✅ needed for bottom image */
+  overflow-x: hidden;   
+}
+
+.login-container.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- Logo --- */
+.login-logo {
+  width: clamp(190px, 20vw, 130px);
+  margin-top: clamp(20px, 8vh, 82px);
+  margin-bottom: 20px;
+   padding: 18px 28px;
+  animation: fadeUp 0.5s ease forwards;
+
+    
+}
+
+/* --- Onboarding Image --- */
+.onboarding-container {
+  display: flex;
+  justify-content: center;
+}
+
+.onboarding-img {
+  width: 100%;
+  max-width: 380px;
+  margin: 00px  30px;
+  animation: fadeUp 0.5s ease forwards;
+   
+}
+
+/* --- Text Section --- */
+.text-section {
+  margin-bottom: 25px;
+}
+
+.welcome-text {
+  font-size: 28px;
+  font-weight: 400;
+  color: #000;
+  margin-top: 10px;
+    font-family: "Lexend", sans-serif;
+  animation: fadeUp 0.5s ease forwards;
+}
+
+.subtitle-text {
+  color: #333;
+    font-weight: 400;
+  font-size: 10px;
+  margin-bottom: 25px;
+    font-family: "Roboto", sans-serif;
+}
+.subtitle-text-1{
+   color:#000000;
+    font-weight: 400;
+      font-family: "Roboto", sans-serif;
+  font-size: 12px;
+   opacity: 0.75; 
+ margin-top: 20px;
+
+
+}
+
+/* --- Google Button --- */
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  color: #000;
+  border: none;
+  border-radius: 12px;
+ border: 0.25px solid #ccc;
+  padding: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 90%;
+  max-width: 350px;
+  margin-left: 20px;
+  height: 46px;
+  gap: 10px;
+}
+
+.google-btn:hover {
+  background-color: #f0f0f0;
+  transform: scale(1.02);
+}
+
+.google-icon {
+  width: 24.45px;
+  height: 24.45px;
+  margin-right: 10px;
+}
+
+/* --- Animations --- */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.card-2{
+    background:#F1F1F1;
+          padding:18px;
+          border-radius:28px;
+           border:1px solid #eee;
+           color: rgb(255, 255, 255);
+
+
+
+}
+.fotter-text{
+      font-weight: 400;
+  font-size: 10px;
+      margin-top: auto;
+ padding: 28px 10px;
+ gap: 10px;
+  opacity: 0.75; 
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.bottom-image {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+       /* optional */
+  z-index: 0;
+  pointer-events: none;
+}
+.top-right-image {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 180px;        /* adjust size */
+       /* optional */
+  z-index: 1;          /* keep behind content */
+  pointer-events: none; /* avoid click issues */
+    opacity: 0.5;
+}
+
+/* --- Responsive --- */
+@media (max-width: 700px) {
+  .welcome-text {
+    font-size: 1.8rem;
+  }
+  .google-btn {
+    font-size: 0.95rem;
+  }
+    .login-logo {
+    margin-top: 20px;
+  }
+
+  .onboarding-img {
+    max-width: 260px;
+  }
+}
