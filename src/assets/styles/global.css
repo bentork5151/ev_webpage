@@ -1,0 +1,117 @@
+/* =====================================================
+   Global Design Tokens
+   Stable foundation for a refined interface
+   ===================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+
+:root {
+    /* Color Palette */
+    --color-matte-black: #212121;
+    --color-white: #ffffff;
+    --color-card-bg: #303030;
+
+    --color-primary-container: #39e29b;
+    --color-on-primary-container: #09231a;
+
+    /* Border Radius Scale */
+    --radius-inner: 12px;
+    --radius-outer: 16px;
+    --radius-large: 28px;
+
+    /* Typography */
+    --font-primary: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial, sans-serif;
+
+    --font-weight-light: 300;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+    --font-weight-black: 900;
+}
+
+/* =====================================================
+   Base Element Defaults
+   Traditional, restrained, dependable
+   ===================================================== */
+
+* {
+    box-sizing: border-box;
+    font-family: var(--font-primary);
+    user-select: none;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-matte-black);
+    color: var(--color-white);
+    font-family: var(--font-primary);
+    font-weight: var(--font-weight-regular);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* =====================================================
+   Typography Utilities
+   Clear hierarchy, minimal effort
+   ===================================================== */
+
+.text-light {
+    font-weight: var(--font-weight-light);
+}
+
+.text-regular {
+    font-weight: var(--font-weight-regular);
+}
+
+.text-medium {
+    font-weight: var(--font-weight-medium);
+}
+
+.text-semibold {
+    font-weight: var(--font-weight-semibold);
+}
+
+.text-bold {
+    font-weight: var(--font-weight-bold);
+}
+
+.text-extrabold {
+    font-weight: var(--font-weight-extrabold);
+}
+
+.text-black {
+    font-weight: var(--font-weight-black);
+}
+
+/* =====================================================
+   Common Utility Classes
+   Practical shortcuts for daily craftsmanship
+   ===================================================== */
+
+.bg-card {
+    background-color: var(--color-card-bg);
+    border-radius: var(--radius-outer);
+}
+
+.bg-primary {
+    background-color: var(--color-primary-container);
+    color: var(--color-on-primary-container);
+}
+
+.radius-inner {
+    border-radius: var(--radius-inner);
+}
+
+.radius-outer {
+    border-radius: var(--radius-outer);
+}
+
+.radius-large {
+    border-radius: var(--radius-large);
+}
