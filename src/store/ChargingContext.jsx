@@ -5,6 +5,7 @@ import ApiService from "../services/api.service";
 import API_CONFIG from "../config/api.config";
 import CacheService from "../services/cache.service";
 import SessionService from "../services/session.service";
+import NotificationService from "../services/notification.service";
 
 const ChargingContext = createContext(null)
 
@@ -20,7 +21,7 @@ export const useCharging = () => {
 export const ChargingProvider = ({ children }) => {
     const navigate = useNavigate()
     const location = useLocation()
-    const { user, chargerData, updatedWalletBalance} = useAuth()
+    const { user, chargerData, updatedWalletBalance, updateChargerData} = useAuth()
 
     const [plans, setPlans] = useState([])
     const [selectedPlan, setSelectedPlan] = useState(null)
@@ -28,6 +29,7 @@ export const ChargingProvider = ({ children }) => {
     const [loading, setLoading] = useState(false)
     const [plansLoading, setPlansLoading] = useState(true)
     const [error, setError] = useState('')
+    const [notificationStatus, setNotificationStatus] = useState('default')
 
     const isReceiptOpen = location.pathname === '/config-charging/receipt'
 
@@ -37,21 +39,24 @@ export const ChargingProvider = ({ children }) => {
 
     const pricing = useMemo(() => {
         const baseAmount = Number(selectedPlan?.walletDeduction || 0)
-        const totalAmount = baseAmount
-
         return {
             baseAmount,
-            totalAmount,
+            totalAmount: baseAmount,
             formattedBaseAmount: baseAmount.toFixed(2),
             formattedTotalAmount: totalAmount.toFixed(2)
         }
     }, [selectedPlan?.walletDeduction])
 
     const hasInsufficientBalance = useMemo(() => {
-        console.log('check wallet balance')
-        console.log((user?.walletBalance || 0) < pricing.totalAmount)
+        console.log('check wallet balance', (user?.walletBalance || 0) < pricing.totalAmount)
         return (user?.walletBalance || 0) < pricing.totalAmount
     }, [user?.walletBalance, pricing.totalAmount])
+
+    useEffect(() => {
+        if (NotificationService.isSupported) {
+            setNotificationStatus(Notification.permission)
+        }
+    }, [])
 
     useEffect(() => {
         fetchPlans()
@@ -75,7 +80,8 @@ export const ChargingProvider = ({ children }) => {
         try {
             const response = await ApiService.get(API_CONFIG.ENDPOINTS.GET_ALL_PLANS)
             const filtered = chargerData?.chargerType
-                ? response.filter((p) => p.chargerType === chargerData?.chargerType)
+                ? response.filter((p) => 
+                    p.chargerType?.toLowerCase() === chargerData?.chargerType?.toLowerCase())
                 : response
             setPlans(filtered)
         } catch (error) {
@@ -87,8 +93,7 @@ export const ChargingProvider = ({ children }) => {
     }, [chargerData?.chargerType])
 
     const selectPlan = useCallback((plan) => {
-        console.log('plan set choosen')
-        console.log(plan)
+        console.log('plan set choosen',plan)
         setSelectedPlan(plan)
         setError('')
     }, [])
@@ -102,6 +107,7 @@ export const ChargingProvider = ({ children }) => {
         if (!selectedPlan) {
             console.error('Plan not selected, PLease select a plan')
             setError('Please select a plan')
+            return
         }
         navigate('receipt')
     }, [selectedPlan, navigate])
@@ -110,6 +116,27 @@ export const ChargingProvider = ({ children }) => {
         navigate('/config-charging', {replace: true})
         setError('')
     }, [navigate])
+
+    const requestNotificationPermission = useCallback(async () => {
+        if (!NotificationService.isSupported) {
+            return { granted: false, status: 'unsupported' }
+        }
+
+        const currentPermission = Notification.permission
+
+        if (currentPermission === 'granted') {
+            return { granted: true, status: 'granted'}
+        }
+
+        if (currentPermission === 'denied') {
+            return { granted: false, status: 'denied'}
+        }
+
+        const granted = await NotificationService.requestPermission()
+        const newStatus = Notification.permission
+        setNotificationStatus(newStatus)
+        return { granted, status: newStatus }
+    })
 
     const processPayment = useCallback(async () => {
 
@@ -126,6 +153,11 @@ export const ChargingProvider = ({ children }) => {
         setLoading(true)
         setError('')
         try {
+            console.log('Requesting notification permission...')
+            const { granted, status } = await requestNotificationPermission()
+            console.log('Notification permission result:', { granted, status })
+            CacheService.saveNotificationPreference(granted)
+
             const updatedPlan = {
                 ...selectedPlan,
                 walletDeduction : Number(pricing.formattedTotalAmount)
@@ -152,25 +184,31 @@ export const ChargingProvider = ({ children }) => {
 
             console.log('result: ',result)
 
-            // if (result?.session?.status === 'FAILED') {
-            //     setError('Charging failed to start')
-            //     return { success : false}
-            // }
-
-            if (result?.success) {
-                CacheService.saveSessionData(result.session)
-
-                const newBalance = Number(user?.walletBalance || 0) - pricing.formattedTotalAmount
-                updatedWalletBalance(newBalance)
-
-                navigate('/charging-session', {replace: true})
-                return { success: true }
-            } else {
-                const errMsg = result?.error || 'Failed to start session'
-                console.error(errMsg)
-                setError(errMsg)
-                return { success: false }
+            if (result?.session?.status === 'FAILED') {
+                setError('Charging failed to start')
+                return { success : false}
             }
+
+            if (!result.success) {
+                setError(result.error || 'Failed to start charging session')
+                CacheService.clearPlanData()
+                CacheService.clearSessionData()
+                return { success: false, error: result.error }
+            }
+
+            const sessionStatus = String(result.session?.status || '').toUpperCase()
+            if (sessionStatus === 'FAILED') {
+                setError('Charging session failed to start. Please try again.')
+                CacheService.clearPlanData()
+                CacheService.clearSessionData()
+                return { success: false, error: 'Session failed to start' }
+            }
+
+            const newBalance = Number(user?.walletBalance || 0) - pricing.totalAmount
+            updatedWalletBalance(newBalance)
+
+            navigate('/charging-session', { replace: true })
+            return { success: true }
         } catch (error) {
             console.error('Payment process error: ',error)
             const errMsg = error?.message || 'Something went wrong, please try again later'
@@ -187,6 +225,8 @@ export const ChargingProvider = ({ children }) => {
         isChargerUnavailable,
         user?.walletBalance,
         updatedWalletBalance,
+        requestNotificationPermission,
+        updateChargerData,
         navigate
     ])
 
