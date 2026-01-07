@@ -20,11 +20,11 @@
 //   const { updateChargerData, transactionHistory } = useAuth()
 //   const [status, setStatus] = useState('Initializing...')
 //   const [progress, setProgress] = useState(0)
-  
+
 //   useEffect(() => {
 //     initializeApp()
 //   }, [])
-  
+
 //   const initializeApp = async () => {
 //     try {
 
@@ -52,7 +52,7 @@
 //         navigate(`/login${ocppId ? `/${ocppId}` : ''}`)
 //         return
 //       }
-      
+
 //       // setProgress(40)
 
 //       if (ocppId) {
@@ -68,7 +68,7 @@
 //         }
 //         // setProgress(60)
 //       }
-      
+
 //       setStatus('Loading Transaction History')
 //       const transactions = await AuthService.loadTransaction(loginResult.user.id, 10)
 //       transactionHistory(transactions)
@@ -91,9 +91,9 @@
 //       }, 1000)
 //     }
 //   }
-  
+
 //   return (
-    
+
 //    <Box className="splash-container">
 //     <img
 //   src={TopRightBg}

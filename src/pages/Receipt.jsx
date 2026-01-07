@@ -206,11 +206,11 @@ const Receipt = () => {
 
       <div className="receipt-backdrop" onClick={() => !loading && closeReceipt()}>
         <div className="receipt-dialog" onClick={(e) => e.stopPropagation()}>
-          
+
           <div className="receipt-header">
             <h3 className="receipt-title">Payment Summary</h3>
-            <button 
-              className="receipt-close-btn" 
+            <button
+              className="receipt-close-btn"
               onClick={closeReceipt}
               disabled={loading}
             >
@@ -222,9 +222,9 @@ const Receipt = () => {
             <div className="receipt-section receipt-red">
               <div className="receipt-error-text">
                 <span>⚠️ Charger is offline. Please try again later.</span>
-                <a 
-                  href="https://bentork.com/support" 
-                  target="_blank" 
+                <a
+                  href="https://bentork.com/support"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="receipt-help-link"
                 >
@@ -280,7 +280,7 @@ const Receipt = () => {
               <span className="receipt-row-label" style={{ fontWeight: 600 }}>
                 Wallet Balance
               </span>
-              <span 
+              <span
                 className={`receipt-row-value ${hasInsufficientBalance ? 'wallet-insufficient' : ''}`}
                 style={{ fontWeight: 600 }}
               >
@@ -291,8 +291,8 @@ const Receipt = () => {
 
           {error && <div className="receipt-error-msg">⚠️ {error}</div>}
 
-          <button 
-            className="receipt-pay-btn" 
+          <button
+            className="receipt-pay-btn"
             onClick={handlePayment}
             disabled={loading || isChargerUnavailable}
           >
@@ -303,7 +303,7 @@ const Receipt = () => {
               </>
             ) : (
               `PAY ₹${pricing.formattedTotalAmount}`
-            )}Í
+            )}
           </button>
         </div>
       </div>
