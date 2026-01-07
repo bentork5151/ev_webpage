@@ -4,7 +4,7 @@ import path from 'path'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  
+
   return {
     plugins: [react()],
     resolve: {
@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
       cors: true,
       proxy: {
         '/api': {
-          target: 'http://localhost:8080',
+          target: 'https://dev.bentork.in',
           changeOrigin: true,
           secure: false,
           configure: (proxy, options) => {
@@ -58,8 +58,8 @@ export default defineConfig(({ mode }) => {
         }
       }
     },
-   define: {
-    'process.env.NODE_ENV': JSON.stringify('production'),
-  }
+    define: {
+      'process.env.NODE_ENV': JSON.stringify('production'),
+    }
   }
 })

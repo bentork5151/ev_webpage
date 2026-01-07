@@ -24,7 +24,7 @@
 //         <Typography variant="h5" color="text.secondary" paragraph>
 //           Thank you for choosing Bentork Charger for charging
 //         </Typography>
-        
+
 //         <Box display="flex" gap={2} mt={4}>
 //           <Button
 //             variant="contained"
@@ -64,7 +64,7 @@ const ThankYou = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       logout();
-      navigate("/login");
+      navigate("/config-charging");
     }, 5000); // 10 seconds
 
     return () => clearTimeout(timer);
@@ -88,7 +88,7 @@ const ThankYou = () => {
           sx={{
             width: 204,
             height: 204,
-           
+
             backgroundColor: "#212121",
             display: "flex",
             alignItems: "center",
@@ -99,9 +99,10 @@ const ThankYou = () => {
           <img
             src={ThumbImg}
             alt="Thank You"
-            style={{ width: 100,
-              height:149,
-             }}
+            style={{
+              width: 100,
+              height: 149,
+            }}
           />
         </Box>
 
@@ -133,7 +134,7 @@ const ThankYou = () => {
           sx={{
             fontSize: "12px",
             color: "rgba(255, 255, 255, 0.5)",
-             fontWeight: 400,
+            fontWeight: 400,
             mt: 4
           }}
         >

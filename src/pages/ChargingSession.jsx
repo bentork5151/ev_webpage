@@ -1,4 +1,4 @@
-import React, { useEffect, useState} from "react"
+import React, { useEffect, useState } from "react"
 import {
   Container,
   Paper,
@@ -13,6 +13,7 @@ import {
 } from "@mui/material"
 import { Bolt } from "@mui/icons-material"
 import { useSession } from "../store/SessionContext"
+import "../assets/styles/global.css"
 
 import energyIcon from "../assets/images/energy.svg";
 import batteryIcon from "../assets/images/battery.svg";
@@ -83,77 +84,77 @@ const ChargingSession = () => {
 
   return (
     <Container
-  maxWidth="sm"
-  sx={{
-     height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-    bgcolor: "#212121",
-  }}
->
+      maxWidth="sm"
+      sx={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        overflow: "hidden",
+        bgcolor: "#212121",
+      }}
+    >
 
-  {isInitializing && (
-    <div className="init-overlay">
-      <div className="init-popup">
-        <div className="init-spinner">
-          <CircularProgress 
-            size={80} 
-            thickness={4}
-            sx={{ color: "#ffffffff" }}
-          />
-          <Bolt className="init-bolt-icon" />
+      {isInitializing && (
+        <div className="init-overlay">
+          <div className="init-popup">
+            <div className="init-spinner">
+              <CircularProgress
+                size={80}
+                thickness={4}
+                sx={{ color: "#ffffffff" }}
+              />
+              <Bolt className="init-bolt-icon" />
+            </div>
+
+            <h2 className="init-title">Starting Your Session</h2>
+            <p className="init-message">{loadingMessage}</p>
+
+            <div className="init-dots">
+              {loadingMessages.slice(0, 4).map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`init-dot ${idx <= messageIndex ? 'active' : ''}`}
+                />
+              ))}
+            </div>
+
+            <p className="init-hint">
+              Please ensure your vehicle is connected
+            </p>
+          </div>
         </div>
-              
-        <h2 className="init-title">Starting Your Session</h2>
-        <p className="init-message">{loadingMessage}</p>
-              
-        <div className="init-dots">
-          {loadingMessages.slice(0, 4).map((_, idx) => (
-            <span 
-              key={idx} 
-              className={`init-dot ${idx <= messageIndex ? 'active' : ''}`}
-            />
-          ))}
-        </div>
+      )}
 
-        <p className="init-hint">
-          Please ensure your vehicle is connected
-        </p>
-      </div>
-    </div>
-  )}
-
-       <Paper
-    elevation={0}                 
-    square
-    sx={{
-      width: "100%",
-      height: "100%",
-      borderRadius: 0,             
-      background: "transparent",   
-      filter: isInitializing ? "blur(8px)" : "none",
-      transition: "filter 0.3s ease",
-      pointerEvents: isInitializing ? "none" : "auto",
-    }}
-    className="main-card"
-  >
+      <Paper
+        elevation={0}
+        square
+        sx={{
+          width: "100%",
+          height: "100%",
+          borderRadius: 0,
+          background: "transparent",
+          filter: isInitializing ? "blur(8px)" : "none",
+          transition: "filter 0.3s ease",
+          pointerEvents: isInitializing ? "none" : "auto",
+        }}
+        className="main-card"
+      >
 
         {/* HEADER */}
         <div className="header">
-         <img
-  src={BentorkLogo}
-  alt="BENTORK Logo"
-  className="logo"
-/>
-         
+          <img
+            src={BentorkLogo}
+            alt="BENTORK Logo"
+            className="logo"
+          />
+
         </div>
 
         {/* CIRCLE */}
         <div className="circle-container">
           <CircularProgress variant="determinate" value={100} size={260} thickness={4} className="circle-bg" />
-          <CircularProgress variant="determinate" value={chargingData.percentage} size={260} thickness={8} className="circle-progress" />
+          <CircularProgress variant="determinate" value={15} size={260} thickness={4} className="circle-progress" />
           <div className="circle-text">
             <Bolt className="bolt-icon" />
             <h1>+{Math.round(chargingData.percentage)}%</h1>
@@ -162,8 +163,8 @@ const ChargingSession = () => {
         </div>
 
         {error && (
-          <Alert 
-            severity="error" 
+          <Alert
+            severity="error"
             sx={{ mx: 2, mb: 2 }}
             onClose={() => setError('')}
           >
@@ -177,8 +178,8 @@ const ChargingSession = () => {
         )}
 
         {/* RATE & TIME */}
-        
-{/*   
+
+        {/*   
    <div className="time-center">
           <h2>{remainingTime}</h2>
           <p>Time Left</p>
@@ -190,35 +191,35 @@ const ChargingSession = () => {
           <div className="stat-box"><Bolt /><div><h3>{chargingData.energyUsed.toFixed(1)} kWh</h3><p>Energy Delivered</p></div></div>
           <div className="stat-box"><BatteryChargingFull /><div><h3>Good</h3><p>Battery Health</p></div></div>
         </div> */}
-<div className="stats">
-  
-  <div className="stat-box">
-   
-    <div>
-      <h3>{chargingData.energyUsed.toFixed(1)} kWh</h3>
-      <p>Energy Delivered</p>
-    </div>
-  </div>
-  {/* RATE & TIME */}
-  <div className="time-center">
-          <h2 className="time-1">{remainingTime}</h2>
-          <p className="time-text">Time Left</p>
-        </div>
+        <div className="stats">
 
-</div>
+          <div className="stat-box">
+
+            <div>
+              <h3>{chargingData.energyUsed.toFixed(1)} kWh</h3>
+              <p>Energy Delivered</p>
+            </div>
+          </div>
+          {/* RATE & TIME */}
+          <div className="time-center">
+            <h2 className="time-1">{remainingTime}</h2>
+            <p className="time-text">Time Left</p>
+          </div>
+
+        </div>
 
         {/* NOTIFY */}
         <div className="notify">
           {/* <div className="notify-left"><NotificationsNone /><span>Notify when complete</span></div> */}
-          <div className="notify-left"> 
-            <img src={notifyIcon} alt="Notify" className="notify-icon" /> 
+          <div className="notify-left">
+            <img src={notifyIcon} alt="Notify" className="notify-icon" />
             <span>
               Notify when complete
               {isNotificationDisabled && (
                 <span style={{ fontSize: '10px', color: '#999', display: 'block' }}>
                   (Permission denied in browser)
                 </span>
-              )}  
+              )}
             </span>
           </div>
           <Switch
@@ -237,23 +238,23 @@ const ChargingSession = () => {
 
         {/* STOP BUTTON */}
         <div className="actions">
-      <Button className="btn cafe">
-  <img
-    src={Flag}
-    alt="report"
-    className="btn-icon"
-  />
-</Button>
+          <Button className="btn cafe">
+            <img
+              src={Flag}
+              alt="report"
+              className="btn-icon"
+            />
+          </Button>
           <Button
-          fullWidth
-          variant="contained"
-          color="error"
-          className="stop-btn"
-          onClick={handleStopClick}
-          disabled={isStopping  || isCompleted  || !isSessionActive || isInitializing}
-        >
-          {isStopping  ? "Stopping..." : "Stop Charging"}
-        </Button>
+            fullWidth
+            variant="contained"
+            color="error"
+            className="stop-btn"
+            onClick={handleStopClick}
+            disabled={isStopping || isCompleted || !isSessionActive || isInitializing}
+          >
+            {isStopping ? "Stopping..." : "Stop Charging"}
+          </Button>
 
         </div>
         <p className="station-id">Station ID: {session?.sessionId || session?.id || 'N/A'}</p>
@@ -283,17 +284,17 @@ const ChargingSession = () => {
           </DialogContent>
 
           <DialogActions className="dialog-actions-custom">
-            <button 
-              className="back-btn" 
-              onClick={() => setStopDialog(false)} 
+            <button
+              className="back-btn"
+              onClick={() => setStopDialog(false)}
               disabled={isStopping}>
-                Back
+              Back
             </button>
-            <button 
-              className="stop-btn-dark" 
-              onClick={handleStopConfirm} 
+            <button
+              className="stop-btn-dark"
+              onClick={handleStopConfirm}
               disabled={isStopping}>
-                {isStopping ? 'Stopping...' : 'Stop Session'}
+              {isStopping ? 'Stopping...' : 'Stop Session'}
             </button>
           </DialogActions>
         </Dialog>
@@ -411,9 +412,9 @@ const ChargingSession = () => {
           }
 
 
-          .main-card {
-  padding: 22px 18px;
-  height: 100%;
+.main-card {
+  padding: 24px 8px;
+  height: 100vh;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -428,11 +429,11 @@ const ChargingSession = () => {
   padding-top: 20px;
 }
 .logo {
- 
+
   height: auto;
   object-fit: contain;
   left: 90px;
-    width: clamp(120px, 40vw, 160px);
+  width: clamp(120px, 45vw, 220px);
 
   
   
@@ -447,15 +448,24 @@ const ChargingSession = () => {
 }
 
 .circle-bg {
-   color: #2e2e2e !important;
+border-radius: 50%;
+  color: #2e2e2e !important;
+}
+.circle-bg .MuiCircularProgress-circle {
+  stroke-linecap: round;
 }
 
 .circle-progress {
   position: absolute;
   left: 0;
   top: 0;
-  color: #ffffff !important;
+  color: var(--color-white);
 }
+
+.circle-progress .MuiCircularProgress-circle {
+  stroke-linecap: round;
+}
+
 
 .circle-text {
   position: absolute;
@@ -468,14 +478,14 @@ const ChargingSession = () => {
 
 .bolt-icon {
   font-size: 34px;
- color: #ffffff;  
+  color: #ffffff; 
 }
 
 .circle-text h1 {
   font-size: 42px;
   margin: 6px 0 0;
   font-weight: 700;
-    color: #ffffff;
+  color: #ffffff;
 }
 
 .circle-text p {
@@ -484,25 +494,6 @@ const ChargingSession = () => {
   font-size: 14px;
 }
 
-/* RATE & TIME *
-
-
-
-.time-1 {
-   margin: 0;
-  font-size: 28px;
-  font-weight: 700;
-
-   color: #ffffff;
-}
-
-.time-text{
-  font-size: 12px;
-  font-weight: 400;
-     color: #664040ff;
-}
-
-
 
 
 /* STATS */
@@ -510,9 +501,9 @@ const ChargingSession = () => {
   display: flex;
   justify-content: space-between;
   margin: 28px 0;
-    gap: 52px;
-      flex-wrap: wrap;
-    padding: 10px 28px;
+  gap: 52px;
+  flex-wrap: wrap;
+  padding: 10px 28px;
 }
 
 .stat-box {
@@ -525,56 +516,56 @@ const ChargingSession = () => {
   margin: 0;
   font-size: 28px;
   font-weight: 700;
-
-   color: #ffffff;
+  color: #ffffff;
 }
 
 .stat-box p {
   margin: 0;
   font-size: 12px;
-    font-weight: 400;
+  font-weight: 400;
   color: #9e9e9e;
+  align-items: center;
+  padding-left: 8px;
+}
+/* RATE & TIME */
+.time-center .time-text{
+color: #9e9e9e;
+font-size: 12px;
+}
+.time-center .time-1{
+color: var(--color-white);
 }
 
 /* NOTIFY */
 .notify {
   width: 100%;
-  max-width: 50 0px;
   height: 60px;
-
-  padding: 18px;
-
+  padding: 12px;
   gap:40px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  border-radius: 28px;
+  border-radius: 18px;
   opacity: 1;
   background-color:#303030;
   box-sizing: border-box;
-    margin-top:10px;
-    
-  
+  margin-top:10px;
 }
 
 .notify-left {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 12px;
   font-size: 12px;
-  font-weight: 400;
-    color: #ffffff;
-
-  
+  font-weight: var(--font-weight-regular);
+  color: #ffffff;
 }
 
 
 .notify-icon {
-  width: 18px;
-  height: 22px;
-  margin-left:20px;
+  width: 24px;
+  height: 24px;
+  margin-left:8px;
 }
 
 /* OFF state track */
@@ -586,9 +577,8 @@ const ChargingSession = () => {
 
 /* ON state */
 .custom-switch.Mui-checked .MuiSwitch-thumb {
-  background-color: #ffffff;  
+  background-color: #ffffff; 
 }
-
 
 
 /* Focus & hover fix */
@@ -599,21 +589,19 @@ const ChargingSession = () => {
 
 /* ACTION BUTTONS */
 .actions {
+  padding: 12px 0;
   display: flex;
   gap: 10px;
-    width: 100%;
+  width: 100%;
   
 }
 
-.btn {  
-
-    border: 1px solid #3a3a3a;
-     border-radius: 12px !important;
-    background: #303030 !important;
-      min-width: 48px;  
+.btn {
+  border: 1px solid #3a3a3a;
+  border-radius: 12px !important;
+  background: #303030 !important;
+  min-width: 48px;
 }
-
-
 
 .report {
   background: #252726ff !important;
@@ -628,23 +616,19 @@ const ChargingSession = () => {
     flex: 1;
   max-width: none;
   font-size: 12px !important;
-
-   font-weight: 700;  
-   color: #ffffffff !important;
-         background:#FF4213 !important;
-      padding: 10px;
-      
-
-
+  font-weight: 700;
+  color: #ffffffff !important;
+  background:#FF4213 !important;
+  padding: 10px;
 }
 
 /* STATION ID */
 .station-id {
   text-align: center;
-  margin-top: 30px;
-   color: #FFFFFF80;
+  margin-top: 0px;
+  color: #FFFFFF80;
   font-size: 12px;
-   font-weight: 400;
+  font-weight: 400;
 }
 
 /* LOADING */
@@ -689,7 +673,6 @@ const ChargingSession = () => {
     width: 220px;
     height: 220px;
   }
-
 
   .circle-text h1 {
     font-size: 28px;
