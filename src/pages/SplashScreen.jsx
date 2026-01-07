@@ -195,7 +195,7 @@ const SplashScreen = () => {
         setTimeout(r, APP_CONFIG.UI.SPLASH_DURATION)
       );
 
-      navigate("/dashboard");
+      navigate("/config-charging");
     } catch (error) {
       console.error("Splash error:", error);
       setTimeout(() => {
