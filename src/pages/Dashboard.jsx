@@ -193,7 +193,7 @@ export default function Dashboard() {
           align-items: center;
           background: #303030;
           border-radius: 12px;
-          padding: 12px;
+          padding: 18px 24px;
         }
 
         .tx-left {
@@ -219,7 +219,7 @@ export default function Dashboard() {
 
         .tx-right { text-align: right; }
         .tx-amount { font-size: 16px; font-weight: 500; color: #fff; }
-        .tx-status { font-size: 10px; background: #39E29B; color: #091f1a; padding: 2px 6px; border-radius: 12px; display: inline-block; margin-top: 4px; }
+        .tx-status { font-size: 10px; background: #39E29B; color: #091f1a; padding: 2px 8px; border-radius: 12px; display: inline-block; margin-top: 4px; }
 
         .btn {
           padding: 8px 24px;

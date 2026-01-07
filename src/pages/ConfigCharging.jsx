@@ -9,6 +9,7 @@ import StationImg from "../assets/images/station-img.png";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 
+import { useAuth } from "../store/AuthContext";
 
 import "../assets/styles/global.css";
 
@@ -66,8 +67,10 @@ const sidebarConfig = {
 
 
 
+
 const ConfigCharging = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const {
     plans,
     selectedPlan,
@@ -447,7 +450,7 @@ md-slider {
             onClick={() => navigate("/dashboard")}
           >
             <img src={WalletIcon} alt="Wallet" />
-            ₹29.30
+            ₹{Number(user?.walletBalance ?? 0).toLocaleString("en-IN")}
           </button>
 
         </div>
