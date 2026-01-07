@@ -12,6 +12,7 @@ import ChargingFlow from './wrapper/ChargingFlow'
 import SessionFlow from './wrapper/SessionFlow'
 import Invoice from './pages/Invoice'
 import ThankYou from './pages/ThankYou'
+import Terms from "./pages/Terms";
 
 
 EmailService.init()
@@ -39,7 +40,8 @@ const router = createBrowserRouter([
       
       { path: '/charging-session', element: <SessionFlow  /> },
       { path: '/invoice', element: <Invoice /> },
-      { path: '/thank-you', element: <ThankYou /> }
+      { path: '/thank-you', element: <ThankYou /> },
+      { path: '/terms', element: <Terms /> }  ,
     ]
   }
 ], {

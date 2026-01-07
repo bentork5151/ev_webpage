@@ -50,7 +50,7 @@ const sidebarConfig = {
     {
       section: "legal",
       items: [
-        { label: "Terms & Conditions", icon: <DescriptionIcon /> },
+        { label: "Terms & Conditions", icon: <DescriptionIcon />, path: "/terms" },
         { label: "Privacy Policy", icon: <PrivacyTipIcon /> },
         { label: "About Us", icon: <InfoOutlinedIcon /> }
       ]
@@ -458,20 +458,11 @@ md-slider {
 
         {/* ===== OVERLAY ===== */}
         {/* ===== OVERLAY ===== */}
-        <div
-          className={`drawer-overlay ${drawerOpen ? "show" : ""}`}
-          onClick={() => {
-            // Check if the clicked item is "MW Wallet"
-            const walletItem = sidebarConfig.menu
-              .flatMap(group => group.items)
-              .find(item => item.label === "MW Wallet");
+       <div
+  className={`drawer-overlay ${drawerOpen ? "show" : ""}`}
+  onClick={() => setDrawerOpen(false)}
+/>
 
-            if (walletItem) {
-              navigate("/dashboard"); // Go to dashboard page
-            }
-            setDrawerOpen(false); // Close drawer anyway
-          }}
-        />
 
         {/* ===== SIDE DRAWER ===== */}
         <div className={`side-drawer ${drawerOpen ? "open" : ""}`}>
@@ -498,18 +489,24 @@ md-slider {
               {sidebarConfig.menu.map((group, index) => (
                 <div key={index}>
                   {group.items.map((item, i) => (
-                    <div
-                      className="item"
-                      key={i}
-                      onClick={() => {
-                        setDrawerOpen(false); // close drawer
-                        if (item.label === "My Wallet") {
-                          navigate("/dashboard");
-                        } else if (item.label === "Terms & Conditions") {
-                          navigate("/terms");
-                        }
-                      }}
-                    >
+                   <div
+  className="item"
+  key={i}
+  onClick={() => {
+    setDrawerOpen(false);
+
+    if (item.label === "My Wallet") {
+      navigate("/dashboard");
+    } else if (item.label === "Terms & Conditions") {
+      navigate("/terms");
+    } else if (item.label === "Privacy Policy") {
+      navigate("/privacy");
+    } else if (item.label === "About Us") {
+      navigate("/about");
+    }
+  }}
+>
+
                       <span className="icon">{item.icon}</span>
                       <span>{item.label}</span>
                     </div>

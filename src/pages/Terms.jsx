@@ -6,32 +6,33 @@ const TermsPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div style={{ padding: "16px", color: "#fff", background: "#303030", minHeight: "100vh" }}>
-      {/* Back button */}
-      <button 
-        style={{ marginBottom: "20px", background: "none", border: "none", color: "#fff", cursor: "pointer" }}
-        onClick={() => navigate(-1)}
-      >
-        &#8592; Back
-      </button>
+    <div className="terms-container">
+      {/* Back button and heading */}
+      <div className="back-header">
+        <button className="back-button" onClick={() => navigate(-1)}>
+          &#8592; Back
+        </button>
+        <h3 className="page-heading">Terms & Conditions</h3>
+      </div>
 
       {/* Logo */}
-      <div style={{ textAlign: "center", marginBottom: "24px" }}>
-        <img src={Logo} alt="Bentork Logo" style={{ height: "60px" }} />
+      <div className="logo-container">
+        <img src={Logo} alt="Bentork Logo" className="logo" />
       </div>
 
       {/* Terms & Conditions content */}
-      <div style={{ fontSize: "14px", lineHeight: "1.6" }}>
-        <h2>Terms & Conditions</h2>
+      <div className="terms-content">
+      
 
-        <ol>
+        <ol className="terms-ol">
           <li>
-            <strong>Acceptance of Terms</strong><br />
-            By accessing, registering, scanning a QR code, or using this EV Charging Platform ("Platform"), the user ("Vehicle Owner/User") agrees to be bound by these Terms & Conditions. If the user does not agree, they must immediately discontinue use of the Platform and charging services.
-          </li>
+            <strong> Acceptance of Terms</strong>
+            <br />
+By accessing, registering, scanning a QR code, or using this EV Charging Platform (“Platform”), the user (“Vehicle Owner/User”) agrees to be bound by these Terms & Conditions. If the user does not agree, they must immediately discontinue use of the Platform and charging services.          </li>
 
           <li>
-            <strong>Nature of Service (Platform Role)</strong><br />
+            <strong>Nature of Service (Platform Role)</strong>
+            <br />
             The Platform acts solely as a technology facilitator enabling access to EV charging infrastructure. The Platform does not guarantee uninterrupted charging, power availability, charging speed, or vehicle performance.
           </li>
 
@@ -80,6 +81,75 @@ const TermsPage = () => {
           </li>
         </ol>
       </div>
+
+      {/* ===== Internal CSS ===== */}
+      <style>{`
+        .terms-container {
+          padding: 16px;
+          color: #fff;
+          background: #303030;
+          min-height: 100vh;
+          font-family: Arial, sans-serif;
+        }
+
+        .back-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 20px;
+        
+        }
+
+        .back-button {
+          background: none;
+          border: none;
+          color: #fff;
+          cursor: pointer;
+          font-size: 16px;
+        }
+
+        .page-heading {
+           margin-left:40px;  
+            font-size: 16px;
+              font-weight: 400;
+        }
+
+        .logo-container {
+          text-align: center;
+          margin-bottom: 24px;
+        }
+
+        .logo {
+          height: 60px;
+        }
+
+        .terms-content {
+          font-size: 14px;
+          line-height: 1.6;
+        }
+
+        .terms-content h2 {
+          font-size: 16px;
+          margin: 16px 0 8px;
+        }
+
+        .terms-ol {
+          padding-left: 20px;
+        }
+
+        .terms-ol li {
+          margin-bottom: 8px;
+        }
+
+        .terms-content ul {
+          padding-left: 20px;
+          margin: 8px 0;
+        }
+
+        .terms-content ul li {
+          margin-bottom: 6px;
+        }
+      `}</style>
     </div>
   );
 };

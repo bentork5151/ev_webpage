@@ -80,16 +80,16 @@ const ThankYou = () => {
           alignItems: "center",
           justifyContent: "center",
           textAlign: "center",
-          backgroundColor: "rgba(33, 33, 33, 1)"
+          backgroundColor: "#212121"
         }}
       >
         {/* Image */}
         <Box
           sx={{
-            width: 120,
-            height: 120,
-            borderRadius: "50%",
-            backgroundColor: "#232425ff",
+            width: 204,
+            height: 204,
+           
+            backgroundColor: "#212121",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
