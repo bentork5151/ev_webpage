@@ -74,7 +74,7 @@ const Login = () => {
 
         window.history.replaceState({}, document.title, window.location.pathname)
 
-        navigate('/dashboard')
+        navigate('/config-charging')
 
       } catch (error) {
         console.error('OAuth callback error:', error)

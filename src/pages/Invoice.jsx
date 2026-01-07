@@ -11,7 +11,19 @@ const Invoice = () => {
   const navigate = useNavigate();
   const { user, chargerData } = useAuth();
   const emailSentRef = useRef(false)
-  const [sessionData, setSessionData] = useState(null);
+  // const [sessionData, setSessionData] = useState(null);
+  const [sessionData, setSessionData] = useState({
+    sessionId: "MOCK-123",
+    stationName: "Test Station",
+    chargerType: "DC Fast",
+    duration: 45,
+    energyUsed: 25.5,
+    rate: 15,
+    finalCost: 382.50,
+    paymentMethod: "Wallet",
+    transactionId: "TXN-999",
+    endTime: new Date().toISOString()
+  });
   const [isLoading, setIsLoading] = useState(true)
   const [emailStatus, setEmailStatus] = useState({
     sending: false,
@@ -52,7 +64,7 @@ const Invoice = () => {
   }
 
   const sendInvoiceEmail = async (data) => {
-    
+
     if (!EmailService.isAvailable()) {
       console.log('EmailJS not configured, skipping email')
       setEmailStatus({
@@ -62,7 +74,7 @@ const Invoice = () => {
       })
       return
     }
-    
+
     if (!user.email) {
       console.log('No user email available')
       setEmailStatus({
@@ -72,7 +84,7 @@ const Invoice = () => {
       })
       return
     }
-    
+
     setEmailStatus({ sending: true, sent: false, error: null })
 
     try {
@@ -92,7 +104,7 @@ const Invoice = () => {
         completedAt: data.endTime || new Date().toISOString()
       }
 
-      console.log('Invoice data: ',invoiceData)
+      console.log('Invoice data: ', invoiceData)
 
       const result = await EmailService.sendInvoiceEmail(invoiceData)
 
@@ -109,9 +121,9 @@ const Invoice = () => {
 
     } catch (error) {
       console.error("Failed to send invoice email:", error)
-      setEmailStatus({ 
-        sending: false, 
-        sent: false, 
+      setEmailStatus({
+        sending: false,
+        sent: false,
         error: error.message || 'Failed to send email'
       })
     }
@@ -146,6 +158,7 @@ const Invoice = () => {
     )
   }
 
+  // Uncomment after fixing Frontend UI
   if (!sessionData) {
     return (
       <div className="invoice-page">
@@ -156,13 +169,16 @@ const Invoice = () => {
         </div>
         <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
           <p>The session data may have already been processed.</p>
-          <button className="done-btn" onClick={() => navigate('/dashboard')}>
+          <button className="done-btn" onClick={() => navigate('/config-charging')}>
             Go to Dashboard
           </button>
         </div>
       </div>
     )
   }
+
+
+
 
   const stationName = sessionData.stationName || chargerData?.stationName || chargerData?.name || "N/A"
   const chargerType = sessionData.chargerType || chargerData?.chargerType || "N/A"
@@ -394,7 +410,7 @@ const Invoice = () => {
           <span>Sending invoice to {user?.email}...</span>
         </div>
       )}
-      
+
       {emailStatus.sent && (
         <div className="email-status sent">
           <Email sx={{ fontSize: 18 }} />
