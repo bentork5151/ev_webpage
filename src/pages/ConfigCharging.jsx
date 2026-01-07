@@ -447,7 +447,7 @@ md-slider {
             onClick={() => navigate("/dashboard")}
           >
             <img src={WalletIcon} alt="Wallet" />
-            ₹29.30
+            ₹balance
           </button>
 
         </div>
