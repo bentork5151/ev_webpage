@@ -17,7 +17,8 @@ import { useSession } from "../store/SessionContext"
 import energyIcon from "../assets/images/energy.svg";
 import batteryIcon from "../assets/images/battery.svg";
 import notifyIcon from "../assets/images/notify.svg"
-import Flag from "../assets/images/Flag.svg"
+import Flag from "../assets/images/Flag.svg";
+import BentorkLogo from "../assets/images/logo-1.png";
 
 const ChargingSession = () => {
 
@@ -89,7 +90,7 @@ const ChargingSession = () => {
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
-    bgcolor: "#fdfdfdff",
+    bgcolor: "#212121",
   }}
 >
 
@@ -100,7 +101,7 @@ const ChargingSession = () => {
           <CircularProgress 
             size={80} 
             thickness={4}
-            sx={{ color: "#7dbb63" }}
+            sx={{ color: "#ffffffff" }}
           />
           <Bolt className="init-bolt-icon" />
         </div>
@@ -141,11 +142,11 @@ const ChargingSession = () => {
 
         {/* HEADER */}
         <div className="header">
-          <img
-            src="https://github.com/bentork5151/assets/blob/main/Logo/logo_transparent.png?raw=true"
-            alt="BENTORK Logo"
-            className="logo"
-          />
+         <img
+  src={BentorkLogo}
+  alt="BENTORK Logo"
+  className="logo"
+/>
          
         </div>
 
@@ -155,7 +156,7 @@ const ChargingSession = () => {
           <CircularProgress variant="determinate" value={chargingData.percentage} size={260} thickness={8} className="circle-progress" />
           <div className="circle-text">
             <Bolt className="bolt-icon" />
-            <h1>{Math.round(chargingData.percentage)}%</h1>
+            <h1>+{Math.round(chargingData.percentage)}%</h1>
             <p>Charged</p>
           </div>
         </div>
@@ -177,11 +178,11 @@ const ChargingSession = () => {
 
         {/* RATE & TIME */}
         
-  
+{/*   
    <div className="time-center">
           <h2>{remainingTime}</h2>
           <p>Time Left</p>
-        </div>
+        </div> */}
 
 
         {/* ENERGY & HEALTH */}
@@ -192,28 +193,17 @@ const ChargingSession = () => {
 <div className="stats">
   
   <div className="stat-box">
-    <img
-      src={energyIcon}
-      alt="Energy"
-      style={{ width: "32px", height: "32px" }}
-    />
+   
     <div>
       <h3>{chargingData.energyUsed.toFixed(1)} kWh</h3>
       <p>Energy Delivered</p>
     </div>
   </div>
-
-  <div className="stat-box">
-    <img
-      src={batteryIcon}
-      alt="Battery"
-      style={{ width: "32px", height: "32px" }}
-    />
-    <div>
-      <h3>{batteryHealth}</h3>
-      <p>Battery Health</p>
-    </div>
-  </div>
+  {/* RATE & TIME */}
+  <div className="time-center">
+          <h2 className="time-1">{remainingTime}</h2>
+          <p className="time-text">Time Left</p>
+        </div>
 
 </div>
 
@@ -313,9 +303,12 @@ const ChargingSession = () => {
         <style>{`
 
         html, body {
-          height: 100%;
-          margin: 0;
-          overflow: hidden;  
+           height: 100%;
+  margin: 0;
+
+  background: #1c1c1c;  
+    color: #ffffffff;
+
         }
 
 
@@ -420,9 +413,7 @@ const ChargingSession = () => {
 
           .main-card {
   padding: 22px 18px;
-  border-radius: 26px;
   height: 100%;
-  max-height: 100vh;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -431,33 +422,39 @@ const ChargingSession = () => {
 
 /* HEADER */
 .header {
-  text-align: center;
-   display: flex;
+  display: flex;
   justify-content: center;
   align-items: center;
+  padding-top: 20px;
 }
 .logo {
-width: clamp(120px, 30vw, 180px);
-  margin: 0 auto 10px;
+ 
+  height: auto;
+  object-fit: contain;
+  left: 90px;
+    width: clamp(120px, 40vw, 160px);
+
+  
+  
 }
 
 /* CIRCLE */
 .circle-container {
   position: relative;
-  width: clamp(200px, 60vw, 260px);
-  height: clamp(200px, 60vw, 260px);
-  margin: 49px 50px;
+  width: min(260px, 70vw);
+  height: min(260px, 70vw);
+  margin: 49px auto;
 }
 
 .circle-bg {
-  color: #cfeec4 !important;
+   color: #2e2e2e !important;
 }
 
 .circle-progress {
   position: absolute;
   left: 0;
   top: 0;
-  color: #7dbb63 !important;
+  color: #ffffff !important;
 }
 
 .circle-text {
@@ -471,36 +468,38 @@ width: clamp(120px, 30vw, 180px);
 
 .bolt-icon {
   font-size: 34px;
-  color: #7dbb63;
+ color: #ffffff;  
 }
 
 .circle-text h1 {
   font-size: 42px;
   margin: 6px 0 0;
   font-weight: 700;
+    color: #ffffff;
 }
 
 .circle-text p {
   margin: 0;
-  color: #555;
+  color: #bdbdbd;
   font-size: 14px;
 }
 
 /* RATE & TIME *
-.time-center {
-          text-align: center;
-            margin-top: 10px;
-        }
 
 
-.time-center h2 {
-  font-size: clamp(20px, 6vw, 26px);
-  margin: 0;
+
+.time-1 {
+   margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+
+   color: #ffffff;
 }
 
-.time-center p {
+.time-text{
   font-size: 12px;
-  color: #666;
+  font-weight: 400;
+     color: #664040ff;
 }
 
 
@@ -511,6 +510,9 @@ width: clamp(120px, 30vw, 180px);
   display: flex;
   justify-content: space-between;
   margin: 28px 0;
+    gap: 52px;
+      flex-wrap: wrap;
+    padding: 10px 28px;
 }
 
 .stat-box {
@@ -521,26 +523,39 @@ width: clamp(120px, 30vw, 180px);
 
 .stat-box h3 {
   margin: 0;
-  font-size: 20px;
+  font-size: 28px;
   font-weight: 700;
+
+   color: #ffffff;
 }
 
 .stat-box p {
   margin: 0;
-  font-size: 13px;
-  color: #777;
+  font-size: 12px;
+    font-weight: 400;
+  color: #9e9e9e;
 }
 
 /* NOTIFY */
 .notify {
+  width: 100%;
+  max-width: 50 0px;
+  height: 60px;
+
+  padding: 18px;
+
+  gap:40px;
+
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  border-radius:28px;
-  border:0.25px solid #00000024;
-  background: #F1F1F1;
-   margin-left:10px;
+  justify-content: space-between;
+
+  border-radius: 28px;
+  opacity: 1;
+  background-color:#303030;
+  box-sizing: border-box;
+    margin-top:10px;
+    
   
 }
 
@@ -550,34 +565,35 @@ width: clamp(120px, 30vw, 180px);
   gap: 18px;
   font-size: 12px;
   font-weight: 400;
+    color: #ffffff;
 
   
 }
 
 
 .notify-icon {
-  width: 16px;
-  height: 20px;
+  width: 18px;
+  height: 22px;
   margin-left:20px;
 }
 
 /* OFF state track */
 .custom-switch .MuiSwitch-track {
-  background-color: #ccc;
+  background-color: #4a4a4a;
   opacity: 1;
   border-radius: 20px;
 }
 
 /* ON state */
 .custom-switch.Mui-checked .MuiSwitch-thumb {
-  background-color: #ffffff;
+  background-color: #ffffff;  
 }
 
 
 
 /* Focus & hover fix */
 .custom-switch .MuiSwitch-switchBase.Mui-checked {
-  color: #000000ff;
+  color: #ffffff;
 }
 
 
@@ -585,20 +601,23 @@ width: clamp(120px, 30vw, 180px);
 .actions {
   display: flex;
   gap: 10px;
+    width: 100%;
   
 }
 
 .btn {  
-    margin-top: 130px !important;
-     border:1px solid #CCCCCC;
+
+    border: 1px solid #3a3a3a;
      border-radius: 12px !important;
+    background: #303030 !important;
+      min-width: 48px;  
 }
 
 
 
 .report {
-  background: #dff3e5 !important;
-  color: #2e7d32 !important;
+  background: #252726ff !important;
+  color: #ffffffff !important;
 }
 
 /* STOP BUTTON */
@@ -606,11 +625,16 @@ width: clamp(120px, 30vw, 180px);
   border-radius: 12px !important;
   height: 44px;
   width: 351px;
+    flex: 1;
+  max-width: none;
   font-size: 12px !important;
-  margin-top: 130px !important;
-   font-weight: 700;
-   
+
+   font-weight: 700;  
+   color: #ffffffff !important;
+         background:#FF4213 !important;
       padding: 10px;
+      
+
 
 }
 
@@ -618,7 +642,7 @@ width: clamp(120px, 30vw, 180px);
 .station-id {
   text-align: center;
   margin-top: 30px;
-  color: #00000080;
+   color: #FFFFFF80;
   font-size: 12px;
    font-weight: 400;
 }
@@ -660,6 +684,18 @@ width: clamp(120px, 30vw, 180px);
   font-size: 15px;
   font-weight: 600;
 }
+  @media (max-height: 700px) {
+  .circle-container {
+    width: 220px;
+    height: 220px;
+  }
+
+
+  .circle-text h1 {
+    font-size: 28px;
+  }
+}
+  
 
 
         `}</style>
