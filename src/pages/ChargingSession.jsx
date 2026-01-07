@@ -153,8 +153,8 @@ const ChargingSession = () => {
 
         {/* CIRCLE */}
         <div className="circle-container">
-          <CircularProgress variant="determinate" value={100} size={260} thickness={4} className="circle-bg" />
-          <CircularProgress variant="determinate" value={15} size={260} thickness={4} className="circle-progress" />
+          <CircularProgress variant="determinate" value={100} size={220} thickness={4} className="circle-bg" />
+          <CircularProgress variant="determinate" value={chargingData.percentage} size={220} thickness={4} className="circle-progress" />
           <div className="circle-text">
             <Bolt className="bolt-icon" />
             <h1>+{Math.round(chargingData.percentage)}%</h1>
@@ -413,12 +413,12 @@ const ChargingSession = () => {
 
 
 .main-card {
-  padding: 24px 8px;
   height: 100vh;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  overflow:scroll
 }
 
 /* HEADER */
@@ -426,7 +426,7 @@ const ChargingSession = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-top: 20px;
+  padding-top: 0px;
 }
 .logo {
 
@@ -442,13 +442,22 @@ const ChargingSession = () => {
 /* CIRCLE */
 .circle-container {
   position: relative;
-  width: min(260px, 70vw);
-  height: min(260px, 70vw);
-  margin: 49px auto;
+  margin: 0px auto;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 220px;
+  flex-wrap: wrap;
 }
 
 .circle-bg {
-border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
   color: #2e2e2e !important;
 }
 .circle-bg .MuiCircularProgress-circle {
@@ -459,6 +468,10 @@ border-radius: 50%;
   position: absolute;
   left: 0;
   top: 0;
+  min-width: 100px;
+  min-height: 100px;
+  width: 150px;
+  height: 150px;
   color: var(--color-white);
 }
 
@@ -501,7 +514,7 @@ border-radius: 50%;
   display: flex;
   justify-content: space-between;
   margin: 28px 0;
-  gap: 52px;
+  gap: 28px;
   flex-wrap: wrap;
   padding: 10px 28px;
 }
@@ -550,6 +563,7 @@ color: var(--color-white);
   background-color:#303030;
   box-sizing: border-box;
   margin-top:10px;
+  margin-bottom: 12px;
 }
 
 .notify-left {
@@ -589,11 +603,13 @@ color: var(--color-white);
 
 /* ACTION BUTTONS */
 .actions {
-  padding: 12px 0;
-  display: flex;
-  gap: 10px;
-  width: 100%;
-  
+position: sticky;
+bottom: 0;
+z-index: 10;
+padding: 12px 0;
+display: flex;
+gap: 12px;
+width: 100%;
 }
 
 .btn {
@@ -625,10 +641,13 @@ color: var(--color-white);
 /* STATION ID */
 .station-id {
   text-align: center;
-  margin-top: 0px;
+  margin: 10px;
   color: #FFFFFF80;
   font-size: 12px;
   font-weight: 400;
+// position: sticky;
+// bottom: 0px;
+// z-index: 10;
 }
 
 /* LOADING */
