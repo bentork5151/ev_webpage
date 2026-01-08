@@ -11,20 +11,20 @@ const Invoice = () => {
   const navigate = useNavigate();
   const { user, chargerData } = useAuth();
   const emailSentRef = useRef(false)
-  const [sessionData, setSessionData] = useState(null);
+  // const [sessionData, setSessionData] = useState(null);
   //Static data for testing
-  // const [sessionData, setSessionData] = useState({
-  //   sessionId: "MOCK-123",
-  //   stationName: "Test Station",
-  //   chargerType: "DC Fast",
-  //   duration: 45,
-  //   energyUsed: 25.5,
-  //   rate: 15,
-  //   finalCost: 382.50,
-  //   paymentMethod: "Wallet",
-  //   transactionId: "TXN-999",
-  //   endTime: new Date().toISOString()
-  // });
+  const [sessionData, setSessionData] = useState({
+    sessionId: "MOCK-123",
+    stationName: "Test Station",
+    chargerType: "DC Fast",
+    duration: 45,
+    energyUsed: 25.5,
+    rate: 15,
+    finalCost: 382.50,
+    paymentMethod: "Wallet",
+    transactionId: "TXN-999",
+    endTime: new Date().toISOString()
+  });
   const [isLoading, setIsLoading] = useState(true)
   const [emailStatus, setEmailStatus] = useState({
     sending: false,
