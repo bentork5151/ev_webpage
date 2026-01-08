@@ -4,7 +4,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { useCharging } from '../store/ChargingContext'
 import "@material/web/slider/slider.js";
 import WalletIcon from "../assets/images/wallet.svg";
-import Logo from "../assets/images/Logo-1.png";
+import Logo from "../assets/images/logo-1.png";
 import StationImg from "../assets/images/station-img.png";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
@@ -121,6 +121,7 @@ const ConfigCharging = () => {
   justify-content: space-between;
   align-items: center;
   padding: 18px;
+  z-index: 100;
   background: #212121;
 
   
@@ -199,7 +200,7 @@ const ConfigCharging = () => {
   background: #212121;
   transform: translateX(-100%);
   transition: transform 0.35s ease;
-  z-index: 10;
+  z-index: 101;
   border-radius: 0 28px 28px 0;
   display: flex;
   flex-direction: column;
@@ -383,21 +384,20 @@ md-slider {
 
 .plan {
   background: #212121;
-  padding: 6px 28px;
-  border-radius: 28px;
+  padding: 12px 18px;
+  border-radius: 18px;
   border: 1px solid var(--color-on-primary-container);
   display: flex;
-  height: 101px;
+  height: fit-content;
   justify-content: space-between;
   align-items: center;
 }
 .plan strong{
-  font-size: 24px;
-
+  font-size: 18px;
     font-weight: 600;
 }
 .plan span {
-  font-size: 16px;
+  font-size: 12px;
   opacity: 0.7;
     font-weight: 400;
 }
@@ -410,7 +410,7 @@ md-slider {
 
 .plan.active {
   background: #2b2b2b;
-  outline: 1px solid #6db85b;
+  outline: 2px solid var(--color-primary-container);
 }
 
 /* ===== PAY BUTTON ===== */
@@ -419,16 +419,17 @@ md-slider {
   bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
-  width: 90%;
+  width: 95%;
   max-width: 420px;
   padding: 14px 24px;
-  background: #ffffffe0;
+  background: #ffffffff;
   color: var(--color-matte-black);
-  border-radius: 18px;
+  border-radius: 12px;
   font-size: 14px;
   font-family: var(--font-primary);
   font-weight: var(--font-weight-semibold);
   border: none;
+  z-index: 99;
 }
 `}</style>
 
@@ -458,10 +459,10 @@ md-slider {
 
         {/* ===== OVERLAY ===== */}
         {/* ===== OVERLAY ===== */}
-       <div
-  className={`drawer-overlay ${drawerOpen ? "show" : ""}`}
-  onClick={() => setDrawerOpen(false)}
-/>
+        <div
+          className={`drawer-overlay ${drawerOpen ? "show" : ""}`}
+          onClick={() => setDrawerOpen(false)}
+        />
 
 
         {/* ===== SIDE DRAWER ===== */}
@@ -470,10 +471,20 @@ md-slider {
             {/* USER HEADER */}
             <div className="drawer-header">
               <div className="user-info">
-                <div className="avatar">{sidebarConfig.user.avatar}</div>
+                <div className="avatar">
+                  {user?.picture ? (
+                    <img
+                      src={user.picture}
+                      alt="avatar"
+                      style={{ width: "100%", height: "100%", borderRadius: "50%" }}
+                    />
+                  ) : (
+                    sidebarConfig.user.avatar
+                  )}
+                </div>
                 <div>
-                  <strong className="text-semibold">{sidebarConfig.user.name}</strong>
-                  <p className="text-regular">{sidebarConfig.user.email}</p>
+                  <strong className="text-semibold">{user?.name || sidebarConfig.user.name}</strong>
+                  <p className="text-regular">{user?.email || sidebarConfig.user.email}</p>
                 </div>
               </div>
               <CloseIcon
@@ -489,23 +500,23 @@ md-slider {
               {sidebarConfig.menu.map((group, index) => (
                 <div key={index}>
                   {group.items.map((item, i) => (
-                   <div
-  className="item"
-  key={i}
-  onClick={() => {
-    setDrawerOpen(false);
+                    <div
+                      className="item"
+                      key={i}
+                      onClick={() => {
+                        setDrawerOpen(false);
 
-    if (item.label === "My Wallet") {
-      navigate("/dashboard");
-    } else if (item.label === "Terms & Conditions") {
-      navigate("/terms");
-    } else if (item.label === "Privacy Policy") {
-      navigate("/privacy");
-    } else if (item.label === "About Us") {
-      navigate("/about");
-    }
-  }}
->
+                        if (item.label === "My Wallet") {
+                          navigate("/dashboard");
+                        } else if (item.label === "Terms & Conditions") {
+                          navigate("/terms");
+                        } else if (item.label === "Privacy Policy") {
+                          navigate("/privacy");
+                        } else if (item.label === "About Us") {
+                          navigate("/about");
+                        }
+                      }}
+                    >
 
                       <span className="icon">{item.icon}</span>
                       <span>{item.label}</span>
@@ -591,7 +602,8 @@ md-slider {
 
         {/* ===== PAY BUTTON ===== */}
         <button className="pay-btn" onClick={openReceipt}>
-          Pay ₹{selectedPlan?.walletDeduction || 0}
+          Start
+          {/* Pay ₹{selectedPlan?.walletDeduction || 0} */}
         </button>
 
         <Outlet />

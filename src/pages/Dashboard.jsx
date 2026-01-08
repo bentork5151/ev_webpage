@@ -5,6 +5,7 @@ import PaymentService from "../services/payment.service";
 import AuthService from "../services/auth.service";
 import APP_CONFIG from "../config/app.config";
 
+import "../assets/styles/global.css";
 import WalletIcon from "../assets/images/wallet.svg";
 import ArrowUp from "../assets/images/ArrowUp.svg";
 import ArrowDown from "../assets/images/ArrowDown.svg";
@@ -129,7 +130,7 @@ export default function Dashboard() {
           margin-top: 16px;
           padding: 16px;
           border-radius: 16px;
-          background: linear-gradient(62deg, rgba(48,48,48,0.5) 2%, rgba(0,0,0,0.5) 54%);
+          background: linear-gradient(52deg, rgba(48,48,48,0.5) 2%, rgba(0,0,0,0.5) 54%);
           backdrop-filter: blur(10px);
           display: flex;
           flex-direction: column;
@@ -168,7 +169,7 @@ export default function Dashboard() {
         .transactions-title {
           font-size: 14px;
           font-weight: var(--font-weight-medium);
-          margin: 16px 0 8px 0;
+          margin: 36px 0 8px 0;
         }
 
         .transactions-scroll {
@@ -278,7 +279,7 @@ export default function Dashboard() {
         }
 
         h3 {
-          text-align: center;
+          text-align: left;
           margin-bottom: 20px;
           font-size: 20px;
           font-weight: 500;
@@ -382,7 +383,24 @@ export default function Dashboard() {
         .error { color: #ff4d4f; margin: 8px 0; text-align:center;}
         .success { color: #4caf50; margin: 8px 0; text-align:center;}
 
+        .chip {
+          display: inline-block;
+          padding: 4px 14px;
+          margin-top: -8px;
+          margin-right: 8px;
+          margin-bottom: 18px;
+          border-radius: 8px;
+          font-size: 14px;
+          background: transparent;
+          color: #fff;
+          border: 2px solid var(--color-card-bg);
+          cursor: pointer;
+          transition: all 0.25s ease;
+        }
 
+        .chip:hover {
+          background: #3a3a3a;
+        }
         
       `}</style>
 
@@ -407,7 +425,7 @@ export default function Dashboard() {
       </div>
 
       {/* Transactions */}
-      <p className="transactions-title">Transactions</p>
+      <p className="transactions-title">Payment History</p>
       <div className="transactions-scroll">
         {transactions?.map((t, i) => {
           const isCredit = t?.type === "credit";
@@ -434,7 +452,7 @@ export default function Dashboard() {
       {/* Dialog */}
       {showDialog && (
         <div className="dialog-backdrop" onClick={() => !loading && setShowDialog(false)}>
-          <div className="dialog" onClick={(e) => e.stopPropagation()}>
+          <div className="dialog glass glass-soft radius-large" onClick={(e) => e.stopPropagation()}>
             <h3>Recharge Wallet</h3>
 
             {/* Amount Input */}
@@ -442,11 +460,14 @@ export default function Dashboard() {
               <label>Amount</label>
               <input
                 type="number"
-                placeholder="Enter amount"
+                placeholder="Select amount"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 disabled={loading}
               />
+              <div className="chip">+100</div>
+              <div className="chip">+200</div>
+              <div className="chip">+500</div>
             </div>
 
             {/* GST & Total */}
@@ -466,7 +487,7 @@ export default function Dashboard() {
 
             {/* Buttons */}
             <button
-              className={`btn-primary ${loading ? "loading" : ""}`}
+              className={`btn-primary glass glass-dark radius-large ${loading ? "loading" : ""}`}
               onClick={handleRecharge}
               disabled={loading || parseFloat(totalAmount) <= 0}
             >
@@ -474,7 +495,7 @@ export default function Dashboard() {
             </button>
 
             <button
-              className="btn-secondary"
+              className="btn-secondary glass glass-primary radius-inner"
               onClick={() => !loading && setShowDialog(false)}
               disabled={loading}
             >
