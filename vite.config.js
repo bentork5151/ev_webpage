@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
       cors: true,
       proxy: {
         '/api': {
-          target: 'http://localhost:8080',
+          target: 'https://dev.bentork.in',
           // target: 'http://localhost:8080',
           changeOrigin: true,
           secure: false,
