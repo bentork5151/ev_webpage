@@ -13,7 +13,8 @@ import SessionFlow from './wrapper/SessionFlow'
 import Invoice from './pages/Invoice'
 import ThankYou from './pages/ThankYou'
 import Terms from "./pages/Terms";
-
+import Privacy from "./pages/Privacy.jsx";
+import About from "./pages/About.jsx";
 
 EmailService.init()
 
@@ -23,6 +24,9 @@ const router = createBrowserRouter([
   { path: '/splash/:ocppId', element: <SplashScreen /> },
   { path: '/login', element: <Login /> },
   { path: '/login/:ocppId', element: <Login /> },
+  { path: '/terms', element: <Terms /> }  ,
+          { path: '/privacy', element: <Privacy /> },
+    { path: '/about', element: <About /> },
   { element: <AuthGuard />,
     children: [
       { path: '/dashboard', element: <Dashboard /> },
@@ -41,7 +45,7 @@ const router = createBrowserRouter([
       { path: '/charging-session', element: <SessionFlow  /> },
       { path: '/invoice', element: <Invoice /> },
       { path: '/thank-you', element: <ThankYou /> },
-      { path: '/terms', element: <Terms /> }  ,
+      
     ]
   }
 ], {

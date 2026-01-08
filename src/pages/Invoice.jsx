@@ -6,7 +6,7 @@ import { useAuth } from "../store/AuthContext";
 import CacheService from "../services/cache.service";
 import EmailService from "../services/email.service"
 import SessionService from "../services/session.service"
-
+import Logo from "../assets/images/logo-1.png";
 const Invoice = () => {
   const navigate = useNavigate();
   const { user, chargerData } = useAuth();
@@ -220,189 +220,287 @@ const Invoice = () => {
   return (
     <div className="invoice-page">
       <style>{`
-        * {
-          box-sizing: border-box;
-        }
+       /* ================== RESET ================== */
+* {
+  box-sizing: border-box;
+  
+}
 
-        body {
-          margin: 0;
-        }
+body {
+  margin: 0;
+  background: #212121;
+  font-family: "Inter", "Roboto", sans-serif;
+}
+
+/* ================== PAGE ================== */
+.invoice-page {
+    min-height: 100vh;
+  background: radial-gradient(circle at top, #1e1e1e, #121212);
+  padding-bottom: 120px;
+  color: #fff;
+}
 
 
-        /* EMAIL STATUS */
-  .email-status {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 12px 16px;
-    margin: -24px 16px 16px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 500;
+
+/* ===== INVOICE ROW ===== */
+.invoice-row {
+  padding: 18px;
+  display: flex;
+  height: 64px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.invoice-row h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* SESSION COMPLETED PILL */
+.session-pill {
+  padding: 2px 8px;
+  border-radius: 20px;
+
+  background: #303030;
+  color: #ffffff;
+
+  font-size: 10px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+
+/* ================== HEADER ================== */
+.invoice-header {
+   background: linear-gradient(180deg, #1c1c1c 0%, #141414 100%);
+  padding: 42px 28px;
+  text-align: center;
+  height: 131px;
+   width: 404px;
+  border-bottom-left-radius: 32px;
+  border-bottom-right-radius: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* LOGO */
+.header-logo {
+  width: 140px;
+  max-width: 70%;
+  height: auto;
+  object-fit: contain;
+}
+
+.invoice-header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.invoice-header p {
+  margin-top: 6px;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.sub-heading {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* ================== EMAIL STATUS ================== */
+.email-status {
+  margin: -20px 16px 16px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.email-status.sending {
+  background: #1f3a5f;
+  color: #dbe9ff;
+}
+
+.email-status.sent {
+  background: #1f3d2b;
+  color: #9df3c4;
+}
+
+.email-status.error {
+  background: #3b1f1f;
+  color: #ffbdbd;
+}
+
+.email-status button {
+  margin-left: auto;
+  background: #c62828;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* ================== CARD ================== */
+.card {
+  margin: 8px;
+   
+      height: 286;
+  border-radius: 18px;
+  background: #212121
+  );
+   gap: 10px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 0 1px #55555580;
+  overflow: hidden;
+}
+
+.card h2 {
+  padding: 10px 8px;
+  
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+  .card-1 {
+  margin: 8px;
+   
+      height: 188px;
+  border-radius: 18px;
+  background: #212121
+  );
+   gap: 10px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 0 1px #55555580;
+  overflow: hidden;
+}
+
+.card-1 h2 {
+  padding: 10px 8px;
+  
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* ================== ROW ================== */
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  font-size: 13px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.row span:first-child {
+  color: #FFFFFF80;
+}
+
+.row span:last-child {
+ 
+  font-weight: 400;
+}
+
+/* ================== HIGHLIGHTS ================== */
+.highlight {
+  background: #303030;
+  font-weight: 700;
+   color: #FFFFFF;
+}
+
+.highlight-green {
+  background: #303030;
+  font-weight: 600;
+   color: #FFFFFF;
+}
+
+/* ================== PAID ================== */
+.paid {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #2cf947ff;
+  font-weight: 600;
+}
+
+.paid svg {
+  font-size: 18px;
+}
+
+/* ================== BOTTOM ACTION ================== */
+.bottom-action {
+  position: fixed;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+}
+
+.bottom-action button {
+  width: 92%;
+  max-width: 420px;
+  padding: 15px;
+  border-radius: 30px;
+  border: none;
+  background: #ffffff;
+  color: #000;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ================== TABLET ================== */
+@media (min-width: 768px) {
+  .invoice-header {
+    padding: 48px 16px 56px;
   }
 
-  .email-status.sending {
-    background: #1976d2;
-    color: #fff;
+  .card {
+    max-width: 600px;
+    margin: 18px auto;
   }
 
-  .email-status.sent {
-    background: #e8f5e9;
-    color: #2e7d32;
+  .invoice-header h1 {
+    font-size: 22px;
+  }
+}
+
+/* ================== DESKTOP ================== */
+@media (min-width: 1024px) {
+  .invoice-page {
+    padding-bottom: 140px;
   }
 
-  .email-status.error {
-    background: #ffebee;
-    color: #c62828;
+  .card {
+    max-width: 720px;
   }
 
-  .email-status button {
-    background: #c62828;
-    color: #fff;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    cursor: pointer;
+  .row {
+    font-size: 14px;
   }
+}
 
-
-
-        .invoice-page {
-          min-height: 100vh;
-          background: #f4f4f4;
-          font-family: Inter, sans-serif;
-          padding-bottom: 120px;
-        }
-
-        /* HEADER */
-        .invoice-header {
-          background: #1f1f1f;
-          color: #fff;
-          text-align: center;
-          padding: 28px 16px 36px;
-          border-bottom-left-radius: 28px;
-          border-bottom-right-radius: 28px;
-        }
-
-        .header-icon {
-          margin-bottom: 16px;
-        }
-
-        .invoice-header h1 {
-          margin: 0;
-          font-size: 16px;
-          font-weight: 700;
-          font-family: 'Roboto', sans-serif;
-        }
-
-        .invoice-header p {
-     
-          font-size: 12px;
-           font-weight: 400;
-         opacity: 0.75;
-         font-family: 'Roboto', sans-serif;
-          color: #fff;
-         
-        }
-          .sub-heading{
-          font-size: 18px;
-           font-weight: 600;
-          }
-
-        /* CARD */
-        .card {
-          background: #fff;
-          margin: 16px;
-          border-radius: 16px;
-          overflow: hidden;
-          box-shadow: 0 0 0 1px #e6e6e6;
-        }
-
-        .card h2 {
-          margin: 0;
-          padding: 16px;
-          font-size: 18px;
-          font-weight: 600;
-        }
-
-        .row {
-          display: flex;
-          justify-content: space-between;
-          padding: 14px 16px;
-          font-size: 12px;
-          border-top: 1px solid #eee;
-        }
-
-        .row span:first-child {
-          color: #444;
-        }
-
-        .row span:last-child {
-          font-weight: 500;
-        }
-
-        .highlight {
-          background: #B1DDFF;
-          font-weight: 600;
-        }
-
-        .paid {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          color: #63b54f;
-          font-weight: 600;
-        }
-
-        .paid svg {
-          font-size: 18px;
-        }
-
-        .highlight-green {
-          background: #C0EFB0;
-          font-weight: 600;
-        }
-
-        /* BOTTOM BUTTON */
-        .bottom-action {
-          position: fixed;
-          bottom: 16px;
-          left: 0;
-          right: 0;
-          display: flex;
-          justify-content: center;
-        }
-
-        .bottom-action button {
-          width: 90%;
-          max-width: 420px;
-          padding: 14px;
-          border-radius: 28px;
-          border: none;
-          background: #1f1f1f;
-          color: #fff;
-          font-size: 16px;
-          font-weight: 600;
-        }
-
-        /* RESPONSIVE */
-        @media (min-width: 768px) {
-          .card {
-            max-width: 600px;
-            margin: 16px auto;
-          }
-        }
       `}</style>
 
       {/* HEADER */}
       <div className="invoice-header">
-        <div className="header-icon">
-          <CheckCircle sx={{ fontSize: 48, color: '#7dbb63' }} />
-        </div>
-        <h1>Invoice</h1>
-        <p>Session Completed</p>
+       <img
+  src={Logo}
+  alt="Bentork Logo"
+  className="header-logo"
+/>
       </div>
 
       {emailStatus.sending && (
@@ -425,6 +523,10 @@ const Invoice = () => {
           <button onClick={handleResendEmail}>Retry</button>
         </div>
       )}
+<div className="invoice-row">
+  <h1>Invoice</h1>
+  <span className="session-pill">Session Completed</span>
+</div>
 
       {/* CHARGING DETAILS */}
       <div className="card">
@@ -440,12 +542,12 @@ const Invoice = () => {
       </div>
 
       {/* PAYMENT DETAILS */}
-      <div className="card">
+      <div className="card-1">
         <h2>Payment Details</h2>
 
         <Row label="Payment Method" value={paymentMethod} />
-        <Row label="Transaction ID" value={transactionId} />
-        <Row label="Completed At" value={formatDate(completedAt)} />
+       
+       
 
         <div className="row">
           <span>Status</span>
