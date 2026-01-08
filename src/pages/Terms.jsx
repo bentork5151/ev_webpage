@@ -10,7 +10,8 @@ const TermsPage = () => {
     <div className="terms-page">
       <style>{`
       body{
-      overflow-y: scroll;}
+      overflow-y: scroll;
+      }
         .terms-page {
           background: var(--color-matte-black);
           min-height: 100vh;
@@ -22,7 +23,7 @@ const TermsPage = () => {
           padding: 18px;
           align-items: center;
           gap: 16px;
-          margin-bottom: 24px;
+          margin-bottom: 12px;
           position: sticky;
           top: 0;
           background: var(--color-matte-black);
@@ -38,9 +39,12 @@ const TermsPage = () => {
           align-items: center;
         }
         .title {
-          font-size: 20px;
+        color: var(--color-primary-container);
+        font-family: var(--font-primary);
+        padding: 6px 18px;
+          font-size: 28px;
           font-weight: 600;
-          margin: 0;
+          margin-bottom: 12px;
         }
         .content {
           padding-top: 0px;
@@ -55,22 +59,50 @@ const TermsPage = () => {
             color: var(--primary-color);
             margin: 0 0 4px 0;
             font-weight: var(--font-weight-medium);
-            font-size: 14px;
+            font-size: 18px;
         }
         ol {
             padding-left: 12px;
             padding-right: 12px;
             text-align: justify;
+            line-height: 1.5;
         }
         li {
             margin-bottom: 20px;
         }
         ul {
-            padding-left: 20px;
+            padding-left: 12px;
             margin-top: 8px;
         }
         ul li {
             margin-bottom: 4px;
+        }
+        .agreement-div{
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        }
+        .agreement-div .btn {
+        margin-top: 16px;
+        margin-bottom: 12px;
+        padding: 12px;
+        width: 100%;
+
+        border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-inner);
+  font-weight: var(--font-weight-regular);
+
+  background: rgba(57, 226, 155, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  color: var(--color-white);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+
+  transition: var(--transition-smooth);
         }
       `}</style>
 
@@ -78,8 +110,8 @@ const TermsPage = () => {
         <button className="back-btn" onClick={() => navigate(-1)}>
           <ArrowBackIosNewIcon sx={{ fontSize: 20 }} />
         </button>
-        <h1 className="title">Terms & Conditions</h1>
       </div>
+      <h1 className="title">Terms & Conditions</h1>
 
       <div className="content">
         <ol>
@@ -304,6 +336,9 @@ const TermsPage = () => {
             </ul>
           </li>
         </ul>
+        <div className="agreement-div">
+          <button className="btn">Accept</button>
+        </div>
       </div>
     </div>
   );

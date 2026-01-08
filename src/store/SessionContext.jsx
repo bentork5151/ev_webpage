@@ -196,12 +196,12 @@ export const SessionProvider = ({ children }) => {
       let activeSession = CacheService.getSessionData()
       let activePlan = CacheService.getPlanData()
 
-      // if (!activeSession || !(activeSession.sessionId || activeSession.id)) {
-      //   console.warn('No active session found')
-      //   setIsInitializing(false)
-      //   navigate('/config-charging')
-      //   return { success: false }
-      // }
+      if (!activeSession || !(activeSession.sessionId || activeSession.id)) {
+        console.warn('No active session found')
+        setIsInitializing(false)
+        navigate('/config-charging')
+        return { success: false }
+      }
 
       const sessionId = activeSession?.sessionId || activeSession?.id
       const currentStatus = await SessionService.getSessionStatus(sessionId)

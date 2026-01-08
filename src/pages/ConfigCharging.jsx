@@ -4,7 +4,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { useCharging } from '../store/ChargingContext'
 import "@material/web/slider/slider.js";
 import WalletIcon from "../assets/images/wallet.svg";
-import Logo from "../assets/images/Logo-1.png";
+import Logo from "../assets/images/logo-1.png";
 import StationImg from "../assets/images/station-img.png";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
@@ -200,7 +200,7 @@ const ConfigCharging = () => {
   background: #212121;
   transform: translateX(-100%);
   transition: transform 0.35s ease;
-  z-index: 10;
+  z-index: 101;
   border-radius: 0 28px 28px 0;
   display: flex;
   flex-direction: column;
@@ -410,7 +410,7 @@ md-slider {
 
 .plan.active {
   background: #2b2b2b;
-  outline: 1px solid #6db85b;
+  outline: 2px solid var(--color-primary-container);
 }
 
 /* ===== PAY BUTTON ===== */
@@ -471,10 +471,20 @@ md-slider {
             {/* USER HEADER */}
             <div className="drawer-header">
               <div className="user-info">
-                <div className="avatar">{sidebarConfig.user.avatar}</div>
+                <div className="avatar">
+                  {user?.picture ? (
+                    <img
+                      src={user.picture}
+                      alt="avatar"
+                      style={{ width: "100%", height: "100%", borderRadius: "50%" }}
+                    />
+                  ) : (
+                    sidebarConfig.user.avatar
+                  )}
+                </div>
                 <div>
-                  <strong className="text-semibold">{sidebarConfig.user.name}</strong>
-                  <p className="text-regular">{sidebarConfig.user.email}</p>
+                  <strong className="text-semibold">{user?.name || sidebarConfig.user.name}</strong>
+                  <p className="text-regular">{user?.email || sidebarConfig.user.email}</p>
                 </div>
               </div>
               <CloseIcon
