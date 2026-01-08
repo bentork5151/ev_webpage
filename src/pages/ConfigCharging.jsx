@@ -8,7 +8,7 @@ import Logo from "../assets/images/logo-1.png";
 import StationImg from "../assets/images/station-img.png";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
-
+import DownloadAppImg from "../assets/images/downloadPage.png";
 import { useAuth } from "../store/AuthContext";
 
 import "../assets/styles/global.css";
@@ -85,7 +85,7 @@ const ConfigCharging = () => {
   // 🔐 SAFE last used plan
   const lastUsed = selectedPlan || plans[0];
   const [drawerOpen, setDrawerOpen] = useState(false);
-
+const [downloadDialogOpen, setDownloadDialogOpen] = useState(false);
   // 🔹 Quick plans only
   const quickPlans = plans.filter(p => p.type === "QUICK");
 
@@ -500,28 +500,33 @@ md-slider {
               {sidebarConfig.menu.map((group, index) => (
                 <div key={index}>
                   {group.items.map((item, i) => (
-                    <div
-                      className="item"
-                      key={i}
-                      onClick={() => {
-                        setDrawerOpen(false);
+  <div
+  className="item"
+  key={i}
+  onClick={() => {
+    setDrawerOpen(false);
 
-                        if (item.label === "My Wallet") {
-                          navigate("/dashboard");
-                        } else if (item.label === "Terms & Conditions") {
-                          navigate("/terms");
-                        } else if (item.label === "Privacy Policy") {
-                          navigate("/privacy");
-                        } else if (item.label === "About Us") {
-                          navigate("/about");
-                        }
-                      }}
-                    >
-
-                      <span className="icon">{item.icon}</span>
-                      <span>{item.label}</span>
-                    </div>
-                  ))}
+    if (item.label === "My Wallet") {
+      navigate("/dashboard");
+    } else if (item.label === "Terms & Conditions") {
+      navigate("/terms");
+    } else if (item.label === "Privacy Policy") {
+      navigate("/privacy");
+    } else if (item.label === "About Us") {
+      navigate("/about");
+    } else if (item.label === "Download App") {
+      setDownloadDialogOpen(true); // open dialog
+    } else if (item.label === "Help") {
+      window.open("https://bentork.com/contacts/",); // open in new tab
+      // OR use this to open in same tab:
+      // window.location.href = "https://bentork.com/contacts/";
+    }
+  }}
+>
+  <span className="icon">{item.icon}</span>
+  <span>{item.label}</span>
+</div>
+))}
 
                   {index !== sidebarConfig.menu.length - 1 && <hr />}
                 </div>
@@ -606,6 +611,69 @@ md-slider {
           {/* Pay ₹{selectedPlan?.walletDeduction || 0} */}
         </button>
 
+{/* Download Dialog */}
+      {downloadDialogOpen && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 999,
+          }}
+          onClick={() => setDownloadDialogOpen(false)}
+        >
+          <div
+            style={{
+              background: "#212121",
+              padding: "20px",
+              borderRadius: "16px",
+              width: "90%",
+              maxWidth: "400px",
+              position: "relative",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <CloseIcon
+              style={{
+                position: "absolute",
+                top: "12px",
+                right: "12px",
+                cursor: "pointer",
+                color: "#fff",
+              }}
+              onClick={() => setDownloadDialogOpen(false)}
+            />
+
+            {/* Image */}
+            <div style={{ textAlign: "center", margin: "20px 0" }}>
+              <img
+                src={DownloadAppImg}
+                alt="Coming Soon"
+                style={{ width: "100%", borderRadius: "8px" }}
+              />
+            </div>
+
+            {/* Text */}
+            <h2
+              style={{
+                textAlign: "center",
+                marginBottom: "8px",
+                color: "#fff",
+              }}
+            >
+              Coming Soon
+            </h2>
+            <p style={{ textAlign: "center", color: "#aaa" }}>Stay Tuned!</p>
+          </div>
+        </div>
+      )}
+
+
+
         <Outlet />
       </div>
     </>
@@ -613,3 +681,6 @@ md-slider {
 };
 
 export default ConfigCharging;
+
+
+
