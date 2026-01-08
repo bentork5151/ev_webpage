@@ -21,7 +21,7 @@ export const useCharging = () => {
 export const ChargingProvider = ({ children }) => {
     const navigate = useNavigate()
     const location = useLocation()
-    const { user, chargerData, updatedWalletBalance, updateChargerData} = useAuth()
+    const { user, chargerData, updatedWalletBalance, updateChargerData } = useAuth()
 
     const [plans, setPlans] = useState([])
     const [selectedPlan, setSelectedPlan] = useState(null)
@@ -81,20 +81,38 @@ export const ChargingProvider = ({ children }) => {
         try {
             const response = await ApiService.get(API_CONFIG.ENDPOINTS.GET_ALL_PLANS)
             const filtered = chargerData?.chargerType
-                ? response.filter((p) => 
+                ? response.filter((p) =>
                     p.chargerType?.toLowerCase() === chargerData?.chargerType?.toLowerCase())
                 : response
             setPlans(filtered)
         } catch (error) {
-            console.error('Failed to fetch Plans: ',error)
+            console.error('Failed to fetch Plans: ', error)
             setError('Failed to fetch Plans')
         } finally {
             setPlansLoading(false)
         }
     }, [chargerData?.chargerType])
 
+    const fetchChargerStatus = useCallback(async () => {
+        if (!chargerData?.ocppId) return
+        try {
+            const response = await ApiService.get(API_CONFIG.ENDPOINTS.GET_CHARGER(chargerData.ocppId))
+            if (response) {
+                updateChargerData(response)
+            }
+        } catch (err) {
+            console.error('Failed to fetch charger status:', err)
+        }
+    }, [chargerData?.ocppId, updateChargerData])
+
+    useEffect(() => {
+        if (chargerData?.ocppId) {
+            fetchChargerStatus()
+        }
+    }, [chargerData?.ocppId])
+
     const selectPlan = useCallback((plan) => {
-        console.log('plan set choosen',plan)
+        console.log('plan set choosen', plan)
         setSelectedPlan(plan)
         setError('')
     }, [])
@@ -114,7 +132,7 @@ export const ChargingProvider = ({ children }) => {
     }, [selectedPlan, navigate])
 
     const closeReceipt = useCallback(() => {
-        navigate('/config-charging', {replace: true})
+        navigate('/config-charging', { replace: true })
         setError('')
     }, [navigate])
 
@@ -126,11 +144,11 @@ export const ChargingProvider = ({ children }) => {
         const currentPermission = Notification.permission
 
         if (currentPermission === 'granted') {
-            return { granted: true, status: 'granted'}
+            return { granted: true, status: 'granted' }
         }
 
         if (currentPermission === 'denied') {
-            return { granted: false, status: 'denied'}
+            return { granted: false, status: 'denied' }
         }
 
         const granted = await NotificationService.requestPermission()
@@ -143,12 +161,12 @@ export const ChargingProvider = ({ children }) => {
 
         if (!selectedPlan) {
             setError('Please select a plan')
-            return { success: false}
+            return { success: false }
         }
 
         if (hasInsufficientBalance) {
             setError('Insufficient wallet balance')
-            return { success: false}
+            return { success: false }
         }
 
         setLoading(true)
@@ -161,20 +179,20 @@ export const ChargingProvider = ({ children }) => {
 
             const updatedPlan = {
                 ...selectedPlan,
-                walletDeduction : Number(pricing.formattedTotalAmount)
+                walletDeduction: Number(pricing.formattedTotalAmount)
             }
             CacheService.savePlanData(updatedPlan)
 
             const chargerResponse = await ApiService.get(
-                        API_CONFIG.ENDPOINTS.GET_CHARGER(chargerData?.ocppId))
+                API_CONFIG.ENDPOINTS.GET_CHARGER(chargerData?.ocppId))
             console.info('Charger Data:', chargerResponse)
             updateChargerData(chargerResponse)
-            console.log('ischargerunavailable: ',isChargerUnavailable)
-            console.log('charger data 2: ',chargerData)
+            console.log('ischargerunavailable: ', isChargerUnavailable)
+            console.log('charger data 2: ', chargerData)
 
             if (isChargerUnavailable) {
                 setError('Charger is unavailable')
-                return { success: false}
+                return { success: false }
             }
 
             const result = await SessionService.startSession(
@@ -183,11 +201,11 @@ export const ChargingProvider = ({ children }) => {
                 chargerData?.ocppId
             )
 
-            console.log('result: ',result)
+            console.log('result: ', result)
 
             if (result?.session?.status === 'FAILED') {
                 setError('Charging failed to start')
-                return { success : false}
+                return { success: false }
             }
 
             if (!result.success) {
@@ -211,10 +229,10 @@ export const ChargingProvider = ({ children }) => {
             navigate('/charging-session', { replace: true })
             return { success: true }
         } catch (error) {
-            console.error('Payment process error: ',error)
+            console.error('Payment process error: ', error)
             const errMsg = error?.message || 'Something went wrong, please try again later'
             setError(errMsg)
-            return { success: false, message: errMsg}
+            return { success: false, message: errMsg }
         } finally {
             setLoading(false)
         }

@@ -196,6 +196,8 @@ export const SessionProvider = ({ children }) => {
       let activeSession = CacheService.getSessionData()
       let activePlan = CacheService.getPlanData()
 
+
+      //Security
       if (!activeSession || !(activeSession.sessionId || activeSession.id)) {
         console.warn('No active session found')
         setIsInitializing(false)

@@ -1,6 +1,7 @@
 import React from 'react'
 import { CircularProgress } from '@mui/material'
 import { useCharging } from '../store/ChargingContext'
+import "../assets/styles/global.css"
 
 const Receipt = () => {
   const {
@@ -46,16 +47,16 @@ const Receipt = () => {
         }
         
         .receipt-dialog {
-          background: #212121;
-          width: 90%;
+          background: var(--color-matte-black);
+          width: 95%;
           max-width: 400px;
           border-radius: 20px;
-          padding: 20px;
+          padding: 18px 12px;
           animation: slideUp 0.3s ease;
           max-height: 85vh;
           overflow-y: auto;
           position: relative;
-          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 1);
         }
 
         .receipt-dialog::-webkit-scrollbar { width: 4px; }
@@ -84,11 +85,11 @@ const Receipt = () => {
         }
 
         .receipt-close-btn {
-          background: #f5f5f5;
+          background: #00000000;
           border: none;
           font-size: 16px;
           cursor: pointer;
-          color: #666;
+          color: #fff;
           width: 36px;
           height: 36px;
           border-radius: 50%;
@@ -105,19 +106,31 @@ const Receipt = () => {
           border-radius: 14px;
           padding: 14px;
           margin-bottom: 12px;
+          background: #ffcbcbff;
         }
 
         .receipt-section-default {
         
-          background: #303030;;
+          background: #303030;
         }
         
         .receipt-blue { background: #303030;  }
-        .receipt-green { background: #212121;   }
+        .receipt-green {
+          border-radius: 16px;
+          background: linear-gradient(42deg, rgba(48,48,48,0.5) 2%, rgba(0,0,0,0.5) 54%);
+          backdrop-filter: blur(10px);
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          cursor: pointer;
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.25);
+        }
 
         .receipt-section-title {
           font-size: 14px;
-          font-weight: 600;
+          font-weight: var(--font-weight-semibold);
           color: #ffffffff;
           margin-bottom: 10px;
           display: block;
@@ -127,37 +140,43 @@ const Receipt = () => {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 6px 0;
-          
-          font-size: 13px;
+          padding-top: 8px;
+          font-size: 10px;
+          border-bottom: 0px solid #fff;
         }
 
-        .receipt-row-label { color: #fff8f8ff;  }
-        .receipt-row-value { font-weight: 500; color: #ffffffff; }
+        .receipt-row-label {
+        color: #fff8f8ff;
+        font-size: 12px;
+        }
+        .receipt-row-value {
+        font-size: 12px;
+        color: #ffffffff;
+        }
         
         .receipt-divider {
           margin: 12px 0;
           border: none;
-          border-top: 1px dashed #ddd;
+          border-top: 1px solid #545454ff;
         }
         
-        .receipt-row-total { font-size: 15px; padding: 8px 0; }
+        .receipt-row-total { font-size: 14px; padding: 0px 0px 8px 0px; }
         .receipt-row-total .receipt-row-label,
         .receipt-row-total .receipt-row-value {
-          font-weight: 700;
+          font-weight: var(--font-weight-semibold);
           color: #ffffffff;
         }
 
         .receipt-error-text {
-          font-size: 12px;
-          color: #dc2626;
+          font-size: 10px;
+          color: #9c0000ff;
           display: flex;
           align-items: center;
           gap: 8px;
         }
         
         .receipt-help-link {
-          font-size: 11px;
+          font-size: 10px;
           font-weight: 600;
           color: #dc2626;
           text-decoration: underline;
@@ -168,12 +187,12 @@ const Receipt = () => {
         .receipt-pay-btn {
           background: #FFFFFF;
           color: #000000ff;
-          padding: 16px;
+          padding: 14px;
           border-radius: 14px;
           text-align: center;
           margin-top: 16px;
-          font-size: 15px;
-          font-weight: 600;
+          font-size: 12px;
+          font-weight: var(--font-weight-semibold);
           cursor: pointer;
           border: none;
           width: 100%;
@@ -185,8 +204,7 @@ const Receipt = () => {
         }
         
         .receipt-pay-btn:hover:not(:disabled) {
-          background: #333;
-          transform: translateY(-1px);
+          background: #cacacaff;
         }
         
         .receipt-pay-btn:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -221,14 +239,14 @@ const Receipt = () => {
           {isChargerUnavailable && (
             <div className="receipt-section receipt-red">
               <div className="receipt-error-text">
-                <span>⚠️ Charger is offline. Please try again later.</span>
+                <span>Charger is offline. Please try again later.</span>
                 <a
                   href="https://bentork.com/support"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="receipt-help-link"
                 >
-                  Get Help
+                  Help
                 </a>
               </div>
             </div>
@@ -276,20 +294,18 @@ const Receipt = () => {
           </div>
 
           <div className="receipt-section receipt-green">
-            <div className="receipt-row">
-              <span className="receipt-row-label" style={{ fontWeight: 600 }}>
+            <div className="receipt-row" style={{ padding: '4px 0' }}>
+              <span className="receipt-row-label">
                 Wallet Balance
               </span>
               <span
-                className={`receipt-row-value ${hasInsufficientBalance ? 'wallet-insufficient' : ''}`}
-                style={{ fontWeight: 600 }}
-              >
+                className={`receipt-row-value ${hasInsufficientBalance ? 'wallet-insufficient' : ''}`}>
                 ₹{userWalletBalance.toFixed(2)}
               </span>
             </div>
           </div>
 
-          {error && <div className="receipt-error-msg">⚠️ {error}</div>}
+          {error && <div className="receipt-error-msg">{error}</div>}
 
           <button
             className="receipt-pay-btn"
