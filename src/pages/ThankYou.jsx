@@ -1,148 +1,83 @@
-// import React from "react";
-// import { useNavigate } from "react-router-dom";
-// import { Box, Typography, Button, Container } from "@mui/material";
-// import { Home, Logout } from "@mui/icons-material";
-// import { useAuth } from "../store/AuthContext";
-
-// const ThankYou = () => {
-//     const navigate = useNavigate()
-//     const { logout } = useAuth()
-
-//     return (
-//     <Container maxWidth="sm">
-//       <Box
-//         display="flex"
-//         flexDirection="column"
-//         alignItems="center"
-//         justifyContent="center"
-//         minHeight="100vh"
-//         textAlign="center"
-//       >
-//         <Typography variant="h3" gutterBottom>
-//           Thank You!
-//         </Typography>
-//         <Typography variant="h5" color="text.secondary" paragraph>
-//           Thank you for choosing Bentork Charger for charging
-//         </Typography>
-
-//         <Box display="flex" gap={2} mt={4}>
-//           <Button
-//             variant="contained"
-//             startIcon={<Home />}
-//             onClick={() => navigate('/dashboard')}
-//           >
-//             Go to Dashboard
-//           </Button>
-//           <Button
-//             variant="outlined"
-//             startIcon={<Logout />}
-//             color="error"
-//             onClick={logout}
-//           >
-//             Logout
-//           </Button>
-//         </Box>
-//       </Box>
-//     </Container>
-//   )
-// }
-
-// export default ThankYou
-
-
-
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Typography, Container } from "@mui/material";
-import { useAuth } from "../store/AuthContext";
-import ThumbImg from "../assets/images/thankyou.png";
+import { CircularProgress } from "@mui/material";
+import ChargerImg from "../assets/images/thankyou.png"; // optional image
 
 const ThankYou = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      logout();
       navigate("/config-charging");
-    }, 5000); // 10 seconds
+    }, 5000);
 
     return () => clearTimeout(timer);
-  }, [logout, navigate]);
+  }, [navigate]);
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          textAlign: "center",
-          backgroundColor: "#212121"
-        }}
-      >
-        {/* Image */}
-        <Box
-          sx={{
-            width: 204,
-            height: 204,
+    <div style={styles.page}>
+      <div style={styles.card}>
+        <img
+          src={ChargerImg}
+          alt="Charging Complete"
+          style={styles.image}
+        />
 
-            backgroundColor: "#212121",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mb: 3
-          }}
-        >
-          <img
-            src={ThumbImg}
-            alt="Thank You"
-            style={{
-              width: 100,
-              height: 149,
-            }}
-          />
-        </Box>
-
-        {/* Heading */}
-        <Typography
-          sx={{
-            fontSize: "28px",
-            fontWeight: 500,
-            color: "#ffffffff",
-            mb: 1
-          }}
-        >
-          Thank You
-        </Typography>
-
-        {/* Subtitle */}
-        <Typography
-          sx={{
-            fontSize: "12px",
-            fontWeight: 400,
-            color: "#ffffffff"
-          }}
-        >
+        <h1 style={styles.title}>Thank You</h1>
+        <p style={styles.subtitle}>
           Invoice will be sent on your mail.
-        </Typography>
+        </p>
 
-        {/* Footer text */}
-        <Typography
-          sx={{
-            fontSize: "12px",
-            color: "rgba(255, 255, 255, 0.5)",
-            fontWeight: 400,
-            mt: 4
-          }}
-        >
-          Logging Out...
-        </Typography>
-      </Box>
-    </Container>
+        <div style={styles.logout}>
+          <CircularProgress size={18} sx={{ color: "#aaa" }} />
+          <span>Logging Out...</span>
+        </div>
+      </div>
+    </div>
   );
 };
 
 export default ThankYou;
+
+/* ================== STYLES ================== */
+const styles = {
+  page: {
+    minHeight: "100vh",
+    background: "radial-gradient(circle at top, #1e1e1e, #0f0f0f)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#fff",
+  },
+  card: {
+    width: "90%",
+    maxWidth: 420,
+    textAlign: "center",
+    padding: "40px 24px",
+    borderRadius: 20,
+    background: "#141414",
+    boxShadow: "0 0 0 1px #333",
+  },
+  image: {
+    width: 160,
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 700,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    opacity: 0.75,
+    marginBottom: 32,
+  },
+  logout: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    fontSize: 13,
+    opacity: 0.7,
+  },
+};
