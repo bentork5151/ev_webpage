@@ -14,6 +14,7 @@ import CacheService from '../services/cache.service'
 import NotificationService from '../services/notification.service'
 // import EmailService from '../services/email.service'
 import APP_CONFIG from '../config/app.config'
+import { logError } from '../config/errors.config'
 
 const SessionContext = createContext(null)
 
@@ -220,7 +221,7 @@ export const SessionProvider = ({ children }) => {
           navigate('/config-charging')
         }, 2000)
 
-        return { success: false, error: 'Session failed to start' }
+        return { success: false, error: logError('SESSION_START_FAILED') }
       }
 
       activeSession.status = sessionStatus
@@ -253,8 +254,7 @@ export const SessionProvider = ({ children }) => {
 
       return { success: true }
     } catch (err) {
-      console.error('Session initialization error:', err)
-      setError('Failed to initialize session')
+      setError(logError('SESSION_INIT_ERROR', err))
       setIsInitializing(false)
       setIsLoading(false)
       return { success: false, error: err.message }
@@ -393,8 +393,7 @@ export const SessionProvider = ({ children }) => {
       }
 
     } catch (err) {
-      console.error('Stop session error:', err)
-      setError('Failed to stop charging session')
+      setError(logError('SESSION_STOP_FAILED', err))
       return { success: false, error: err.message }
     } finally {
       setIsStopping(false)

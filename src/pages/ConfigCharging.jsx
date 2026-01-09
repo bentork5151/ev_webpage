@@ -71,9 +71,11 @@ const sidebarConfig = {
 
 
 
+import About from "./About";
+
 const ConfigCharging = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const {
     plans,
     selectedPlan,
@@ -94,10 +96,45 @@ const ConfigCharging = () => {
     }
   }, [navigate])
 
+  // Reset imgError when user picture changes
+  React.useEffect(() => {
+    setImgError(false);
+  }, [user?.picture]);
+
   // 🔐 SAFE last used plan
   const lastUsed = selectedPlan || plans[0];
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [downloadDialogOpen, setDownloadDialogOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
+
+  // Drawer Drag Logic
+  const [drawerStartX, setDrawerStartX] = useState(0);
+  const [drawerDragOffset, setDrawerDragOffset] = useState(0);
+  const [isDrawerDragging, setIsDrawerDragging] = useState(false);
+
+  const onDrawerTouchStart = (e) => {
+    setDrawerStartX(e.touches[0].clientX);
+    setIsDrawerDragging(true);
+  };
+
+  const onDrawerTouchMove = (e) => {
+    if (!isDrawerDragging) return;
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - drawerStartX;
+    // Drawer coming from left (0). Dragging left (negative) closes it.
+    if (diff < 0) {
+      setDrawerDragOffset(diff);
+    }
+  };
+
+  const onDrawerTouchEnd = () => {
+    setIsDrawerDragging(false);
+    if (drawerDragOffset < -75) { // Threshold to close
+      setDrawerOpen(false);
+    }
+    setDrawerDragOffset(0);
+  };
   // 🔹 Quick plans only
   const quickPlans = plans.filter(p => p.type === "QUICK");
 
@@ -207,7 +244,7 @@ const ConfigCharging = () => {
   top: 0;
   left: 0;
   height: 100vh;
-  width: 90%;
+  width: 82%;
   max-width: 347px;
   background: #212121;
   transform: translateX(-100%);
@@ -296,7 +333,7 @@ const ConfigCharging = () => {
   width: 88%;
   margin: 18px 0px;
   padding: 12px 10px;
-  background: #7b2c2c;
+  background: #ff3131ff;
   color: #fff;
   border: none;
   border-radius: 14px;
@@ -524,17 +561,30 @@ color: var(--color-on-primary-container);
 
 
         {/* ===== SIDE DRAWER ===== */}
-        <div className={`side-drawer ${drawerOpen ? "open" : ""}`}>
+        <div
+          className={`side-drawer ${drawerOpen ? "open" : ""}`}
+          style={{
+            transform: isDrawerDragging
+              ? `translateX(${drawerDragOffset}px)`
+              : (drawerOpen ? 'translateX(0)' : 'translateX(-100%)'),
+            transition: isDrawerDragging ? 'none' : 'transform 0.35s ease'
+          }}
+          onTouchStart={onDrawerTouchStart}
+          onTouchMove={onDrawerTouchMove}
+          onTouchEnd={onDrawerTouchEnd}
+        >
           <div className="drawer-box" onClick={(e) => e.stopPropagation()}>
             {/* USER HEADER */}
             <div className="drawer-header">
               <div className="user-info">
                 <div className="avatar">
-                  {user?.picture ? (
+                  {user?.picture && !imgError ? (
                     <img
                       src={user.picture}
                       alt="avatar"
-                      style={{ width: "100%", height: "100%", borderRadius: "50%" }}
+                      referrerPolicy="no-referrer"
+                      onError={() => setImgError(true)}
+                      style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
                     />
                   ) : (
                     sidebarConfig.user.avatar
@@ -571,7 +621,7 @@ color: var(--color-on-primary-container);
                         } else if (item.label === "Privacy Policy") {
                           navigate("/privacy");
                         } else if (item.label === "About Us") {
-                          navigate("/about");
+                          setAboutOpen(true);
                         } else if (item.label === "Download App") {
                           setDownloadDialogOpen(true); // open dialog
                         } else if (item.label === "Help") {
@@ -593,11 +643,14 @@ color: var(--color-on-primary-container);
 
 
             {/* LOGOUT */}
-            <button className="logout-btn" onClick={() => console.log("Log Out")}>
+            <button className="logout-btn" onClick={logout}>
               Log Out
             </button>
           </div>
         </div>
+
+        {/* ABOUT SHEET */}
+        <About isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
 
 
 
@@ -676,7 +729,7 @@ color: var(--color-on-primary-container);
         {/* ===== PLANS ===== */}
         <div className="plans-header">
           <h3>Plans</h3>
-          <span className="last-used-pill">Last used</span>
+          {/* <span className="last-used-pill">Last used</span> */}
         </div>
 
         <div className="plans">
