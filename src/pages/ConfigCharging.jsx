@@ -21,6 +21,9 @@ import DownloadIcon from "@mui/icons-material/Download";
 import DescriptionIcon from "@mui/icons-material/Description";
 import PrivacyTipIcon from "@mui/icons-material/PrivacyTip";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import WarningIcon from "@mui/icons-material/Warning";
+import ErrorIcon from "@mui/icons-material/Error";
 
 
 
@@ -82,6 +85,14 @@ const ConfigCharging = () => {
     updatePowerValue,
     error
   } = useCharging()
+
+  // Terms Check
+  React.useEffect(() => {
+    const accepted = localStorage.getItem('terms_accepted')
+    if (!accepted) {
+      navigate('/terms', { replace: true })
+    }
+  }, [navigate])
 
   // 🔐 SAFE last used plan
   const lastUsed = selectedPlan || plans[0];
@@ -317,14 +328,19 @@ const ConfigCharging = () => {
 }
 
 .charger-name {
-  margin-top: 40%;
-  font-size: 14px;
+width: 98%;
+  margin-top: 0%;
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-weight: var(--font-weight-medium);
 }
 
 .charger-meta {
-  margin-top:2px;
-  font-size: 12px;
+width: 100%;
+  margin-top: 12px;
+  font-size: 10px;
   font-weight: var(--font-weight-regular);
 }
 
@@ -596,20 +612,9 @@ color: var(--color-on-primary-container);
         {/* ===== CHARGER CARD ===== */}
         <div className="charger-card">
           <div className="charger-info">
-            <h1>Configure</h1>
-            <h2>Charger</h2>
-            <br />
             <p className="charger-name">
               {chargerData?.name || "Bentork Charger"}
             </p>
-            <p className="charger-meta">
-              • Type: {chargerData?.connectorType || "CSS2"}<br />
-              • Power: {chargerData?.chargerType || "AC"}
-            </p>
-
-
-
-
             <div
               className={`status-pill ${!chargerData?.status
                 ? 'status-offline'
@@ -620,8 +625,36 @@ color: var(--color-on-primary-container);
                     : 'status-offline'
                 }`}
             >
+              {!chargerData?.status ? (
+                <ErrorIcon style={{ fontSize: 14, marginRight: 4 }} />
+              ) : chargerData.status.toLowerCase() === 'available' ? (
+                <CheckCircleIcon style={{ fontSize: 14, marginRight: 4 }} />
+              ) : chargerData.status.toLowerCase() === 'busy' ? (
+                <WarningIcon style={{ fontSize: 14, marginRight: 4 }} />
+              ) : (
+                <ErrorIcon style={{ fontSize: 14, marginRight: 4 }} />
+              )}
               {chargerData?.status || 'Offline'}
             </div>
+            <br />
+
+            <p className="charger-meta">
+              • Type: {chargerData?.connectorType || "CSS2"}<br />
+              • Power: {chargerData?.chargerType || "AC"}
+
+              <br />
+              <br />
+              <br />
+              <h4>Charger Stats</h4>
+              • Monthly Energy: 120 kWh<br />
+              • Total Sessions: 120<br />
+              • Average Cost: ₹0.12kWh<br />
+            </p>
+
+
+
+
+
 
           </div>
 
