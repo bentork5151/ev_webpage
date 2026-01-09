@@ -11,20 +11,20 @@ const Invoice = () => {
   const navigate = useNavigate();
   const { user, chargerData } = useAuth();
   const emailSentRef = useRef(false)
-  const [sessionData, setSessionData] = useState(null);
+  // const [sessionData, setSessionData] = useState(null);
   //Static data for testing
-  // const [sessionData, setSessionData] = useState({
-  //   sessionId: "MOCK-123",
-  //   stationName: "Test Station",
-  //   chargerType: "DC Fast",
-  //   duration: 45,
-  //   energyUsed: 25.5,
-  //   rate: 15,
-  //   finalCost: 382.50,
-  //   paymentMethod: "Wallet",
-  //   transactionId: "TXN-999",
-  //   endTime: new Date().toISOString()
-  // });
+  const [sessionData, setSessionData] = useState({
+    sessionId: "MOCK-123",
+    stationName: "Test Station",
+    chargerType: "DC Fast",
+    duration: 45,
+    energyUsed: 25.5,
+    rate: 15,
+    finalCost: 382.50,
+    paymentMethod: "Wallet",
+    transactionId: "TXN-999",
+    endTime: new Date().toISOString()
+  });
   const [isLoading, setIsLoading] = useState(true)
   const [emailStatus, setEmailStatus] = useState({
     sending: false,
@@ -228,14 +228,14 @@ const Invoice = () => {
 
 body {
   margin: 0;
-  background: var(--color-matte-black);
+  background: #212121;
   font-family: "Inter", "Roboto", sans-serif;
-  overflow-y: scroll;
 }
 
 /* ================== PAGE ================== */
 .invoice-page {
     min-height: 100vh;
+  background: radial-gradient(circle at top, #1e1e1e, #121212);
   padding-bottom: 120px;
   color: #fff;
 }
@@ -260,22 +260,25 @@ body {
 
 /* SESSION COMPLETED PILL */
 .session-pill {
-  padding: 4px 12px;
+  padding: 2px 8px;
   border-radius: 20px;
+
   background: #303030;
   color: #ffffff;
+
   font-size: 10px;
+  font-weight: 400;
   white-space: nowrap;
 }
 
 
 /* ================== HEADER ================== */
 .invoice-header {
-  background: var(--color-matte-black);
+   background: linear-gradient(180deg, #1c1c1c 0%, #141414 100%);
   padding: 42px 28px;
   text-align: center;
   height: 131px;
-  width: 100%;
+   width: 404px;
   border-bottom-left-radius: 32px;
   border-bottom-right-radius: 32px;
 
@@ -349,36 +352,42 @@ body {
 
 /* ================== CARD ================== */
 .card {
-  margin: 0px 16px;
-  height: 286;
+  margin: 8px;
+   
+      height: 286;
   border-radius: 18px;
-  background: #212121;
-  gap: 10px;
+  background: #212121
+  );
+   gap: 10px;
   backdrop-filter: blur(10px);
   box-shadow: 0 0 0 1px #55555580;
   overflow: hidden;
 }
 
 .card h2 {
-  padding: 18px 16px;
-  font-size: 16px;
+  padding: 10px 8px;
+  
+  font-size: 18px;
   font-weight: 600;
   color: #fff;
 }
   .card-1 {
-  margin: 18px 16px;
-  height: fit-content;
+  margin: 8px;
+   
+      height: 188px;
   border-radius: 18px;
-  background: #212121;
-  gap: 10px;
+  background: #212121
+  );
+   gap: 10px;
   backdrop-filter: blur(10px);
   box-shadow: 0 0 0 1px #55555580;
   overflow: hidden;
 }
 
 .card-1 h2 {
-  padding: 18px 16px;
-  font-size: 16px;
+  padding: 10px 8px;
+  
+  font-size: 18px;
   font-weight: 600;
   color: #fff;
 }
@@ -394,16 +403,17 @@ body {
 }
 
 .row span:first-child {
-  color: #ffffffff;
+  color: #FFFFFF80;
 }
 
 .row span:last-child {
-  font-weight: 100;
+ 
+  font-weight: 400;
 }
 
 /* ================== HIGHLIGHTS ================== */
 .highlight {
-  background: var(--color-card-bg);
+  background: #303030;
   font-weight: 700;
    color: #FFFFFF;
 }
@@ -419,7 +429,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--color-primary-container);
+  color: #2cf947ff;
   font-weight: 600;
 }
 
@@ -486,11 +496,11 @@ body {
 
       {/* HEADER */}
       <div className="invoice-header">
-        <img
-          src={Logo}
-          alt="Bentork Logo"
-          className="header-logo"
-        />
+       <img
+  src={Logo}
+  alt="Bentork Logo"
+  className="header-logo"
+/>
       </div>
 
       {emailStatus.sending && (
@@ -513,10 +523,10 @@ body {
           <button onClick={handleResendEmail}>Retry</button>
         </div>
       )}
-      <div className="invoice-row">
-        <h1>Invoice</h1>
-        <span className="session-pill">Session Completed</span>
-      </div>
+<div className="invoice-row">
+  <h1>Invoice</h1>
+  <span className="session-pill">Session Completed</span>
+</div>
 
       {/* CHARGING DETAILS */}
       <div className="card">
@@ -536,8 +546,8 @@ body {
         <h2>Payment Details</h2>
 
         <Row label="Payment Method" value={paymentMethod} />
-
-
+       
+       
 
         <div className="row">
           <span>Status</span>
