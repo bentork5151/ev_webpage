@@ -1,0 +1,113 @@
+@import url("./global.css");
+
+.error-page-container {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--color-white);
+    background: radial-gradient(circle at top, #1f1f1f, #0e0e0e);
+    position: relative;
+    overflow: hidden;
+}
+
+.error-content {
+    z-index: 2;
+    padding: 20px;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeIn var(--transition-medium);
+}
+
+.error-icon-wrapper {
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.error-icon-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    background: var(--color-primary-container);
+    filter: blur(60px);
+    opacity: 0.2;
+    border-radius: 50%;
+    z-index: -1;
+}
+
+.error-title {
+    font-size: 18px;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-white);
+    margin: 0 0 16px 0;
+    line-height: 1.1;
+}
+
+.error-message {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 40px 0;
+    font-weight: var(--font-weight-regular);
+    line-height: 1.6;
+    max-width: 400px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 16px;
+}
+
+.back-home-btn {
+    padding: 12px 18px;
+    border-radius: var(--radius-large);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--color-white);
+    font-weight: var(--font-weight-medium);
+    font-size: 12px;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    transition: var(--transition-smooth);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.back-home-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.back-home-btn.primary {
+    background: var(--color-primary-container);
+    color: var(--color-on-primary-container);
+    border-color: var(--color-primary-container);
+}
+
+.back-home-btn.primary:hover {
+    background: #32c98a;
+    /* Slightly darker/different shade */
+    box-shadow: 0 4px 12px rgba(57, 226, 155, 0.3);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

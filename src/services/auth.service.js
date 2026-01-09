@@ -30,7 +30,7 @@ class AuthService {
             email: userDetails.email,
             name: userDetails.name || email,
             mobile: userDetails.mobile,
-            picture: userDetails.picture || userDetails.avatar || userDetails.profile_picture || userDetails.profileImage || tokenData.picture || null,
+            picture: userDetails.imageUrl || userDetails.picture || userDetails.avatar || userDetails.profile_picture || userDetails.profileImage || tokenData.picture || null,
             walletBalance: Number(userDetails.walletBalance ?? 0)
           }
         }
@@ -74,7 +74,7 @@ class AuthService {
         email: userDetails.email,
         name: userDetails.name || email,
         mobile: userDetails.mobile,
-        picture: userDetails.picture || userDetails.avatar || userDetails.profile_picture || userDetails.profileImage || tokenData.picture || null,
+        picture: userDetails.imageUrl || userDetails.picture || userDetails.avatar || userDetails.profile_picture || userDetails.profileImage || tokenData.picture || null,
         walletBalance: Number(userDetails.walletBalance ?? 0)
       }
 
@@ -109,7 +109,7 @@ class AuthService {
         email: userDetails.email,
         name: userDetails.name || email,
         mobile: userDetails.mobile,
-        picture: userDetails.picture || userDetails.avatar || userDetails.profile_picture || userDetails.profileImage || null,
+        picture: userDetails.imageUrl || userDetails.picture || userDetails.avatar || userDetails.profile_picture || userDetails.profileImage || null,
         walletBalance: Number(userDetails.walletBalance ?? 0)
       }
 

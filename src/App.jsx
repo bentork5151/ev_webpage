@@ -15,40 +15,53 @@ import ThankYou from './pages/ThankYou'
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy.jsx";
 import About from "./pages/about.jsx";
+import AnimatedLayout from './wrapper/AnimatedLayout';
+
+import ErrorPage from './pages/ErrorPage'
 
 EmailService.init()
 
 const router = createBrowserRouter([
 
-  { path: '/', element: <SplashScreen /> },
-  { path: '/splash/:ocppId', element: <SplashScreen /> },
-  { path: '/login', element: <Login /> },
-  { path: '/login/:ocppId', element: <Login /> },
-  { path: '/terms', element: <Terms /> },
-  { path: '/privacy', element: <Privacy /> },
-  { path: '/about', element: <About /> },
   {
-    element: <AuthGuard />,
+    element: <AnimatedLayout />,
     children: [
-      { path: '/dashboard', element: <Dashboard /> },
-
+      { path: '/', element: <SplashScreen /> },
+      { path: '/splash/:ocppId', element: <SplashScreen /> },
+      { path: '/login', element: <Login /> },
+      { path: '/login/:ocppId', element: <Login /> },
+      { path: '/terms', element: <Terms /> },
+      { path: '/privacy', element: <Privacy /> },
+      { path: '/about', element: <About /> },
       {
-        path: '/config-charging', element: <ChargingFlow />,
+        element: <AuthGuard />,
+        errorElement: <ErrorPage />,
         children: [
+          { path: '/dashboard', element: <Dashboard /> },
+
           {
-            path: 'receipt',
-            lazy: async () => {
-              const { default: Receipt } = await import('./pages/Receipt')
-              return { Component: Receipt }
-            }
-          }
+            path: '/config-charging', element: <ChargingFlow />,
+            children: [
+              {
+                path: 'receipt',
+                lazy: async () => {
+                  const { default: Receipt } = await import('./pages/Receipt')
+                  return { Component: Receipt }
+                }
+              }
+            ]
+          },
+
+          { path: '/charging-session', element: <SessionFlow /> },
+          { path: '/invoice', element: <Invoice /> },
+          { path: '/thank-you', element: <ThankYou /> },
+
         ]
       },
-
-      { path: '/charging-session', element: <SessionFlow /> },
-      { path: '/invoice', element: <Invoice /> },
-      { path: '/thank-you', element: <ThankYou /> },
-
+      {
+        path: '*',
+        element: <ErrorPage />
+      }
     ]
   }
 ], {
@@ -67,7 +80,3 @@ function App() {
 }
 
 export default App
-
-
-
-

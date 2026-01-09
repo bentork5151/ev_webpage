@@ -76,7 +76,7 @@ const Login = () => {
         window.history.replaceState({}, document.title, window.location.pathname)
 
         if (ocppIdFromUrl) {
-          navigate(`/config-charging/${ocppIdFromUrl}`)
+          navigate(`/config-charging?ocppid=${ocppIdFromUrl}`)
         } else {
           navigate('/config-charging')
         }

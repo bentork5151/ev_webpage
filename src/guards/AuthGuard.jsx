@@ -5,7 +5,7 @@ import { CircularProgress, Box } from '@mui/material'
 
 const AuthGuard = () => {
   const { isAuthenticated, loading } = useAuth()
-  
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
@@ -13,7 +13,7 @@ const AuthGuard = () => {
       </Box>
     )
   }
-  
+
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />
 }
 
