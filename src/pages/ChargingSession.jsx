@@ -15,7 +15,6 @@ import {
 import { Bolt } from "@mui/icons-material"
 import { useSession } from "../store/SessionContext"
 import "../assets/styles/global.css"
-
 import notifyIcon from "../assets/images/notify.svg"
 import Flag from "../assets/images/Flag.svg"
 import BentorkLogo from "../assets/images/logo-1.png"
@@ -160,20 +159,7 @@ const ChargingSession = () => {
             </div>
           </div>
 
-          {error && (
-            <Alert
-              severity="error"
-              sx={{ mx: 2, mb: 2 }}
-              onClose={() => setError('')}
-            >
-              {error}
-            </Alert>
-          )}
-          {isCompleted && (
-            <Alert severity="success" sx={{ mx: 2, mb: 2 }}>
-              Session Complete! Redirecting to invoice...
-            </Alert>
-          )}
+
 
           {/* STATS */}
           <div className="stats">
@@ -214,6 +200,24 @@ const ChargingSession = () => {
             />
           </div>
 
+        </div>
+
+        {/* ALERTS OVERLAY */}
+        <div className="alert-overlay">
+          {error && (
+            <Alert
+              severity="error"
+              onClose={() => setError('')}
+              className="alert-item"
+            >
+              {error}
+            </Alert>
+          )}
+          {isCompleted && (
+            <Alert severity="success" className="alert-item">
+              Session Complete! Redirecting to invoice...
+            </Alert>
+          )}
         </div>
 
         {/* FIXED FOOTER */}
@@ -345,7 +349,7 @@ const ChargingSession = () => {
   width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly; /* Distribute space */
+  justify-content: space-between; /* Distribute space */
 }
 
 .footer-fixed {
@@ -363,13 +367,16 @@ const ChargingSession = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-top: 10px;
+  padding-top: 0px;
   flex-shrink: 0;
+  position: relative;
+  z-index: 5; /* Ensure it stays above other elements */
 }
 .logo {
   height: auto;
   object-fit: contain;
-  width: clamp(100px, 35vw, 180px); /* Responsive width */
+  width: clamp(160px, 45vw, 260px); /* Increased size */
+  max-width: 80%;
   margin-top: 10px;
 }
 
@@ -382,6 +389,7 @@ const ChargingSession = () => {
   align-items: center;
   width: 100%;
   flex-shrink: 0;
+  margin-top: 72px;
 }
 
 .circle-bg { position: absolute; color: #2e2e2e !important; z-index: 1; }
@@ -407,7 +415,7 @@ const ChargingSession = () => {
   justify-content: space-between;
   margin: 10px 0;
   gap: 16px; 
-  padding: 10px 24px;
+  padding: 42px 24px;
 }
 
 .stat-box { display: flex; align-items: center; gap: 8px; }
@@ -416,19 +424,38 @@ const ChargingSession = () => {
 
 /* RATE & TIME */
 .time-center .time-text{ color: #9e9e9e; font-size: 12px; }
-.time-center .time-1{ color: var(--color-white); margin: 0; font-size: 24px; font-weight: 700;}
+.time-center .time-1{ color: var(--color-white); margin: 0; font-size: 18px; font-weight: 700;}
 
 /* NOTIFY */
 .notify {
-  width: 90%;
-  margin: 0 auto 10px;
-  padding: 10px 12px;
+  width: 100%;
+  margin: 0;
+  padding: 12px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-radius: 18px;
   background-color:#303030;
   box-sizing: border-box;
+}
+
+.alert-overlay {
+  position: absolute;
+  bottom: 110px; /* Above footer */
+  left: 0;
+  right: 0;
+  z-index: 20;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none; /* Let clicks pass through if empty */
+}
+
+.alert-item {
+font-size: 12px;
+  pointer-events: auto; /* Re-enable pointer events for alerts */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
 .notify-left { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: var(--font-weight-regular); color: #ffffff; }
@@ -452,7 +479,7 @@ const ChargingSession = () => {
   border-radius: 12px !important;
   background: #303030 !important;
   min-width: 48px;
-  width: 48px; 
+  width: 48px;
 }
 
 .report { height: 44px; background: #252726ff !important; color: #ffffffff !important; }
@@ -462,8 +489,8 @@ const ChargingSession = () => {
   border-radius: 12px !important;
   height: 48px;
   flex: 1;
-  font-size: 14px !important;
-  font-weight: 700;
+  font-size: 12px !important;
+  font-weight: var(--font-weight-medium);
   color: #ffffffff !important;
   background:#FF4213 !important;
 }
@@ -481,16 +508,16 @@ const ChargingSession = () => {
 .stop-btn-dark { padding: 12px; border-radius: 12px; background: #C62828; border: none; color: white; font-size: 14px; font-weight: 600; cursor: pointer; flex: 1;}
 
 /* Responsive Media Queries for Small Screens */
-@media (max-width: 380px) {
-  .logo { width: 120px; margin-top: 5px; }
+@media (max-width: 380px) { 
+  .logo { width: 180px; margin-top: 5px; }
   .bolt-icon { font-size: 28px; }
   .circle-text h1 { font-size: 32px; }
   .stat-box h3 { font-size: 16px; }
-  .time-center .time-1 { font-size: 20px; }
+  .time-center .time-1 { font-size: 18px; }
 }
 
 @media (max-height: 700px) {
-  .logo { margin-top: 5px; width: 210px;}
+  .logo { margin-top: 5px; width: clamp(130px, 30vw, 180px);}
   .stats { margin: 5px 0; padding: 5px 16px; }
   .notify { margin: 5px auto; padding: 6px 10px; }
   .circle-container { min-height: 180px; margin: 5px auto;}

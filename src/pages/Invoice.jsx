@@ -130,7 +130,7 @@ const Invoice = () => {
   //     })
   //   }
   // }
-  const sendInvoice = async () => {
+  const sendInvoiceEmail = async (data) => {
     if (!EmailService.isAvailable()) {
       console.log("EmailJS not configured, skipping email");
       setEmailStatus({
@@ -151,7 +151,7 @@ const Invoice = () => {
       return;
     }
 
-    if (!sessionData) {
+    if (!data) {
       setEmailStatus({
         sending: false,
         sent: false,
@@ -169,42 +169,44 @@ const Invoice = () => {
         userName: user.name || "Customer",
 
         // SESSION
-        sessionId: sessionData.sessionId,
+        sessionId: data.sessionId,
         receiptId:
-          sessionData.receiptId ||
-          sessionData.transactionId ||
-          sessionData.sessionId,
+          data.receiptId ||
+          data.transactionId ||
+          data.sessionId,
 
-        completedAt: sessionData.endTime || new Date().toISOString(),
+        completedAt: data.endTime || new Date().toISOString(),
 
         // CHARGING
         stationName:
-          sessionData.stationName ||
+          data.stationName ||
           chargerData?.stationName ||
           chargerData?.name ||
+          chargerData?.chargerName ||
+          chargerData?.charger_name ||
           "Bentork Station",
 
         chargerType:
-          sessionData.chargerType ||
+          data.chargerType ||
           chargerData?.chargerType ||
           "N/A",
 
-        duration: sessionData.duration || 0,
-        energyUsed: sessionData.energyUsed || 0,
-        rate: sessionData.rate || sessionData.plan?.rate || 0,
+        duration: data.duration || 0,
+        energyUsed: data.energyUsed || 0,
+        rate: data.rate || data.plan?.rate || 0,
 
         // PAYMENT
-        paymentMethod: sessionData.paymentMethod || "Wallet",
+        paymentMethod: data.paymentMethod || "Wallet",
         transactionId:
-          sessionData.transactionId ||
-          sessionData.receiptId ||
-          sessionData.sessionId,
+          data.transactionId ||
+          data.receiptId ||
+          data.sessionId,
 
         totalCost:
-          sessionData.finalCost ||
-          sessionData.amountDebited ||
-          (sessionData.energyUsed || 0) *
-          (sessionData.rate || 0),
+          data.finalCost ||
+          data.amountDebited ||
+          (data.energyUsed || 0) *
+          (data.rate || 0),
       };
 
       console.log("Invoice data:", invoiceData);
@@ -288,7 +290,7 @@ const Invoice = () => {
 
 
 
-  const stationName = sessionData.stationName || chargerData?.stationName || chargerData?.name || "N/A"
+  const stationName = sessionData.stationName || chargerData?.stationName || chargerData?.name || chargerData?.chargerName || chargerData?.charger_name || "N/A"
   const chargerType = sessionData.chargerType || chargerData?.chargerType || "N/A"
   const durationMin = sessionData.duration || 0
   const energy = sessionData.energyUsed || 0

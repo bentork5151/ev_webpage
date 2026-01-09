@@ -21,7 +21,7 @@ class NotificationService {
             const permission = await Notification.requestPermission()
             return permission === 'granted'
         } catch (error) {
-            console.log('Failed to request for notification permission: ',error)
+            console.log('Failed to request for notification permission: ', error)
             return false
         }
     }
@@ -37,14 +37,14 @@ class NotificationService {
     }
 
 
-    static async send (title, options = {}) {
+    static async send(title, options = {}) {
         if (!this.isSupported) {
             console.log('Notification is not supported')
             return null
         }
 
         if (Notification.permission !== 'granted') {
-            const granted = this.requestPermission()
+            const granted = await this.requestPermission()
             if (!granted) {
                 console.log('Notification permission request denied')
                 return null
@@ -52,6 +52,23 @@ class NotificationService {
         }
 
         try {
+            // Try Service Worker first (Required for Mobile)
+            if ('serviceWorker' in navigator) {
+                const registration = await navigator.serviceWorker.ready
+                if (registration) {
+                    // Mobile & PWA Support
+                    await registration.showNotification(title, {
+                        icon: '/favicon.ico',
+                        badge: '/favicon.ico',
+                        vibrate: [200, 100, 200],
+                        requireInteraction: false,
+                        ...options
+                    })
+                    return true
+                }
+            }
+
+            // Fallback to Desktop API
             const notification = new Notification(title, {
                 icon: '/favicon.ico',
                 badge: '/favicon.ico',
@@ -67,37 +84,43 @@ class NotificationService {
             return notification
         } catch (error) {
             console.log('Failed to send notification: ', error)
-            return null
+
+            // Last Resort Fallback
+            try {
+                return new Notification(title, options)
+            } catch (e) {
+                return null
+            }
         }
     }
 
 
-    static async sendSessionCompleted (sessionId, userName = 'User') {
-        return this.send (
+    static async sendSessionCompleted(sessionId, userName = 'User') {
+        return this.send(
             '🔋 Charging Complited!',
             {
                 body: `Hello ${userName}, your charging session #${sessionId} is successfully completed.`,
                 tag: `session-completed-${sessionId}`,
                 // icon: '/charging-completed-icon.png',
-                data: {sessionId}
+                data: { sessionId }
             }
         )
     }
 
 
-    static async sendSessionStarted (sessionId) {
-        return this.send (
+    static async sendSessionStarted(sessionId) {
+        return this.send(
             '⚡ Charging Started',
             {
-                body : `Your charging session #${sessionId} is started.`,
+                body: `Your charging session #${sessionId} is started.`,
                 tag: `session-started-${sessionId}`
             }
         )
     }
 
 
-    static async sendLowTimeWarning (remainingMinutes) {
-        return this.send (
+    static async sendLowTimeWarning(remainingMinutes) {
+        return this.send(
             '⏰ Charging Almost Done',
             {
                 body: `Your charging session will be complete in ${remainingMinutes} minute.`,
