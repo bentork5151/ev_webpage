@@ -18,11 +18,11 @@ const API_CONFIG = {
 
     GET_ALL_USER_TRANSACTIONS: (id) => `/api/wallet/history/${id}`,
     GET_USER_TRANSACTION: (id) => `/api/wallet/history/${id}`,
-    
+
 
     GET_CHARGER: (ocppId) => `/api/user/charger/ocpp/${ocppId}`,
     // encodeURIComponent(ocppId)
-    
+
 
     GET_ALL_PLANS: '/api/user-plan-selection/available',
     GET_PLAN_BY_ID: (id) => `/api/user-plan-selection/${id}`,
@@ -33,14 +33,14 @@ const API_CONFIG = {
     GET_ENERGY_USED: (sessionId) => `/api/sessions/${sessionId}/energy`,
     GET_SESSION_STATUS: (sessionId) => `/api/sessions/${sessionId}/status`,
     // GET_KWH_USED: '/session/kwh/used',
-    
+
 
     CREATE_ORDER: '/api/razorpay/create-order',
     VERIFY_PAYMENT: '/api/razorpay/verify-payment',
   },
-  
+
   TIMEOUT: 30000,
-  
+
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000,
 }

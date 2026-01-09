@@ -6,6 +6,7 @@ import API_CONFIG from "../config/api.config";
 import CacheService from "../services/cache.service";
 import SessionService from "../services/session.service";
 import NotificationService from "../services/notification.service";
+import { logError } from "../config/errors.config";
 
 const ChargingContext = createContext(null)
 
@@ -160,12 +161,12 @@ export const ChargingProvider = ({ children }) => {
     const processPayment = useCallback(async () => {
 
         if (!selectedPlan) {
-            setError('Please select a plan')
+            setError(logError('PLAN_NOT_SELECTED'))
             return { success: false }
         }
 
         if (hasInsufficientBalance) {
-            setError('Insufficient wallet balance')
+            setError(logError('WALLET_INSUFFICIENT'))
             return { success: false }
         }
 
@@ -187,11 +188,13 @@ export const ChargingProvider = ({ children }) => {
                 API_CONFIG.ENDPOINTS.GET_CHARGER(chargerData?.ocppId))
             console.info('Charger Data:', chargerResponse)
             updateChargerData(chargerResponse)
-            console.log('ischargerunavailable: ', isChargerUnavailable)
-            console.log('charger data 2: ', chargerData)
 
-            if (isChargerUnavailable) {
-                setError('Charger is unavailable')
+            // Check status directly from fresh response
+            const currentStatus = chargerResponse?.status?.toLowerCase() || 'offline'
+            const isUnavailable = currentStatus === 'offline' || currentStatus === 'busy'
+
+            if (isUnavailable) {
+                setError(logError('CHARGER_UNAVAILABLE'))
                 return { success: false }
             }
 
@@ -204,12 +207,12 @@ export const ChargingProvider = ({ children }) => {
             console.log('result: ', result)
 
             if (result?.session?.status === 'FAILED') {
-                setError('Charging failed to start')
+                setError(logError('SESSION_START_FAILED'))
                 return { success: false }
             }
 
             if (!result.success) {
-                setError(result.error || 'Failed to start charging session')
+                setError(result.error || logError('SESSION_START_FAILED'))
                 CacheService.clearPlanData()
                 CacheService.clearSessionData()
                 return { success: false, error: result.error }
@@ -217,7 +220,7 @@ export const ChargingProvider = ({ children }) => {
 
             const sessionStatus = String(result.session?.status || '').toUpperCase()
             if (sessionStatus === 'FAILED') {
-                setError('Charging session failed to start. Please try again.')
+                setError(logError('SESSION_START_FAILED'))
                 CacheService.clearPlanData()
                 CacheService.clearSessionData()
                 return { success: false, error: 'Session failed to start' }
@@ -229,8 +232,7 @@ export const ChargingProvider = ({ children }) => {
             navigate('/charging-session', { replace: true })
             return { success: true }
         } catch (error) {
-            console.error('Payment process error: ', error)
-            const errMsg = error?.message || 'Something went wrong, please try again later'
+            const errMsg = logError('GENERIC_ERROR', error)
             setError(errMsg)
             return { success: false, message: errMsg }
         } finally {

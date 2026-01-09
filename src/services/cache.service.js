@@ -5,12 +5,12 @@ import APP_CONFIG from '../config/app.config'
 class CacheService {
 
   static ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY || 'ev-charging-secret-key-default-2024'
-  
+
 
   static encrypt(data) {
     return CryptoJS.AES.encrypt(JSON.stringify(data), this.ENCRYPTION_KEY).toString()
   }
-  
+
 
   static decrypt(encryptedData) {
     try {
@@ -21,7 +21,7 @@ class CacheService {
       return null
     }
   }
-  
+
 
   static saveUserCredentials(userData, token) {
     const dataToSave = {
@@ -30,24 +30,24 @@ class CacheService {
       timestamp: dayjs().toISOString(),
       expiry: dayjs().add(APP_CONFIG.CACHE.EXPIRY_DAYS, 'day').toISOString()
     }
-    
+
 
     const encryptedData = this.encrypt(dataToSave)
     localStorage.setItem(APP_CONFIG.CACHE.USER_KEY, encryptedData)
-    
+
 
     sessionStorage.setItem(APP_CONFIG.CACHE.TOKEN_KEY, token)
   }
-  
+
 
   static getCachedUser() {
     try {
       const encryptedData = localStorage.getItem(APP_CONFIG.CACHE.USER_KEY)
       if (!encryptedData) return null
-      
+
       const decryptedData = this.decrypt(encryptedData)
       if (!decryptedData) return null
-      
+
       const expiryDate = dayjs(decryptedData.expiry)
       if (dayjs().isAfter(expiryDate)) {
         this.clearCache()
@@ -60,31 +60,40 @@ class CacheService {
       return null
     }
   }
-  
+
 
   static getToken() {
-    return sessionStorage.getItem(APP_CONFIG.CACHE.TOKEN_KEY)
+    let token = sessionStorage.getItem(APP_CONFIG.CACHE.TOKEN_KEY)
+
+    if (!token) {
+      const cachedData = this.getCachedUser()
+      if (cachedData?.token) {
+        token = cachedData.token
+        sessionStorage.setItem(APP_CONFIG.CACHE.TOKEN_KEY, token)
+      }
+    }
+    return token
   }
-  
+
 
   static clearCache() {
     localStorage.removeItem(APP_CONFIG.CACHE.USER_KEY)
     localStorage.removeItem(APP_CONFIG.CACHE.CHARGER_KEY)
     sessionStorage.clear()
   }
-  
+
 
   static saveChargerData(chargerData) {
     sessionStorage.setItem(APP_CONFIG.CACHE.CHARGER_KEY, JSON.stringify(chargerData))
   }
 
-  
+
   static getChargerData() {
     const data = sessionStorage.getItem(APP_CONFIG.CACHE.CHARGER_KEY)
     return data ? JSON.parse(data) : null
   }
-  
-  static saveTransactionHistory(transactionData){
+
+  static saveTransactionHistory(transactionData) {
     sessionStorage.setItem(APP_CONFIG.CACHE.TRANSACTION_KEY, JSON.stringify(transactionData))
   }
 
@@ -102,7 +111,7 @@ class CacheService {
     sessionStorage.setItem(APP_CONFIG.CACHE.PLAN_KEY, JSON.stringify(planData))
   }
 
-  
+
   static getPlanData() {
     const data = sessionStorage.getItem(APP_CONFIG.CACHE.PLAN_KEY)
     return data ? JSON.parse(data) : null
@@ -112,7 +121,7 @@ class CacheService {
     sessionStorage.removeItem(APP_CONFIG.CACHE.PLAN_KEY)
   }
 
-  static saveSessionData(sessionData){
+  static saveSessionData(sessionData) {
     if (!sessionData) {
       return null
     }
@@ -129,7 +138,7 @@ class CacheService {
   static getSessionData() {
     try {
       let data = sessionStorage.getItem(APP_CONFIG.CACHE.SESSION_KEY)
-      
+
       if (!data) {
         data = localStorage.getItem(APP_CONFIG.CACHE.SESSION_KEY)
 
@@ -209,7 +218,7 @@ class CacheService {
 
       const parse = JSON.parse(data)
 
-      const elapsedSincesSave = Math.floor((Date.now() - parse.savesAt)/1000)
+      const elapsedSincesSave = Math.floor((Date.now() - parse.savesAt) / 1000)
 
       return {
         ...parse,

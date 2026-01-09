@@ -16,26 +16,27 @@ class AuthService {
       if (response.token) {
         const tokenData = parseJwtToken(response.token)
         console.log('Parsed token data:', tokenData)
-        
+
         let userDetails = await ApiService.get(
           API_CONFIG.ENDPOINTS.GET_USER_BY_EMAIL(email),
           null,
-          { headers: { Authorization: `Bearer ${response.token}` }}
+          { headers: { Authorization: `Bearer ${response.token}` } }
         )
         console.log(userDetails)
         let user = null
-        if(userDetails){
+        if (userDetails) {
           user = {
             id: userDetails.id,
             email: userDetails.email,
             name: userDetails.name || email,
             mobile: userDetails.mobile,
+            picture: userDetails.picture || userDetails.avatar || userDetails.profile_picture || userDetails.profileImage || tokenData.picture || null,
             walletBalance: Number(userDetails.walletBalance ?? 0)
           }
         }
 
         CacheService.saveUserCredentials(user, response.token)
-        
+
         return {
           success: true,
           user: user,
@@ -53,19 +54,19 @@ class AuthService {
   }
 
 
-  static async googleLogin(tokenString){
-    try{
+  static async googleLogin(tokenString) {
+    try {
       const tokenData = parseJwtToken(tokenString)
       const email = tokenData.sub || tokenData.email
 
-      if(!email){
+      if (!email) {
         throw new Error('Email not found')
       }
 
       const userDetails = await ApiService.get(
         API_CONFIG.ENDPOINTS.GET_USER_BY_EMAIL(email),
         null,
-        { headers : { Authorization : `Bearer ${tokenString}`}}
+        { headers: { Authorization: `Bearer ${tokenString}` } }
       )
 
       const user = {
@@ -73,21 +74,22 @@ class AuthService {
         email: userDetails.email,
         name: userDetails.name || email,
         mobile: userDetails.mobile,
+        picture: userDetails.picture || userDetails.avatar || userDetails.profile_picture || userDetails.profileImage || tokenData.picture || null,
         walletBalance: Number(userDetails.walletBalance ?? 0)
       }
 
       CacheService.saveUserCredentials(user, tokenString)
 
       return {
-        success : true,
-        user : user,
-        token : tokenString
+        success: true,
+        user: user,
+        token: tokenString
       }
-    } catch(error){
+    } catch (error) {
       console.error('Google login error', error)
       return {
-        success : false,
-        error : error.message || 'Google login failed'
+        success: false,
+        error: error.message || 'Google login failed'
       }
     }
   }
@@ -95,11 +97,11 @@ class AuthService {
   static async userByEmail(email) {
     const token = CacheService.getToken()
 
-    if(token) {
+    if (token) {
       const userDetails = await ApiService.get(
         API_CONFIG.ENDPOINTS.GET_USER_BY_EMAIL(email),
         null,
-        { headers : { Authorization : `Bearer ${token}`}}
+        { headers: { Authorization: `Bearer ${token}` } }
       )
 
       const user = {
@@ -107,36 +109,37 @@ class AuthService {
         email: userDetails.email,
         name: userDetails.name || email,
         mobile: userDetails.mobile,
+        picture: userDetails.picture || userDetails.avatar || userDetails.profile_picture || userDetails.profileImage || null,
         walletBalance: Number(userDetails.walletBalance ?? 0)
       }
 
       CacheService.saveUserCredentials(user, token)
 
       return {
-        success : true,
-        user : user,
-        token : token
+        success: true,
+        user: user,
+        token: token
       }
     } else {
       return {
-        success : false,
-        message : "Falied to get user details"
+        success: false,
+        message: "Falied to get user details"
       }
     }
-    
+
   }
 
-  static async loadTransaction(userId, limit = 10){
-    try{
+  static async loadTransaction(userId, limit = 10) {
+    try {
 
       const endpoint = limit === 'all'
-        ?API_CONFIG.ENDPOINTS.GET_ALL_USER_TRANSACTIONS(userId)
-        :API_CONFIG.ENDPOINTS.GET_USER_TRANSACTION(userId)
+        ? API_CONFIG.ENDPOINTS.GET_ALL_USER_TRANSACTIONS(userId)
+        : API_CONFIG.ENDPOINTS.GET_USER_TRANSACTION(userId)
 
       const transactions = await ApiService.get(endpoint, { limit })
       return transactions || []
 
-    } catch(error){
+    } catch (error) {
       console.error('Failed to load transactions:', error)
       return []
     }
@@ -145,12 +148,12 @@ class AuthService {
 
   static async verifyCachedCredentials() {
     const cachedData = CacheService.getCachedUser()
-    
+
     if (!cachedData) {
       console.log('No cached credentials')
       return { success: false, message: 'No cached credentials' }
     }
-    
+
     if (cachedData.token) {
       console.log('Cached credentials')
       console.log(cachedData.token)
@@ -163,26 +166,26 @@ class AuthService {
         }
       }
     }
-    
+
     CacheService.clearCache()
     console.log('Clean cache')
     return { success: false, message: 'Token expired' }
   }
-  
+
 
   static logout() {
     CacheService.clearCache()
     window.location.href = '/login'
   }
-  
+
 
   static getCurrentUser() {
     const cachedData = CacheService.getCachedUser()
     console.log(cachedData)
-    console.log(cachedData.user)
+    console.log(cachedData?.user)
     return cachedData?.user || null
   }
-  
+
 
   static isAuthenticated() {
     return !!CacheService.getToken()

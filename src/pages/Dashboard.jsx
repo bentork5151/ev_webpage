@@ -32,14 +32,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const baseAmount = parseFloat(amount) || 0
-
-    if (baseAmount > 0) {
-      const gst = baseAmount * (APP_CONFIG.TAX.GST_RATE || 0)
-      const total = baseAmount + gst
-      setTotalAmount(total.toFixed(2));
-    } else {
-      setTotalAmount(0);
-    }
+    setTotalAmount(baseAmount.toFixed(2));
   }, [amount]);
 
   const handleRecharge = async () => {
@@ -402,6 +395,33 @@ export default function Dashboard() {
           background: #3a3a3a;
         }
         
+        /* Remove Arrows/Spinners */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        input[type=number] {
+          -moz-appearance: textfield;
+        }
+        
+        .clear-btn {
+          position: absolute;
+          right: 12px;
+          top: 12px;
+          background: transparent;
+          border: none;
+          color: #888;
+          cursor: pointer;
+          font-size: 16px;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .clear-btn:hover { color: #fff; }
+        
       `}</style>
 
       {/* Header */}
@@ -458,23 +478,40 @@ export default function Dashboard() {
             {/* Amount Input */}
             <div className="invoice-row">
               <label>Amount</label>
-              <input
-                type="number"
-                placeholder="Select amount"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                disabled={loading}
-              />
-              <div className="chip">+100</div>
-              <div className="chip">+200</div>
-              <div className="chip">+500</div>
+              <div className="input-wrapper" style={{ position: 'relative', marginBottom: '20px' }}>
+                <span style={{ position: 'absolute', left: '14px', top: '12px', color: '#fff', fontSize: '16px' }}>₹</span>
+                <input
+                  type="number"
+                  placeholder="Select amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  disabled={loading}
+                  style={{ paddingLeft: '30px', marginBottom: 0 }}
+                />
+                {amount && (
+                  <button
+                    className="clear-btn"
+                    onClick={() => !loading && setAmount('')}
+                    disabled={loading}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              <div className="chip" onClick={() => !loading && setAmount((prev) => (parseFloat(prev) || 0) + 100)}>+₹100</div>
+              <div className="chip" onClick={() => !loading && setAmount((prev) => (parseFloat(prev) || 0) + 200)}>+₹200</div>
+              <div className="chip" onClick={() => !loading && setAmount((prev) => (parseFloat(prev) || 0) + 500)}>+₹500</div>
             </div>
 
             {/* GST & Total */}
             <div className="invoice-summary">
               <div className="row">
-                <span>GST (18%)</span>
-                <span>₹{((parseFloat(amount) || 0) * 0.18).toFixed(2)}</span>
+                <span>Base Amount</span>
+                <span>₹{((parseFloat(amount) || 0) - ((parseFloat(amount) || 0) * (APP_CONFIG.TAX.GST_RATE || 0.18))).toFixed(2)}</span>
+              </div>
+              <div className="row">
+                <span>GST ({(APP_CONFIG.TAX.GST_RATE || 0.18) * 100}%)</span>
+                <span>₹{((parseFloat(amount) || 0) * (APP_CONFIG.TAX.GST_RATE || 0.18)).toFixed(2)}</span>
               </div>
               <div className="row total">
                 <span>Total Payable</span>

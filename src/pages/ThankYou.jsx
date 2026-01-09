@@ -9,7 +9,7 @@ const ThankYou = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       navigate("/config-charging");
-    }, 5000);
+    }, 4000);
 
     return () => clearTimeout(timer);
   }, [navigate]);
@@ -30,7 +30,7 @@ const ThankYou = () => {
 
         <div style={styles.logout}>
           <CircularProgress size={18} sx={{ color: "#aaa" }} />
-          <span>Logging Out...</span>
+          <span>Redirecting...</span>
         </div>
       </div>
     </div>

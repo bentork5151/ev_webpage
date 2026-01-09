@@ -1,7 +1,7 @@
 const APP_CONFIG = {
   APP_NAME: 'Bentork',
   VERSION: '1.0.0',
-  
+
 
   CACHE: {
     USER_KEY: 'ev_user_data',
@@ -12,7 +12,7 @@ const APP_CONFIG = {
     SESSION_KEY: 'ev_session_data',
     EXPIRY_DAYS: 7,
   },
-  
+
 
   SESSION: {
     SESSION_TIMER: 'ev_session_time',
@@ -25,13 +25,12 @@ const APP_CONFIG = {
     MAX_RETRY_ATTEMPTS: 3,
     MESSAGE_ROTATE_INTERVAL: 2000,
   },
-  
+
 
   TAX: {
     GST_RATE: 0.18, // 18%
-    SXT_RATE: 0.18, // 18%
   },
-  
+
 
   UI: {
     SPLASH_DURATION: 3000,
