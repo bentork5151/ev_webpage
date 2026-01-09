@@ -12,24 +12,34 @@ export const useAuth = () => {
   return context
 }
 
-export const AuthProvider = ({ children }) => { 
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [chargerData, setChargerData] = useState(null)
   const [transactionData, setTransactionData] = useState([])
-  
+
 
   useEffect(() => {
     initializeAuth()
   }, [])
-  
+
   const initializeAuth = async () => {
     try {
       const cachedData = CacheService.getCachedUser()
       if (cachedData) {
         setUser(cachedData.user)
+
+        // Refresh User Data (Silent Update)
+        if (cachedData.user?.email) {
+          AuthService.userByEmail(cachedData.user.email).then((res) => {
+            if (res.success && res.user) {
+              // Only update if data changed or expanded
+              setUser((prev) => ({ ...prev, ...res.user }))
+            }
+          }).catch(err => console.error("Silent user refresh failed", err));
+        }
       }
-      
+
 
       const charger = CacheService.getChargerData()
       if (charger) {
@@ -38,7 +48,7 @@ export const AuthProvider = ({ children }) => {
 
       const transactions = CacheService.getTransactionHistory()
       if (transactions) {
-          setTransactionData(transactions)
+        setTransactionData(transactions)
       }
 
     } catch (error) {
@@ -47,12 +57,12 @@ export const AuthProvider = ({ children }) => {
       setLoading(false)
     }
   }
-  
+
   const login = async (emailOrCredential, password = null) => {
-    try{
+    try {
       let result;
 
-      if(password) {
+      if (password) {
         result = await AuthService.login(emailOrCredential, password)
       } else {
         result = await AuthService.googleLogin(emailOrCredential)
@@ -65,19 +75,19 @@ export const AuthProvider = ({ children }) => {
 
       return result || { success: false, error: 'Login failed' }
     } catch (error) {
-        console.error('Login error in context:', error)
-        return {
+      console.error('Login error in context:', error)
+      return {
         success: false,
         error: error.message || 'Login failed'
       }
-      }
+    }
   }
 
   const userByEmail = async (email) => {
     try {
       const updatedUser = await AuthService.userByEmail(email)
 
-      if(updatedUser.success) {
+      if (updatedUser.success) {
         updateUserData(updatedUser.user)
         return {
           success: true,
@@ -101,7 +111,7 @@ export const AuthProvider = ({ children }) => {
 
   const updatedWalletBalance = async (newBalance) => {
     setUser(prevUser => {
-      const updateUser = { ...prevUser, walletBalance: newBalance}
+      const updateUser = { ...prevUser, walletBalance: newBalance }
 
       const token = CacheService.getToken()
       if (token) {
@@ -111,14 +121,14 @@ export const AuthProvider = ({ children }) => {
       return updateUser
     })
   }
-  
+
   const logout = () => {
     setUser(null)
     setChargerData(null)
     setTransactionData([])
     AuthService.logout()
   }
-  
+
   const updateChargerData = (data) => {
     setChargerData(data)
     CacheService.saveChargerData(data)
@@ -132,13 +142,13 @@ export const AuthProvider = ({ children }) => {
   const updateUserData = (data) => {
     setUser(data);
     const token = CacheService.getToken()
-    if(token){
+    if (token) {
       CacheService.saveUserCredentials(data, token)
     }
   }
 
 
-  
+
   const value = {
     user,
     chargerData,
@@ -153,6 +163,6 @@ export const AuthProvider = ({ children }) => {
     userByEmail,
     updatedWalletBalance
   }
-  
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

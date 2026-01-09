@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
 import { useCharging } from '../store/ChargingContext'
@@ -25,9 +25,8 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningIcon from "@mui/icons-material/Warning";
 import ErrorIcon from "@mui/icons-material/Error";
 
-
-
-
+import About from "./About";
+import AuthService from "../services/auth.service"; // Import service
 
 const sidebarConfig = {
   user: {
@@ -62,17 +61,6 @@ const sidebarConfig = {
 };
 
 
-
-
-
-
-
-
-
-
-
-import About from "./About";
-
 const ConfigCharging = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -88,6 +76,8 @@ const ConfigCharging = () => {
     error
   } = useCharging()
 
+
+
   // Terms Check
   React.useEffect(() => {
     const accepted = localStorage.getItem('terms_accepted')
@@ -100,6 +90,8 @@ const ConfigCharging = () => {
   React.useEffect(() => {
     setImgError(false);
   }, [user?.picture]);
+
+
 
   // 🔐 SAFE last used plan
   const lastUsed = selectedPlan || plans[0];
@@ -295,8 +287,12 @@ const ConfigCharging = () => {
 }
 
 .user-info p {
-  font-size: 12px;
-  opacity: 0.6;
+width: 100%;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+font-size: 12px;
+opacity: 0.6;
 }
 
 .close-icon {
@@ -666,7 +662,7 @@ color: var(--color-on-primary-container);
         <div className="charger-card">
           <div className="charger-info">
             <p className="charger-name">
-              {chargerData?.name || "Bentork Charger"}
+              {chargerData?.name || chargerData?.chargerName || chargerData?.charger_name || chargerData?.stationName || "Bentork Charger"}
             </p>
             <div
               className={`status-pill ${!chargerData?.status
@@ -699,9 +695,9 @@ color: var(--color-on-primary-container);
               <br />
               <br />
               <h4>Charger Stats</h4>
-              • Monthly Energy: 120 kWh<br />
-              • Total Sessions: 120<br />
-              • Average Cost: ₹0.12kWh<br />
+              • Energy Used: 450 kWh<br />
+              • Total Sessions: 28<br />
+              • Avg Cost: ₹18.00/kWh<br />
             </p>
 
 

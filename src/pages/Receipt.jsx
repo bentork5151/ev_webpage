@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { CircularProgress } from '@mui/material'
 import { useCharging } from '../store/ChargingContext'
 import "../assets/styles/global.css"
@@ -22,6 +22,24 @@ const Receipt = () => {
     return null
   }
 
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    // Trigger enter animation
+    requestAnimationFrame(() => {
+      setIsVisible(true)
+    })
+  }, [])
+
+  const handleClose = () => {
+    if (loading) return
+    setIsVisible(false)
+    // Wait for animation to finish before unmounting/navigating
+    setTimeout(() => {
+      closeReceipt()
+    }, 300)
+  }
+
   const handlePayment = async () => {
     await processPayment()
   }
@@ -38,12 +56,12 @@ const Receipt = () => {
           align-items: center;
           z-index: 1001;
           backdrop-filter: blur(2px);
-          animation: fadeIn 0.2s ease;
+          transition: opacity 0.3s ease;
+          opacity: 0;
         }
 
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
+        .receipt-backdrop.visible {
+          opacity: 1;
         }
         
         .receipt-dialog {
@@ -52,22 +70,24 @@ const Receipt = () => {
           max-width: 400px;
           border-radius: 20px;
           padding: 18px 12px;
-          animation: slideUp 0.3s ease;
+          transition: transform 0.3s ease, opacity 0.3s ease;
+          transform: translateY(30px);
+          opacity: 0;
           max-height: 85vh;
           overflow-y: auto;
           position: relative;
           box-shadow: 0 10px 40px rgba(0, 0, 0, 1);
         }
 
+        .receipt-dialog.visible {
+          transform: translateY(0);
+          opacity: 1;
+        }
+
         .receipt-dialog::-webkit-scrollbar { width: 4px; }
         .receipt-dialog::-webkit-scrollbar-thumb {
           background: #ccc;
           border-radius: 4px;
-        }
-        
-        @keyframes slideUp {
-          from { transform: translateY(30px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
         }
         
         .receipt-header {
@@ -78,6 +98,7 @@ const Receipt = () => {
         }
 
         .receipt-title {
+        padding-left: 8px;
           font-size: 18px;
           font-weight: 600;
           margin: 0;
@@ -222,14 +243,14 @@ const Receipt = () => {
         .wallet-insufficient { color: #dc2626; }
       `}</style>
 
-      <div className="receipt-backdrop" onClick={() => !loading && closeReceipt()}>
-        <div className="receipt-dialog" onClick={(e) => e.stopPropagation()}>
+      <div className={`receipt-backdrop ${isVisible ? 'visible' : ''}`} onClick={() => !loading && handleClose()}>
+        <div className={`receipt-dialog ${isVisible ? 'visible' : ''}`} onClick={(e) => e.stopPropagation()}>
 
           <div className="receipt-header">
             <h3 className="receipt-title">Payment Summary</h3>
             <button
               className="receipt-close-btn"
-              onClick={closeReceipt}
+              onClick={handleClose}
               disabled={loading}
             >
               ✕

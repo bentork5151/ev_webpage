@@ -10,7 +10,7 @@ class SessionService {
   static activeSession = null
   static statusPollingInterval = null
   static onStatusUpdate = null
-  
+
   static async startSession(chargerId, planId, boxId) {
     try {
       if (!chargerId || !planId) {
@@ -38,7 +38,7 @@ class SessionService {
 
       const statusResponse = await this.getSessionStatus(response?.sessionId)
 
-      console.log('response session status: ',statusResponse)
+      console.log('response session status: ', statusResponse)
 
       const normalizedStatus = String(statusResponse).toUpperCase()
       if (normalizedStatus === 'FAILED') {
@@ -48,7 +48,7 @@ class SessionService {
           session: { ...response, statusResponse }
         }
       }
-      
+
       if (response.sessionId) {
         this.activeSession = {
           id: response.sessionId,
@@ -58,11 +58,11 @@ class SessionService {
           timeElapsed: 0,
           ...response
         }
-        
+
         // wsService.connect(response.sessionId)
-        
+
         CacheService.saveSessionData(this.activeSession)
-        
+
         await NotificationService.requestPermission()
       }
 
@@ -93,10 +93,10 @@ class SessionService {
       await NotificationService.sendSessionStarted(sessionId)
     }
 
-    console.log('Session Data after Warmup complete: ',session)
+    console.log('Session Data after Warmup complete: ', session)
     return session
   }
-  
+
 
   static async stopSession(sessionId) {
     try {
@@ -112,7 +112,7 @@ class SessionService {
       const response = await ApiService.post(API_CONFIG.ENDPOINTS.STOP_SESSION, {
         sessionId: sessionId
       })
-      
+
       console.log('Stop session response:', response)
 
       const statusResponse = await this.getSessionStatus(sessionId)
@@ -126,9 +126,9 @@ class SessionService {
       // wsService.disconnect()
       // this.activeSession = null
       // sessionStorage.removeItem(APP_CONFIG.CACHE.SESSION_KEY)
-      
+
       this.stopStatusPolling()
-      
+
       return {
         success: true,
         sessionData: {
@@ -144,7 +144,7 @@ class SessionService {
       }
     }
   }
-  
+
 
   static async getSessionStatus(sessionId) {
     try {
@@ -163,7 +163,7 @@ class SessionService {
       return { status: 'UNKNOWN', error: error.message }
     }
   }
-  
+
 
   static async getKwhUsed(sessionId) {
     try {
@@ -173,8 +173,8 @@ class SessionService {
       }
 
       const response = await ApiService.get(API_CONFIG.ENDPOINTS.GET_ENERGY_USED(sessionId))
-      console.log('KWH: ',response)
-      
+      console.log('KWH: ', response)
+
       let energyUsed = 0
       if (typeof response === 'number') {
         energyUsed = response
@@ -200,7 +200,7 @@ class SessionService {
         this.activeSession.status = status
         this.activeSession.energyUsed = energyUsed
         this.activeSession.lastUpdated = new Date().toISOString()
-        
+
         CacheService.saveSessionData(this.activeSession)
       }
 
@@ -224,7 +224,7 @@ class SessionService {
 
     const poll = async () => {
       const data = await this.fetchSessionData(sessionId)
-      
+
       if (this.onStatusUpdate) {
         this.onStatusUpdate(data)
       }
@@ -248,7 +248,7 @@ class SessionService {
     }
     this.onStatusUpdate = null
   }
-  
+
 
   static getActiveSession() {
     if (!this.activeSession) {
@@ -265,7 +265,7 @@ class SessionService {
     if (this.activeSession) {
       this.activeSession.timeElapsed = timeElapsed
       this.activeSession.percentage = percentage
-      
+
       CacheService.saveSessionTimer({
         timeElapsed,
         percentage,
@@ -290,15 +290,15 @@ class SessionService {
     const normalizedStatus = String(session.status).toUpperCase()
     return ['ACTIVE', 'INITIATED'].includes(normalizedStatus)
   }
-  
-  
+
+
   // Simulate session progress (for demo purposes without WebSocket)
   // static simulateProgress(durationMin) {
   //   const totalSeconds = durationMin * 60
   //   const startTime = new Date(this.activeSession?.startTime || Date.now())
   //   const elapsed = Math.floor((Date.now() - startTime.getTime()) / 1000)
   //   const percentage = Math.min(100, (elapsed / totalSeconds) * 100)
-    
+
   //   return {
   //     elapsed,
   //     percentage,

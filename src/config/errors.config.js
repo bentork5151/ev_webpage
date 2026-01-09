@@ -82,6 +82,10 @@ export const ERROR_MESSAGES = {
     GENERIC_ERROR: {
         user: "Something went wrong. Please restart the app or try again.",
         dev: "Unhandled exception occurred."
+    },
+    ROUTE_NOT_FOUND: {
+        user: "The page you are looking for does not exist.",
+        dev: "Navigated to non-existent route."
     }
 };
 

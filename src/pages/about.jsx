@@ -5,6 +5,7 @@ import APP_CONFIG from "../config/app.config";
 
 const About = ({ isOpen, onClose }) => {
   const [render, setRender] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const [startY, setStartY] = useState(0);
   const [currentY, setCurrentY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -14,12 +15,20 @@ const About = ({ isOpen, onClose }) => {
       setRender(true);
       document.body.style.overflow = "hidden";
       setCurrentY(0); // Reset position on open
+      setTimeout(() => setIsVisible(true), 10);
     } else {
-      setTimeout(() => setRender(false), 300);
-      document.body.style.overflow = "auto";
+      setIsVisible(false);
+      setTimeout(() => {
+        setRender(false);
+        document.body.style.overflow = "auto";
+      }, 300);
     }
-    return () => { document.body.style.overflow = "auto"; };
   }, [isOpen]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => { document.body.style.overflow = "auto"; };
+  }, []);
 
   const onTouchStart = (e) => {
     setStartY(e.touches[0].clientY);
@@ -53,8 +62,8 @@ const About = ({ isOpen, onClose }) => {
         style={{
           position: 'fixed', inset: 0,
           background: 'rgba(0,0,0,0.5)',
-          opacity: isOpen ? 1 : 0, transition: '0.3s',
-          pointerEvents: isOpen ? 'all' : 'none',
+          opacity: isVisible ? 1 : 0, transition: '0.3s',
+          pointerEvents: isVisible ? 'all' : 'none',
           zIndex: 1000
         }}
         onClick={onClose}
@@ -66,7 +75,7 @@ const About = ({ isOpen, onClose }) => {
           position: 'fixed', left: 0, right: 0, bottom: 0,
           background: '#212121',
           borderRadius: '24px 24px 0 0',
-          transform: isOpen ? `translateY(${currentY}px)` : 'translateY(100%)',
+          transform: isVisible ? `translateY(${currentY}px)` : 'translateY(100%)',
           transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)',
           zIndex: 1001,
           maxHeight: '90vh',
