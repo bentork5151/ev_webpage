@@ -14,7 +14,7 @@ import Invoice from './pages/Invoice'
 import ThankYou from './pages/ThankYou'
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy.jsx";
-import About from "./pages/About.jsx";
+import About from "./pages/about.jsx";
 
 EmailService.init()
 
@@ -24,16 +24,19 @@ const router = createBrowserRouter([
   { path: '/splash/:ocppId', element: <SplashScreen /> },
   { path: '/login', element: <Login /> },
   { path: '/login/:ocppId', element: <Login /> },
-  { path: '/terms', element: <Terms /> }  ,
-          { path: '/privacy', element: <Privacy /> },
-    { path: '/about', element: <About /> },
-  { element: <AuthGuard />,
+  { path: '/terms', element: <Terms /> },
+  { path: '/privacy', element: <Privacy /> },
+  { path: '/about', element: <About /> },
+  {
+    element: <AuthGuard />,
     children: [
       { path: '/dashboard', element: <Dashboard /> },
 
-      { path: '/config-charging', element: <ChargingFlow />,
+      {
+        path: '/config-charging', element: <ChargingFlow />,
         children: [
-          { path: 'receipt',
+          {
+            path: 'receipt',
             lazy: async () => {
               const { default: Receipt } = await import('./pages/Receipt')
               return { Component: Receipt }
@@ -41,11 +44,11 @@ const router = createBrowserRouter([
           }
         ]
       },
-      
-      { path: '/charging-session', element: <SessionFlow  /> },
+
+      { path: '/charging-session', element: <SessionFlow /> },
       { path: '/invoice', element: <Invoice /> },
       { path: '/thank-you', element: <ThankYou /> },
-      
+
     ]
   }
 ], {
@@ -57,9 +60,9 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-      <AuthProvider>
-        <RouterProvider router={router} />
-      </AuthProvider>
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   )
 }
 

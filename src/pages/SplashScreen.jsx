@@ -164,10 +164,15 @@ const SplashScreen = () => {
       }
 
       setStatus("Validating credentials...");
-      const loginResult = await AuthService.login(cacheUser.email);
+      // const loginResult = await AuthService.login(cacheUser.email);
 
-      if (!loginResult?.success) {
-        navigate(`/login${ocppId ? `/${ocppId}` : ""}`);
+      // if (!loginResult?.success) {
+      //   navigate(`/login${ocppId ? `/${ocppId}` : ""}`);
+      //   return;
+      // }
+      const userResult = await AuthService.userByEmail(cacheUser.email); // Fetches user details using the existing valid token
+      if (!userResult.success) {
+        navigate('/login');
         return;
       }
 
