@@ -120,12 +120,16 @@ const Privacy = () => {
         .legal-page {
           display: flex;
           flex-direction: column;
-          height: 100vh;
+          height: 100vh; /* Fallback */
+          height: 100dvh;
+          width: 100%;
+          max-width: 100vw;
           background: var(--color-matte-black);
           color: var(--color-white);
           font-family: var(--font-primary);
           overflow: hidden;
           animation: fadeIn 0.4s ease-out;
+          box-sizing: border-box;
         }
 
         @keyframes fadeIn {
@@ -138,7 +142,10 @@ const Privacy = () => {
           flex: 0 0 auto;
           display: flex;
           align-items: center;
-          padding: 24px;
+          padding: 24px 24px 16px 24px;
+          padding-top: calc(24px + env(safe-area-inset-top));
+          padding-left: calc(24px + env(safe-area-inset-left));
+          padding-right: calc(24px + env(safe-area-inset-right));
           background: transparent;
           z-index: 10;
         }
@@ -154,6 +161,7 @@ const Privacy = () => {
           border-radius: 50%;
           transition: all 0.2s ease;
           border: 1px solid rgba(255, 255, 255, 0.05);
+          flex-shrink: 0; /* Prevent squishing */
         }
         
         .back-btn:hover {
@@ -169,45 +177,59 @@ const Privacy = () => {
         /* ===== TITLE ===== */
         .page-title-container {
           padding: 0 24px 10px;
+          padding-left: calc(24px + env(safe-area-inset-left));
+          padding-right: calc(24px + env(safe-area-inset-right));
           flex: 0 0 auto;
+          width: 100%;
         }
 
         .page-title-container h1 {
-          font-size: 32px;
+          font-size: clamp(24px, 5vw, 32px);
           font-weight: var(--font-weight-bold);
           color: var(--color-primary-container);
           margin: 0;
           letter-spacing: -0.5px;
           text-shadow: 0 2px 10px rgba(57, 226, 155, 0.1);
+          line-height: 1.2;
         }
 
         /* ===== SCROLLABLE CONTENT ===== */
         .legal-content {
           flex: 1;
           overflow-y: auto;
+          overflow-x: hidden;
           padding: 0 24px 40px;
+          padding-left: calc(24px + env(safe-area-inset-left));
+          padding-right: calc(24px + env(safe-area-inset-right));
+          padding-bottom: calc(40px + env(safe-area-inset-bottom));
           font-size: 14px;
           line-height: 1.6;
           opacity: 0.9;
+          width: 100%;
+          word-wrap: break-word; /* Prevent overflow */
+          overflow-wrap: break-word;
         }
 
         .section {
           margin-bottom: 24px;
+          max-width: 100%;
         }
 
         .legal-content h2 {
-          font-size: 18px;
+          font-size: clamp(16px, 4vw, 18px);
           margin-bottom: 12px;
           color: var(--color-white);
           font-weight: var(--font-weight-semibold);
           border-left: 3px solid var(--color-primary-container);
           padding-left: 12px;
+          line-height: 1.4;
         }
 
         .legal-content p {
           margin-bottom: 8px;
           color: rgba(255, 255, 255, 0.75);
           font-weight: var(--font-weight-light);
+          max-width: 100%;
         }
 
         .legal-content ul {
@@ -243,13 +265,21 @@ const Privacy = () => {
         /* ===== RESPONSIVE STYLES ===== */
         @media (max-width: 480px) {
           .legal-header {
-            padding: 16px;
+            padding: 16px 16px 10px 16px;
+            padding-top: calc(16px + env(safe-area-inset-top));
+            padding-left: calc(16px + env(safe-area-inset-left));
+            padding-right: calc(16px + env(safe-area-inset-right));
           }
-          .page-title-container h1 {
-            font-size: 28px;
+          .page-title-container {
+             padding: 0 16px 10px;
+             padding-left: calc(16px + env(safe-area-inset-left));
+             padding-right: calc(16px + env(safe-area-inset-right));
           }
           .legal-content {
             padding: 0 16px 30px;
+            padding-left: calc(16px + env(safe-area-inset-left));
+            padding-right: calc(16px + env(safe-area-inset-right));
+            padding-bottom: calc(30px + env(safe-area-inset-bottom));
           }
           .legal-content h2 {
             font-size: 16px;

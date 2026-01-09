@@ -139,11 +139,12 @@ import { useAuth } from "../store/AuthContext";
 import "@material/web/progress/linear-progress.js"; // ✅ Material Web progress
 import logo from "../assets/images/logo-1.png";
 import "../assets/styles/SplashScreen.css";
+import { logError } from "../config/errors.config";
 
 const SplashScreen = () => {
   const navigate = useNavigate();
   const { ocppId } = useParams();
-  const { updateChargerData, transactionHistory } = useAuth();
+  const { updateChargerData, transactionHistory, updateUserData } = useAuth();
 
   const [status, setStatus] = useState("Loading...");
 
@@ -154,9 +155,15 @@ const SplashScreen = () => {
 
   const initializeApp = async () => {
     try {
+
+      // Wait for splash duration before proceeding
+      await new Promise((r) => setTimeout(r, APP_CONFIG.UI.SPLASH_DURATION));
+
       setStatus("Checking authentication...");
 
       const cacheUser = await AuthService.getCurrentUser();
+      console.log("CACHE USER →", cacheUser)
+
 
       if (!cacheUser) {
         navigate(`/login${ocppId ? `/${ocppId}` : ""}`);
@@ -171,10 +178,14 @@ const SplashScreen = () => {
       //   return;
       // }
       const userResult = await AuthService.userByEmail(cacheUser.email); // Fetches user details using the existing valid token
+      console.log("USER BY EMAIL RESULT", userResult);
       if (!userResult.success) {
-        navigate('/login');
+        navigate(`/login${ocppId ? `/${ocppId}` : ""}`);
         return;
       }
+
+      // Update AuthContext with the fresh user data
+      updateUserData(userResult.user);
 
       if (ocppId) {
         try {
@@ -190,19 +201,23 @@ const SplashScreen = () => {
 
       setStatus("Loading transactions...");
       const transactions = await AuthService.loadTransaction(
-        loginResult.user.id,
+        userResult.user.id,
         10
       );
       transactionHistory(transactions);
 
       setStatus("Securing communication...");
-      await new Promise((r) =>
-        setTimeout(r, APP_CONFIG.UI.SPLASH_DURATION)
-      );
+      // await new Promise((r) =>
+      //   setTimeout(r, APP_CONFIG.UI.SPLASH_DURATION)
+      // );
 
-      navigate("/config-charging");
+      if (ocppId) {
+        navigate(`/config-charging?ocppId=${ocppId}`);
+      } else {
+        navigate('/config-charging');
+      }
     } catch (error) {
-      console.error("Splash error:", error);
+      logError('SESSION_INIT_ERROR', error)
       setTimeout(() => {
         navigate(`/login${ocppId ? `/${ocppId}` : ""}`);
       }, 1000);

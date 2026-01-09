@@ -7,24 +7,25 @@ import CacheService from "../services/cache.service";
 import EmailService from "../services/email.service"
 import SessionService from "../services/session.service"
 import Logo from "../assets/images/logo-1.png";
+import { logError } from "../config/errors.config";
 const Invoice = () => {
   const navigate = useNavigate();
   const { user, chargerData } = useAuth();
   const emailSentRef = useRef(false)
-  // const [sessionData, setSessionData] = useState(null);
+  const [sessionData, setSessionData] = useState(null);
   //Static data for testing
-  const [sessionData, setSessionData] = useState({
-    sessionId: "MOCK-123",
-    stationName: "Test Station",
-    chargerType: "DC Fast",
-    duration: 45,
-    energyUsed: 25.5,
-    rate: 15,
-    finalCost: 382.50,
-    paymentMethod: "Wallet",
-    transactionId: "TXN-999",
-    endTime: new Date().toISOString()
-  });
+  // const [sessionData, setSessionData] = useState({
+  //   sessionId: "MOCK-123",
+  //   stationName: "Test Station",
+  //   chargerType: "DC Fast",
+  //   duration: 45,
+  //   energyUsed: 25.5,
+  //   rate: 15,
+  //   finalCost: 382.50,
+  //   paymentMethod: "Wallet",
+  //   transactionId: "TXN-999",
+  //   endTime: new Date().toISOString()
+  // });
   const [isLoading, setIsLoading] = useState(true)
   const [emailStatus, setEmailStatus] = useState({
     sending: false,
@@ -129,101 +130,100 @@ const Invoice = () => {
   //     })
   //   }
   // }
-const sendInvoice = async () => {
-  if (!EmailService.isAvailable()) {
-    console.log("EmailJS not configured, skipping email");
-    setEmailStatus({
-      sending: false,
-      sent: false,
-      error: "Email service not configured",
-    });
-    return;
-  }
-
-  if (!user?.email) {
-    console.log("No user email available");
-    setEmailStatus({
-      sending: false,
-      sent: false,
-      error: "User email not available",
-    });
-    return;
-  }
-
-  if (!sessionData) {
-    setEmailStatus({
-      sending: false,
-      sent: false,
-      error: "Session data not available",
-    });
-    return;
-  }
-
-  setEmailStatus({ sending: true, sent: false, error: null });
-
-  try {
-    const invoiceData = {
-      // USER
-      userEmail: user.email,
-      userName: user.name || "Customer",
-
-      // SESSION
-      sessionId: sessionData.sessionId,
-      receiptId:
-        sessionData.receiptId ||
-        sessionData.transactionId ||
-        sessionData.sessionId,
-
-      completedAt: sessionData.endTime || new Date().toISOString(),
-
-      // CHARGING
-      stationName:
-        sessionData.stationName ||
-        chargerData?.stationName ||
-        chargerData?.name ||
-        "Bentork Station",
-
-      chargerType:
-        sessionData.chargerType ||
-        chargerData?.chargerType ||
-        "N/A",
-
-      duration: sessionData.duration || 0,
-      energyUsed: sessionData.energyUsed || 0,
-      rate: sessionData.rate || sessionData.plan?.rate || 0,
-
-      // PAYMENT
-      paymentMethod: sessionData.paymentMethod || "Wallet",
-      transactionId:
-        sessionData.transactionId ||
-        sessionData.receiptId ||
-        sessionData.sessionId,
-
-      totalCost:
-        sessionData.finalCost ||
-        sessionData.amountDebited ||
-        (sessionData.energyUsed || 0) *
-          (sessionData.rate || 0),
-    };
-
-    console.log("Invoice data:", invoiceData);
-
-    const result = await EmailService.sendInvoiceEmail(invoiceData);
-
-    if (result.success) {
-      setEmailStatus({ sending: false, sent: true, error: null });
-    } else {
-      throw new Error(result.error);
+  const sendInvoice = async () => {
+    if (!EmailService.isAvailable()) {
+      console.log("EmailJS not configured, skipping email");
+      setEmailStatus({
+        sending: false,
+        sent: false,
+        error: "Email service not configured",
+      });
+      return;
     }
-  } catch (error) {
-    console.error("Failed to send invoice email:", error);
-    setEmailStatus({
-      sending: false,
-      sent: false,
-      error: error.message || "Failed to send email",
-    });
-  }
-};
+
+    if (!user?.email) {
+      console.log("No user email available");
+      setEmailStatus({
+        sending: false,
+        sent: false,
+        error: "User email not available",
+      });
+      return;
+    }
+
+    if (!sessionData) {
+      setEmailStatus({
+        sending: false,
+        sent: false,
+        error: "Session data not available",
+      });
+      return;
+    }
+
+    setEmailStatus({ sending: true, sent: false, error: null });
+
+    try {
+      const invoiceData = {
+        // USER
+        userEmail: user.email,
+        userName: user.name || "Customer",
+
+        // SESSION
+        sessionId: sessionData.sessionId,
+        receiptId:
+          sessionData.receiptId ||
+          sessionData.transactionId ||
+          sessionData.sessionId,
+
+        completedAt: sessionData.endTime || new Date().toISOString(),
+
+        // CHARGING
+        stationName:
+          sessionData.stationName ||
+          chargerData?.stationName ||
+          chargerData?.name ||
+          "Bentork Station",
+
+        chargerType:
+          sessionData.chargerType ||
+          chargerData?.chargerType ||
+          "N/A",
+
+        duration: sessionData.duration || 0,
+        energyUsed: sessionData.energyUsed || 0,
+        rate: sessionData.rate || sessionData.plan?.rate || 0,
+
+        // PAYMENT
+        paymentMethod: sessionData.paymentMethod || "Wallet",
+        transactionId:
+          sessionData.transactionId ||
+          sessionData.receiptId ||
+          sessionData.sessionId,
+
+        totalCost:
+          sessionData.finalCost ||
+          sessionData.amountDebited ||
+          (sessionData.energyUsed || 0) *
+          (sessionData.rate || 0),
+      };
+
+      console.log("Invoice data:", invoiceData);
+
+      const result = await EmailService.sendInvoiceEmail(invoiceData);
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      setEmailStatus({ sending: false, sent: true, error: null });
+    } catch (error) {
+      console.error("Failed to send invoice email:", error);
+      setEmailStatus({
+        sending: false,
+        sent: false,
+        error: logError('INVOICE_SEND_FAIL', error),
+      });
+    }
+  };
 
 
 
@@ -603,11 +603,11 @@ body {
 
       {/* HEADER */}
       <div className="invoice-header">
-       <img
-  src={Logo}
-  alt="Bentork Logo"
-  className="header-logo"
-/>
+        <img
+          src={Logo}
+          alt="Bentork Logo"
+          className="header-logo"
+        />
       </div>
 
       {emailStatus.sending && (
@@ -630,10 +630,10 @@ body {
           <button onClick={handleResendEmail}>Retry</button>
         </div>
       )}
-<div className="invoice-row">
-  <h1>Invoice</h1>
-  <span className="session-pill">Session Completed</span>
-</div>
+      <div className="invoice-row">
+        <h1>Invoice</h1>
+        <span className="session-pill">Session Completed</span>
+      </div>
 
       {/* CHARGING DETAILS */}
       <div className="card">
@@ -653,8 +653,8 @@ body {
         <h2>Payment Details</h2>
 
         <Row label="Payment Method" value={paymentMethod} />
-       
-       
+
+
 
         <div className="row">
           <span>Status</span>

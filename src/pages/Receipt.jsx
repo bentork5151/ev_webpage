@@ -268,7 +268,7 @@ const Receipt = () => {
             </div>
             <div className="receipt-row">
               <span className="receipt-row-label">Rate</span>
-              <span className="receipt-row-value">₹{chargerData?.rate || 8}/kWh</span>
+              <span className="receipt-row-value">₹{chargerData?.rate || 0} /kWh</span>
             </div>
           </div>
 
