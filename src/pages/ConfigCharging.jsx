@@ -26,7 +26,7 @@ import WarningIcon from "@mui/icons-material/Warning";
 import ErrorIcon from "@mui/icons-material/Error";
 import SchoolIcon from "@mui/icons-material/School";
 
-import About from "./About";
+import About from "./about";
 import AuthService from "../services/auth.service"; // Import service
 
 const sidebarConfig = {
