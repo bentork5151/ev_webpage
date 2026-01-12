@@ -17,7 +17,7 @@ import Privacy from "./pages/Privacy.jsx";
 import About from "./pages/about.jsx";
 import OnboardingOne from "./pages/OnboardingOne";
 import OnboardingTwo from "./pages/OnboardingTwo";
-import AnimatedLayout from './wrapper/AnimatedLayout';
+import AnimatedLayout from './wrapper/AnimatedLayout'; 
 
 import ErrorPage from './pages/ErrorPage'
 
