@@ -13,7 +13,9 @@ const OnboardingOne = () => {
         .onboarding-page {
           min-height: 100vh;
           background: #fff;
-          padding-bottom: 24px;
+        padding-bottom: 56px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
         }
 
         .onboarding-header {
@@ -81,7 +83,23 @@ const OnboardingOne = () => {
           padding: 14px;
           border-radius: 30px;
         }
+
+        /* Mobile responsiveness */
+@media (max-width: 480px) {
+  .steps-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .onboarding-header h2 {
+    font-size: 20px;
+  }
+
+  .onboarding-header p {
+    font-size: 14px;
+  }
+}
         `}
+        
       </style>
 
       <div className="onboarding-page page-enter-anim">
