@@ -13,7 +13,9 @@ const OnboardingTwo = () => {
         .onboarding-two {
           min-height: 100vh;
           background: #fff;
-          padding-bottom: 24px;
+        padding-bottom: 56px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
         }
 
         .onboarding-header {
@@ -76,6 +78,22 @@ const OnboardingTwo = () => {
           font-size: 16px;
           border: none;
         }
+
+        /* ✅ Mobile optimization */
+@media (max-width: 480px) {
+  .steps-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .onboarding-header h2 {
+    font-size: 20px;
+  }
+
+  .cta-btn {
+    font-size: 15px;
+    padding: 14px;
+  }
+}
         `}
       </style>
 
