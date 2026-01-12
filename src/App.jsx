@@ -15,6 +15,8 @@ import ThankYou from './pages/ThankYou'
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy.jsx";
 import About from "./pages/about.jsx";
+import OnboardingOne from "./pages/OnboardingOne";
+import OnboardingTwo from "./pages/OnboardingTwo";
 import AnimatedLayout from './wrapper/AnimatedLayout';
 
 import ErrorPage from './pages/ErrorPage'
@@ -33,11 +35,16 @@ const router = createBrowserRouter([
       { path: '/terms', element: <Terms /> },
       { path: '/privacy', element: <Privacy /> },
       { path: '/about', element: <About /> },
+
+        { path: '/onboarding-1', element: <OnboardingOne /> },
+      { path: '/onboarding-2', element: <OnboardingTwo /> },
       {
         element: <AuthGuard />,
         errorElement: <ErrorPage />,
         children: [
           { path: '/dashboard', element: <Dashboard /> },
+
+          
 
           {
             path: '/config-charging', element: <ChargingFlow />,
