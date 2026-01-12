@@ -11,22 +11,32 @@ class SessionService {
   static statusPollingInterval = null
   static onStatusUpdate = null
 
-  static async startSession(chargerId, planId, boxId) {
+  static async startSession(chargerId, planId, boxId, selectedKwh) {
     try {
-      if (!chargerId || !planId) {
+      if (!chargerId || (!planId && !selectedKwh)) {
         return {
           success: false,
-          error: 'Charger ID and Plan ID are required'
+          error: 'Charger ID and Plan ID (or Custom Power) are required'
         }
       }
       this.clearSession()
-      console.log('Starting session:', { chargerId, planId, boxId })
+      console.log('Starting session:', { chargerId, planId, boxId, selectedKwh })
 
-      const response = await ApiService.post(API_CONFIG.ENDPOINTS.START_SESSION, {
+      const payload = {
         chargerId,
-        planId,
         boxId
-      })
+      }
+
+      if (selectedKwh) {
+        payload.selectedKwh = Number(selectedKwh)
+        payload.planId = null
+      } else {
+        payload.planId = planId
+      }
+
+      console.log('Sending Start Session Payload:', payload)
+
+      const response = await ApiService.post(API_CONFIG.ENDPOINTS.START_SESSION, payload)
 
       console.log('Session start response:', response)
       if (!response?.sessionId) {

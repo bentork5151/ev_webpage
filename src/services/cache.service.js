@@ -246,6 +246,15 @@ class CacheService {
     }
   }
 
+  static saveOnboardingStatus(status) {
+    localStorage.setItem(APP_CONFIG.CACHE.ONBOARDING_KEY, JSON.stringify(status))
+  }
+
+  static getOnboardingStatus() {
+    const data = localStorage.getItem(APP_CONFIG.CACHE.ONBOARDING_KEY)
+    return data ? JSON.parse(data) : false
+  }
+
 }
 
 export default CacheService

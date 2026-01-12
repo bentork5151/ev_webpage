@@ -327,7 +327,7 @@ const Invoice = () => {
   )
 
   return (
-    <div className="invoice-page">
+    <div className="invoice-page page-enter-anim">
       <style>{`
        /* ================== RESET ================== */
 * {
