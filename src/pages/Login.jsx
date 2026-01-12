@@ -75,10 +75,17 @@ const Login = () => {
 
         window.history.replaceState({}, document.title, window.location.pathname)
 
-        if (ocppIdFromUrl) {
-          navigate(`/config-charging?ocppid=${ocppIdFromUrl}`)
+        const hasSeenOnboarding = CacheService.getOnboardingStatus()
+
+        if (!hasSeenOnboarding) {
+          CacheService.saveOnboardingStatus(true)
+          navigate('/onboarding-1')
         } else {
-          navigate('/config-charging')
+          if (ocppIdFromUrl) {
+            navigate(`/config-charging?ocppid=${ocppIdFromUrl}`)
+          } else {
+            navigate('/config-charging')
+          }
         }
 
       } catch (error) {

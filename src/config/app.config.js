@@ -10,6 +10,7 @@ const APP_CONFIG = {
     PLAN_KEY: 'ev_plan_data',
     TRANSACTION_KEY: 'ev_user_transaction_data',
     SESSION_KEY: 'ev_session_data',
+    ONBOARDING_KEY: 'ev_onboarding_completed',
     EXPIRY_DAYS: 7,
   },
 

@@ -1,11 +1,6 @@
-  import React from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-
-// ✅ Import 4 DIFFERENT images manually
-import StepImg1 from "../assets/images/onboarding-step-5.png";
-import StepImg2 from "../assets/images/onboarding-step-6.png";
-import StepImg3 from "../assets/images/onboarding-step-7.png";
-import StepImg4 from "../assets/images/onboarding-step-8.png";
+import TempIcon from "../assets/images/energy.svg";
 
 const OnboardingTwo = () => {
   const navigate = useNavigate();
@@ -84,7 +79,7 @@ const OnboardingTwo = () => {
         `}
       </style>
 
-      <div className="onboarding-two">
+      <div className="onboarding-two page-enter-anim">
         {/* Header */}
         <div className="onboarding-header">
           <h2>Start Charging</h2>
@@ -94,28 +89,28 @@ const OnboardingTwo = () => {
         {/* Steps */}
         <div className="steps-grid">
           <div className="step-card">
-            <img src={StepImg1} alt="Open App" />
+            <img src={TempIcon} alt="Open App" />
             <div className="step-number">1</div>
             <h4>Open App</h4>
             <p>Launch charging app or website</p>
           </div>
 
           <div className="step-card">
-            <img src={StepImg2} alt="Select Station" />
+            <img src={TempIcon} alt="Select Station" />
             <div className="step-number">2</div>
             <h4>Select Station OR Scan QR</h4>
             <p>Choose your charging station</p>
           </div>
 
           <div className="step-card">
-            <img src={StepImg3} alt="Start Session" />
+            <img src={TempIcon} alt="Start Session" />
             <div className="step-number">3</div>
             <h4>Start Session</h4>
             <p>Tap ‘Start Charging’ button</p>
           </div>
 
           <div className="step-card">
-            <img src={StepImg4} alt="Monitor Charging" />
+            <img src={TempIcon} alt="Monitor Charging" />
             <div className="step-number">4</div>
             <h4>Monitor</h4>
             <p>Track status in real-time</p>
@@ -126,7 +121,7 @@ const OnboardingTwo = () => {
         <div className="cta-container">
           <button
             className="cta-btn"
-            onClick={() => navigate("/ConfigCharging")}
+            onClick={() => navigate("/config-charging")}
           >
             Get Started!
           </button>

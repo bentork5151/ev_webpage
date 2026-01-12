@@ -25,6 +25,16 @@ export default function Dashboard() {
   const [success, setSuccess] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
 
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleCloseDialog = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setShowDialog(false);
+      setIsClosing(false);
+    }, 300); // match animation duration
+  };
+
   useEffect(() => {
     if (!user) navigate("/login");
     if (Array.isArray(transactionData)) setTransactions(transactionData);
@@ -74,7 +84,7 @@ export default function Dashboard() {
       setTransactions(transactionReload); transactionHistory(transactionReload);
       setTimeout(() => {
         setSuccess("Verification Completed");
-        setTimeout(() => { setShowDialog(false); setSuccess(""); setAmount(""); setError(""); setIsVerifying(false); }, 500);
+        setTimeout(() => { handleCloseDialog(); setSuccess(""); setAmount(""); setError(""); setIsVerifying(false); }, 500);
       }, 1000);
     } catch {
       setError("Failed while reloading data"); setIsVerifying(false); setLoading(false);
@@ -82,7 +92,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="dashboard">
+    <div className="dashboard page-enter-anim">
 
       <style>{`
         body {
@@ -96,6 +106,11 @@ export default function Dashboard() {
           padding: 16px;
           max-width: 480px;
           margin: auto;
+          height: 100vh;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          box-sizing: border-box;
         }
 
         .title-bar {
@@ -103,6 +118,7 @@ export default function Dashboard() {
           align-items: center;
           gap: 12px;
           padding: 8px 0;
+          flex-shrink: 0;
         }
 
         .back-btn {
@@ -132,6 +148,7 @@ export default function Dashboard() {
           backdrop-filter: blur(10px);
           -webkit-backdrop-filter: blur(10px);
           border: 1px solid rgba(255, 255, 255, 0.25);
+          flex-shrink: 0;
         }
 
         .wallet-row {
@@ -163,14 +180,16 @@ export default function Dashboard() {
           font-size: 14px;
           font-weight: var(--font-weight-medium);
           margin: 36px 0 8px 0;
+          flex-shrink: 0;
         }
 
         .transactions-scroll {
           display: flex;
           flex-direction: column;
           gap: 16px;
-          max-height: 630px;
+          flex: 1;
           overflow-y: auto;
+          padding-bottom: 70px; /* Space for content not to be cut off */
         }
 
         .transactions-scroll::-webkit-scrollbar {
@@ -246,7 +265,11 @@ export default function Dashboard() {
           align-items: center;
           justify-content: center;
           z-index: 999;
-          animation: fadeIn 0.3s ease;
+          animation: fadeIn 0.3s ease forwards;
+        }
+
+        .dialog-backdrop.closing {
+          animation: fadeOut 0.3s ease forwards;
         }
 
         .dialog {
@@ -257,8 +280,12 @@ export default function Dashboard() {
           border-radius: 20px;
           color: #fff;
           box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-          animation: slideUp 0.4s ease;
+          animation: slideUp 0.4s ease forwards;
           font-family: 'Arial', sans-serif;
+        }
+
+        .dialog.closing {
+          animation: slideDown 0.3s ease forwards;
         }
 
         @keyframes slideUp {
@@ -266,9 +293,19 @@ export default function Dashboard() {
           100% { transform: translateY(0); opacity: 1; }
         }
 
+        @keyframes slideDown {
+          0% { transform: translateY(0); opacity: 1; }
+          100% { transform: translateY(100px); opacity: 0; }
+        }
+
         @keyframes fadeIn {
           0% { opacity: 0; }
           100% { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+          0% { opacity: 1; }
+          100% { opacity: 0; }
         }
 
         h3 {
@@ -471,8 +508,8 @@ export default function Dashboard() {
 
       {/* Dialog */}
       {showDialog && (
-        <div className="dialog-backdrop" onClick={() => !loading && setShowDialog(false)}>
-          <div className="dialog glass glass-soft radius-large" onClick={(e) => e.stopPropagation()}>
+        <div className={`dialog-backdrop ${isClosing ? "closing" : ""}`} onClick={() => !loading && handleCloseDialog()}>
+          <div className={`dialog glass glass-soft radius-large ${isClosing ? "closing" : ""}`} onClick={(e) => e.stopPropagation()}>
             <h3>Recharge Wallet</h3>
 
             {/* Amount Input */}
@@ -533,7 +570,7 @@ export default function Dashboard() {
 
             <button
               className="btn-secondary glass glass-primary radius-inner"
-              onClick={() => !loading && setShowDialog(false)}
+              onClick={() => !loading && handleCloseDialog()}
               disabled={loading}
             >
               Cancel

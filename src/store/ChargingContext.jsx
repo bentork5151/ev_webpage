@@ -35,7 +35,9 @@ export const ChargingProvider = ({ children }) => {
     const isReceiptOpen = location.pathname === '/config-charging/receipt'
 
     const isChargerUnavailable = useMemo(() => {
-        return chargerData?.status === 'offline' || chargerData?.status === 'busy'
+        if (!chargerData?.status) return true;
+        const s = chargerData.status.toLowerCase();
+        return s === 'offline' || s === 'busy' || s === 'charging' || s === 'preparing' || s === 'active' || s === 'finishing' || s === 'suspendedev' || s === 'suspendedevse' || s === 'reserved' || s === 'unavailable' || s === 'faulted';
     }, [chargerData?.status])
 
     const pricing = useMemo(() => {
@@ -64,12 +66,12 @@ export const ChargingProvider = ({ children }) => {
         fetchPlans()
     }, [chargerData?.chargerType])
 
-    useEffect(() => {
-        if (plans.length && !selectedPlan) {
-            console.log('plan set 0')
-            setSelectedPlan(plans[0])
-        }
-    }, [plans, selectedPlan])
+    //     useEffect(() => {
+    //         if (plans.length && !selectedPlan) {
+    //             console.log('plan set 0')
+    //             setSelectedPlan(plans[0])
+    //         }
+    //     }, [plans, selectedPlan])
 
     useEffect(() => {
         if (error) {
@@ -191,7 +193,9 @@ export const ChargingProvider = ({ children }) => {
 
             // Check status directly from fresh response
             const currentStatus = chargerResponse?.status?.toLowerCase() || 'offline'
-            const isUnavailable = currentStatus === 'offline' || currentStatus === 'busy'
+            // Check comprehensive busy list
+            const busyStatuses = ['offline', 'busy', 'charging', 'active', 'preparing', 'finishing', 'suspendedev', 'suspendedevse', 'reserved', 'unavailable', 'faulted'];
+            const isUnavailable = busyStatuses.includes(currentStatus);
 
             if (isUnavailable) {
                 setError(logError('CHARGER_UNAVAILABLE'))
@@ -201,7 +205,8 @@ export const ChargingProvider = ({ children }) => {
             const result = await SessionService.startSession(
                 chargerData?.id,
                 selectedPlan?.id,
-                chargerData?.ocppId
+                chargerData?.ocppId,
+                selectedPlan?.kw || null
             )
 
             console.log('result: ', result)
@@ -261,6 +266,7 @@ export const ChargingProvider = ({ children }) => {
 
         plans,
         selectedPlan,
+        powerValue,
         loading,
         plansLoading,
         error,
@@ -281,6 +287,7 @@ export const ChargingProvider = ({ children }) => {
     }), [
         plans,
         selectedPlan,
+        powerValue,
         loading,
         plansLoading,
         error,
