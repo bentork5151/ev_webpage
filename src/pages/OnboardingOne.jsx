@@ -1,11 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-
-// ✅ Import DIFFERENT images
-import StepImg1 from "../assets/images/connect-step-1.png";
-import StepImg2 from "../assets/images/connect-step-2.png";
-import StepImg3 from "../assets/images/connect-step-3.png";
-import StepImg4 from "../assets/images/connect-step-4.png";
+import TempIcon from "../assets/images/energy.svg";
 
 const OnboardingOne = () => {
   const navigate = useNavigate();
@@ -89,7 +84,7 @@ const OnboardingOne = () => {
         `}
       </style>
 
-      <div className="onboarding-page">
+      <div className="onboarding-page page-enter-anim">
         {/* Header */}
         <div className="onboarding-header">
           <h2>Connect Your Charger</h2>
@@ -99,28 +94,28 @@ const OnboardingOne = () => {
         {/* Steps */}
         <div className="steps-grid">
           <div className="step-card">
-            <img src={StepImg1} alt="Locate Port" />
+            <img src={TempIcon} alt="Locate Port" />
             <div className="step-number">1</div>
             <h4>Locate Port</h4>
             <p>Find charging port behind vehicle flap</p>
           </div>
 
           <div className="step-card">
-            <img src={StepImg2} alt="Take Cable" />
+            <img src={TempIcon} alt="Take Cable" />
             <div className="step-number">2</div>
             <h4>Take Cable</h4>
             <p>Remove cable from station holder</p>
           </div>
 
           <div className="step-card">
-            <img src={StepImg3} alt="Connect Cable" />
+            <img src={TempIcon} alt="Connect Cable" />
             <div className="step-number">3</div>
             <h4>Connect Cable</h4>
             <p>Connect firmly to vehicle port</p>
           </div>
 
           <div className="step-card">
-            <img src={StepImg4} alt="Check Indicator" />
+            <img src={TempIcon} alt="Check Indicator" />
             <div className="step-number">4</div>
             <h4>Check Indicator</h4>
             <p>Check indicator light is green</p>
@@ -131,14 +126,14 @@ const OnboardingOne = () => {
         <div className="onboarding-actions">
           <button
             className="skip-btn"
-            onClick={() => navigate("/ConfigCharging")}
+            onClick={() => navigate("/config-charging")}
           >
             Skip Tutorial
           </button>
 
           <button
             className="next-btn"
-            onClick={() => navigate("/OnboardingTwo")}
+            onClick={() => navigate("/onboarding-2")}
           >
             Next
           </button>
