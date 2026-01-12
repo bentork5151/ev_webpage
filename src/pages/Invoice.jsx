@@ -538,7 +538,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #2cf947ff;
+  color: var(--color-primary-container);
   font-weight: 600;
 }
 
