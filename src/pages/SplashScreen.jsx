@@ -208,29 +208,58 @@ const SplashScreen = () => {
       transactionHistory(transactions);
 
 
-      setStatus("Checking active session...");
-      const activeSession = CacheService.getSessionData();
+      console.log("Checking active session...");
 
-      if (
-        activeSession &&
-        activeSession.sessionId &&
-        ["ACTIVE", "INITIATED", "WARMUP"].includes(
-          (activeSession.status || "").toUpperCase()
-        )
-      ) {
-        // Check if session belongs to current user
-        const isSameUser =
-          !activeSession.userId || activeSession.userId === userResult.user.id;
+      const userActiveSessionId = userResult.user.activeSessionId || userResult.user.active_session_id || userResult.user.currentSessionId;
+      let validActiveSession = null;
 
-        // Check if it matches the current OCPP ID (if provided)
-        // If ocppId is not provided (e.g. root URL), we still redirect to session
-        // If ocppId IS provided, we ensure it matches the session's charger
-        const isSameCharger =
-          !ocppId ||
-          activeSession.chargerId === ocppId ||
-          activeSession.boxId === ocppId;
+      if (userActiveSessionId) {
+        console.log("Found Active Session ID in User Profile:", userActiveSessionId);
+        try {
+          const sessionStatus = await SessionService.getSessionStatus(userActiveSessionId);
+          const normalizedStatus = String(sessionStatus || '').toUpperCase();
 
-        if (isSameUser && isSameCharger) {
+          if (["ACTIVE", "INITIATED", "WARMUP"].includes(normalizedStatus)) {
+            // Recover existing cache if it matches, otherwise create active session object
+            const cachedSession = CacheService.getSessionData();
+
+            validActiveSession = {
+              ...(cachedSession && cachedSession.sessionId === userActiveSessionId ? cachedSession : {}),
+              sessionId: userActiveSessionId,
+              id: userActiveSessionId, // Ensure both ID fields are set
+              status: normalizedStatus,
+              userId: userResult.user.id,
+              chargerId: ocppId || (cachedSession && cachedSession.chargerId) || 'unknown',
+              boxId: ocppId || (cachedSession && cachedSession.boxId) || 'unknown',
+            };
+
+            // Ensure we have a start time
+            if (!validActiveSession.startTime) {
+              validActiveSession.startTime = new Date().toISOString();
+            }
+
+            CacheService.saveSessionData(validActiveSession);
+            console.log("Session verified and cached:", validActiveSession);
+          } else {
+            console.log("Session exists but status is not active:", normalizedStatus);
+            CacheService.clearSessionData();
+          }
+        } catch (err) {
+          console.error("Failed to verify session status:", err);
+          // If verification fails (e.g. network), we might fallback to cache if the IDs match
+          const cachedSession = CacheService.getSessionData();
+          if (cachedSession && cachedSession.sessionId === userActiveSessionId) {
+            validActiveSession = cachedSession;
+          }
+        }
+      } else {
+        // No active session in profile -> Clear any stale cache
+        CacheService.clearSessionData();
+      }
+
+      if (validActiveSession) {
+        // Double check user ownership
+        if (String(validActiveSession.userId) === String(userResult.user.id)) {
           navigate("/charging-session");
           return;
         }

@@ -138,7 +138,7 @@ const Login = () => {
         <div className="footer-legal">
           <p>By continuing you agree to our</p>
           <div className="legal-links">
-            <span>Terms of Service</span> and <span>Privacy Policy</span>
+            <span onClick={() => navigate('/terms')}>Terms of Service</span> and <span onClick={() => navigate('/privacy')}>Privacy Policy</span>
           </div>
         </div>
 

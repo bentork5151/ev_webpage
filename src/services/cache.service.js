@@ -79,7 +79,13 @@ class CacheService {
   static clearCache() {
     localStorage.removeItem(APP_CONFIG.CACHE.USER_KEY)
     localStorage.removeItem(APP_CONFIG.CACHE.CHARGER_KEY)
+
+    // Preserve ocppId to ensure charger persist across re-login
+    const ocppId = sessionStorage.getItem('ocppId')
     sessionStorage.clear()
+    if (ocppId) {
+      sessionStorage.setItem('ocppId', ocppId)
+    }
   }
 
 
