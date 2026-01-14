@@ -199,21 +199,21 @@ export const SessionProvider = ({ children }) => {
 
 
       //Security
-      if (!activeSession || !(activeSession.sessionId || activeSession.id)) {
-        console.warn('No active session found')
-        setIsInitializing(false)
-        navigate('/config-charging')
-        return { success: false }
-      }
+      // if (!activeSession || !(activeSession.sessionId || activeSession.id)) {
+      //   console.warn('No active session found')
+      //   setIsInitializing(false)
+      //   navigate('/config-charging')
+      //   return { success: false }
+      // }
 
       const sessionId = activeSession?.sessionId || activeSession?.id
-      const currentStatus = await SessionService.getSessionStatus(sessionId)
-      console.log('Current session ID from API: ', currentStatus)
+      const sessionData = await SessionService.fetchSessionData(sessionId)
+      console.log('Current session Data from API: ', sessionData)
 
-      const sessionStatus = String(currentStatus || '').toUpperCase()
-      if (sessionStatus === 'FAILED') {
-        console.error('Session status is FAILED, redirecting back')
-        setError('Failed to start charging session')
+      const sessionStatus = String(sessionData.status || '').toUpperCase()
+      if (sessionStatus === 'FAILED' || sessionStatus === 'COMPLETED' || sessionStatus === 'STOPPED') {
+        console.error('Session status is invalid/finished, redirecting back')
+        setError(`Session ${sessionStatus.toLowerCase()}. Please start a new session.`)
         CacheService.clearSessionData()
         CacheService.clearPlanData()
         setIsInitializing(false)
@@ -221,34 +221,45 @@ export const SessionProvider = ({ children }) => {
           navigate('/config-charging')
         }, 2000)
 
-        return { success: false, error: logError('SESSION_START_FAILED') }
+        return { success: false, error: 'Session unavailable' }
       }
 
       activeSession.status = sessionStatus
+      if (sessionData.energyUsed) {
+        activeSession.energyUsed = sessionData.energyUsed
+      }
 
       setSession(activeSession)
       setPlan(activePlan)
       sessionRef.current = activeSession
       planRef.current = activePlan
 
+      // Calculate elapsed time from startTime if not cached
+      let initialElapsed = 0
       const savedTimer = CacheService.getSessionTimer()
-      if (savedTimer && savedTimer.sessionId === (activeSession.sessionId) && activeSession.warmupCompletedAt) {
-        setChargingData(prev => ({
-          ...prev,
-          timeElapsed: savedTimer.timeElapsed,
-          percentage: savedTimer.percentage,
-          energyUsed: activeSession.energyUsed || 0,
-          status: activeSession.status || 'ACTIVE'
-        }))
 
-        if (activeSession.warmupCompletedAt || activeSession.status === 'ACTIVE') {
-          setIsInitializing(false)
-          startChargingTimers(activeSession, activePlan, savedTimer.timeElapsed)
-        } else {
-          CacheService.clearSessionTimer()
-          await runWarmupSequence(activeSession, activePlan)
-        }
+      if (savedTimer && savedTimer.sessionId === (activeSession.sessionId)) {
+        initialElapsed = savedTimer.timeElapsed
+      } else if (activeSession.startTime) {
+        const start = new Date(activeSession.startTime).getTime()
+        const now = Date.now()
+        initialElapsed = Math.floor((now - start) / 1000)
+        if (initialElapsed < 0) initialElapsed = 0
+      }
+
+      setChargingData(prev => ({
+        ...prev,
+        timeElapsed: initialElapsed,
+        percentage: 0,
+        energyUsed: activeSession.energyUsed || 0,
+        status: activeSession.status || 'ACTIVE'
+      }))
+
+      if (activeSession.warmupCompletedAt || activeSession.status === 'ACTIVE' || initialElapsed > 0) {
+        setIsInitializing(false)
+        startChargingTimers(activeSession, activePlan, initialElapsed)
       } else {
+        CacheService.clearSessionTimer()
         await runWarmupSequence(activeSession, activePlan)
       }
 

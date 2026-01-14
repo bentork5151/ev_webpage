@@ -63,6 +63,25 @@ export const ChargingProvider = ({ children }) => {
     }, [])
 
     useEffect(() => {
+        const searchParams = new URLSearchParams(location.search)
+        const paramId = searchParams.get('ocppId') || searchParams.get('ocppid')
+
+        if (paramId && (!chargerData || chargerData.ocppId !== paramId)) {
+            const loadChargerFromUrl = async () => {
+                try {
+                    const response = await ApiService.get(API_CONFIG.ENDPOINTS.GET_CHARGER(paramId))
+                    if (response) {
+                        updateChargerData(response)
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch charger status from URL:', err)
+                }
+            }
+            loadChargerFromUrl()
+        }
+    }, [location.search, chargerData, updateChargerData])
+
+    useEffect(() => {
         fetchPlans()
     }, [chargerData?.chargerType])
 

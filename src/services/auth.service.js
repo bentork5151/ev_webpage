@@ -31,7 +31,8 @@ class AuthService {
             name: userDetails.name || email,
             mobile: userDetails.mobile,
             picture: userDetails.imageUrl || userDetails.picture || userDetails.avatar || userDetails.profile_picture || userDetails.profileImage || tokenData.picture || null,
-            walletBalance: Number(userDetails.walletBalance ?? 0)
+            walletBalance: Number(userDetails.walletBalance ?? 0),
+            activeSessionId: userDetails.activeSessionId || userDetails.active_session_id || userDetails.currentSessionId || userDetails.current_session_id || null
           }
         }
 
@@ -75,7 +76,8 @@ class AuthService {
         name: userDetails.name || email,
         mobile: userDetails.mobile,
         picture: userDetails.imageUrl || userDetails.picture || userDetails.avatar || userDetails.profile_picture || userDetails.profileImage || tokenData.picture || null,
-        walletBalance: Number(userDetails.walletBalance ?? 0)
+        walletBalance: Number(userDetails.walletBalance ?? 0),
+        activeSessionId: userDetails.activeSessionId || userDetails.active_session_id || userDetails.currentSessionId || userDetails.current_session_id || null
       }
 
       CacheService.saveUserCredentials(user, tokenString)
@@ -110,7 +112,8 @@ class AuthService {
         name: userDetails.name || email,
         mobile: userDetails.mobile,
         picture: userDetails.imageUrl || userDetails.picture || userDetails.avatar || userDetails.profile_picture || userDetails.profileImage || null,
-        walletBalance: Number(userDetails.walletBalance ?? 0)
+        walletBalance: Number(userDetails.walletBalance ?? 0),
+        activeSessionId: userDetails.activeSessionId || userDetails.active_session_id || userDetails.currentSessionId || userDetails.current_session_id || null
       }
 
       CacheService.saveUserCredentials(user, token)

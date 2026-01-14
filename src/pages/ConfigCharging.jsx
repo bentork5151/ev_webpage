@@ -43,15 +43,15 @@ const sidebarConfig = {
 
       ]
     },
-   {
-  section: "support",
-  items: [
-    { label: "Help", icon: <HelpOutlineIcon /> },
-    { label: "FAQ", icon: <QuizIcon />, path: "/faq" },
-    { label: "Tutorial", icon: <SchoolIcon /> },
-    { label: "Download App", icon: <DownloadIcon /> }
-  ]
-},
+    {
+      section: "support",
+      items: [
+        { label: "Help", icon: <HelpOutlineIcon /> },
+        { label: "FAQ", icon: <QuizIcon />, path: "/faq" },
+        { label: "Tutorial", icon: <SchoolIcon /> },
+        { label: "Download App", icon: <DownloadIcon /> }
+      ]
+    },
 
     {
       section: "legal",
@@ -257,10 +257,11 @@ const ConfigCharging = () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
-  background: rgba(40, 40, 40, 0.68);
-  border-radius: 16px;
-  border: none;
+  padding: 8px 12px;background: rgba(36, 36, 36, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
   color: #fff;
   font-size: 12px;
   font-family: var(--font-primary);
@@ -298,7 +299,7 @@ const ConfigCharging = () => {
   flex-direction: column;
   height: 100%;
   margin: 16px;
-  background: var(--color-matte-black);
+  background: #21212107;
   border-radius: 22px;
   overflow: hidden; /* Prevent internal spill */
 }
@@ -311,14 +312,15 @@ const ConfigCharging = () => {
   height: 100dvh;
   width: 85vw;
   max-width: 340px;
-  background: #212121;
+  background: #21212196;
+  backdrop-filter: blur(28px);
   transform: translateX(-100%);
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 101;
   border-radius: 0 28px 28px 0;
   display: flex;
   flex-direction: column;
-  box-shadow: 4px 0 24px rgba(0,0,0,0.5); /* Add shadow for depth */
+  box-shadow: 4px 0 24px rgba(0,0,0,0.0); /* Add shadow for depth */
 }
 
 .side-drawer hr {
@@ -795,10 +797,10 @@ color: var(--color-on-primary-container);
                   <p className="text-regular">{user?.email || sidebarConfig.user.email}</p>
                 </div>
               </div>
-              <CloseIcon
+              {/* <CloseIcon
                 className="close-icon"
                 onClick={() => setDrawerOpen(false)}
-              />
+              /> */}
             </div>
 
             <hr />
@@ -812,26 +814,26 @@ color: var(--color-on-primary-container);
                       className="item"
                       key={i}
                       onClick={() => {
-  setDrawerOpen(false);
+                        setDrawerOpen(false);
 
-  if (item.label === "My Wallet") {
-    navigate("/dashboard");
-  } else if (item.label === "Terms & Conditions") {
-    navigate("/terms");
-  } else if (item.label === "Privacy Policy") {
-    navigate("/privacy");
-  } else if (item.label === "About Us") {
-    setAboutOpen(true);
-  } else if (item.label === "Tutorial") {
-    navigate("/onboarding-1");
-  } else if (item.label === "FAQ") {
-    navigate("/faq");
-  } else if (item.label === "Download App") {
-    setDownloadDialogOpen(true);
-  } else if (item.label === "Help") {
-    window.open("https://bentork.com/contacts/");
-  }
-}}
+                        if (item.label === "My Wallet") {
+                          navigate("/dashboard");
+                        } else if (item.label === "Terms & Conditions") {
+                          navigate("/terms");
+                        } else if (item.label === "Privacy Policy") {
+                          navigate("/privacy");
+                        } else if (item.label === "About Us") {
+                          setAboutOpen(true);
+                        } else if (item.label === "Tutorial") {
+                          navigate("/onboarding-1");
+                        } else if (item.label === "FAQ") {
+                          navigate("/faq");
+                        } else if (item.label === "Download App") {
+                          setDownloadDialogOpen(true);
+                        } else if (item.label === "Help") {
+                          window.open("https://bentork.com/contacts/");
+                        }
+                      }}
 
                     >
                       <span className="icon">{item.icon}</span>
@@ -915,7 +917,7 @@ color: var(--color-on-primary-container);
 
 
           {/* ===== CUSTOM POWER INPUT ===== */}
-          <div className="label">Custom Power (kW)</div>
+          <div className="label">Custom Power</div>
           <div style={{ padding: '0 16px 20px' }}>
             <div style={{ position: 'relative' }}>
               <input
@@ -1092,14 +1094,12 @@ color: var(--color-on-primary-container);
         </div>
 
         {/* ===== PAY BUTTON ===== */}
-        {(selectedPlan || isChargerUnavailable) && (
+        {selectedPlan && !isChargerUnavailable && (
           <button
             className="pay-btn"
             onClick={openReceipt}
-            disabled={isChargerUnavailable}
-            style={{ opacity: isChargerUnavailable ? 0.6 : 1, cursor: isChargerUnavailable ? 'not-allowed' : 'pointer' }}
           >
-            {isChargerUnavailable ? 'Charger Unavailable' : 'Next'}
+            Next
           </button>
         )}
 

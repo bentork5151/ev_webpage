@@ -97,9 +97,9 @@ class NotificationService {
 
     static async sendSessionCompleted(sessionId, userName = 'User') {
         return this.send(
-            '🔋 Charging Complited!',
+            'Charging Complited!',
             {
-                body: `Hello ${userName}, your charging session #${sessionId} is successfully completed.`,
+                body: `Hello ${userName}, your charging session is successfully completed.`,
                 tag: `session-completed-${sessionId}`,
                 // icon: '/charging-completed-icon.png',
                 data: { sessionId }
@@ -110,9 +110,9 @@ class NotificationService {
 
     static async sendSessionStarted(sessionId) {
         return this.send(
-            '⚡ Charging Started',
+            'Charging Started',
             {
-                body: `Your charging session #${sessionId} is started.`,
+                body: `Your charging session is started.`,
                 tag: `session-started-${sessionId}`
             }
         )
@@ -121,7 +121,7 @@ class NotificationService {
 
     static async sendLowTimeWarning(remainingMinutes) {
         return this.send(
-            '⏰ Charging Almost Done',
+            'Charging Almost Done',
             {
                 body: `Your charging session will be complete in ${remainingMinutes} minute.`,
                 tag: 'low-time-warning'
