@@ -25,7 +25,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningIcon from "@mui/icons-material/Warning";
 import ErrorIcon from "@mui/icons-material/Error";
 import SchoolIcon from "@mui/icons-material/School";
-
+import QuizIcon from "@mui/icons-material/Quiz";
 import About from "./about";
 import AuthService from "../services/auth.service"; // Import service
 
@@ -43,14 +43,16 @@ const sidebarConfig = {
 
       ]
     },
-    {
-      section: "support",
-      items: [
-        { label: "Help", icon: <HelpOutlineIcon /> },
-        { label: "Tutorial", icon: <SchoolIcon /> },
-        { label: "Download App", icon: <DownloadIcon /> }
-      ]
-    },
+   {
+  section: "support",
+  items: [
+    { label: "Help", icon: <HelpOutlineIcon /> },
+    { label: "FAQ", icon: <QuizIcon />, path: "/faq" },
+    { label: "Tutorial", icon: <SchoolIcon /> },
+    { label: "Download App", icon: <DownloadIcon /> }
+  ]
+},
+
     {
       section: "legal",
       items: [
@@ -810,26 +812,27 @@ color: var(--color-on-primary-container);
                       className="item"
                       key={i}
                       onClick={() => {
-                        setDrawerOpen(false);
+  setDrawerOpen(false);
 
-                        if (item.label === "My Wallet") {
-                          navigate("/dashboard");
-                        } else if (item.label === "Terms & Conditions") {
-                          navigate("/terms");
-                        } else if (item.label === "Privacy Policy") {
-                          navigate("/privacy");
-                        } else if (item.label === "About Us") {
-                          setAboutOpen(true);
-                        } else if (item.label === "Tutorial") {
-                          navigate("/onboarding-1");
-                        } else if (item.label === "Download App") {
-                          setDownloadDialogOpen(true); // open dialog
-                        } else if (item.label === "Help") {
-                          window.open("https://bentork.com/contacts/",); // open in new tab
-                          // OR use this to open in same tab:
-                          // window.location.href = "https://bentork.com/contacts/";
-                        }
-                      }}
+  if (item.label === "My Wallet") {
+    navigate("/dashboard");
+  } else if (item.label === "Terms & Conditions") {
+    navigate("/terms");
+  } else if (item.label === "Privacy Policy") {
+    navigate("/privacy");
+  } else if (item.label === "About Us") {
+    setAboutOpen(true);
+  } else if (item.label === "Tutorial") {
+    navigate("/onboarding-1");
+  } else if (item.label === "FAQ") {
+    navigate("/faq");
+  } else if (item.label === "Download App") {
+    setDownloadDialogOpen(true);
+  } else if (item.label === "Help") {
+    window.open("https://bentork.com/contacts/");
+  }
+}}
+
                     >
                       <span className="icon">{item.icon}</span>
                       <span>{item.label}</span>

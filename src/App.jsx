@@ -15,6 +15,7 @@ import ThankYou from './pages/ThankYou'
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy.jsx";
 import About from "./pages/about.jsx";
+import Faq from "./pages/Faq.jsx";
 import OnboardingOne from "./pages/OnboardingOne";
 import OnboardingTwo from "./pages/OnboardingTwo";
 import AnimatedLayout from './wrapper/AnimatedLayout'; 
@@ -35,7 +36,7 @@ const router = createBrowserRouter([
       { path: '/terms', element: <Terms /> },
       { path: '/privacy', element: <Privacy /> },
       { path: '/about', element: <About /> },
-
+ { path: '/Faq', element: <Faq /> },
         { path: '/onboarding-1', element: <OnboardingOne /> },
       { path: '/onboarding-2', element: <OnboardingTwo /> },
       {
