@@ -75,7 +75,8 @@ const ConfigCharging = () => {
     openReceipt,
     selectPlan,
     updatePowerValue,
-    error
+    error,
+    isChargerUnavailable
   } = useCharging()
 
 
@@ -197,7 +198,7 @@ const ConfigCharging = () => {
        /* ===== PAGE ===== */
 .config-page {
   min-height: 100vh;
-  background: #303030;
+  background: var(--color-matte-black);
   color: #fff;
   padding-top: 68px;
   padding-bottom: 100px;
@@ -210,15 +211,28 @@ const ConfigCharging = () => {
   top: 0;
   left: 0;
   right: 0;
-  height: 62px;
+  height: 82px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 18px;
   z-index: 100;
-  background: #212121;
+  background: transparent;
+}
 
-  
+.topbar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 60%, rgba(0, 0, 0, 0) 100%);
+  pointer-events: none;
 }
 
 .topbar-left {
@@ -242,7 +256,7 @@ const ConfigCharging = () => {
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  background:#303030;
+  background: rgba(40, 40, 40, 0.68);
   border-radius: 16px;
   border: none;
   color: #fff;
@@ -275,40 +289,44 @@ const ConfigCharging = () => {
 
 /* ===== DRAWER ===== */
 
+/* ===== DRAWER ===== */
+
 .drawer-box {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   margin: 16px;
   background: var(--color-matte-black);
   border-radius: 22px;
-  overflow: hidden;
+  overflow: hidden; /* Prevent internal spill */
 }
-
-
 
 .side-drawer {
   position: fixed;
   top: 0;
   left: 0;
   height: 100vh;
-  width: 82%;
-  max-width: 347px;
+  height: 100dvh;
+  width: 85vw;
+  max-width: 340px;
   background: #212121;
   transform: translateX(-100%);
-  transition: transform 0.35s ease;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 101;
   border-radius: 0 28px 28px 0;
   display: flex;
   flex-direction: column;
-  padding-left: 0px;
-  gap: 18px;
-
+  box-shadow: 4px 0 24px rgba(0,0,0,0.5); /* Add shadow for depth */
 }
 
 .side-drawer hr {
   border: none;
   height: 1px;
-  background: rgba(255, 255, 255, 0.23);
-  margin: 14px 0;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 10px 0;
+  width: 100%;
 }
+
 /* OPEN STATE */
 .side-drawer.open {
   transform: translateX(0%);
@@ -317,19 +335,22 @@ const ConfigCharging = () => {
 
 /* ===== HEADER ===== */
 .drawer-header {
-  padding: 20px 8px 0 0;
+  padding: 20px 16px 10px; /* Adjusted padding */
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .user-info {
   display: flex;
   gap: 12px;
   align-items: center;
+  overflow: hidden; /* Protect text overflow */
 }
 
 .avatar {
+  flex-shrink: 0;
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -339,33 +360,51 @@ const ConfigCharging = () => {
   justify-content: center;
 }
 
+.user-text-container {
+  min-width: 0; /* Important for text-overflow to work in flex */
+  display: flex;
+  flex-direction: column;
+}
+
 .user-info p {
-width: 100%;
-white-space: nowrap;
-overflow: hidden;
-text-overflow: ellipsis;
-font-size: 12px;
-opacity: 0.6;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  opacity: 0.6;
+  margin: 0;
 }
 
 .close-icon {
   cursor: pointer;
+  padding: 4px;
 }
 
 
 /* ===== MENU ===== */
+.drawer-menu {
+  flex: 1; /* Take up remaining space */
+  overflow-y: auto; /* Scroll if menu is too long */
+  padding: 0 16px; 
+}
+
 .drawer-menu .item {
-  padding: 8px 0;
-  font-size: 12px;
+  padding: 12px 0; /* More vertically spacing for touch */
+  font-size: 14px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   color: var(--color-white);
+  cursor: pointer;
+}
+
+.drawer-menu .item:active {
+  opacity: 0.7;
 }
 
 .drawer-menu .item svg {
-  margin-top: 6px;
-  font-size: 18px;
+  font-size: 20px;
   opacity: 0.85;
 }
 
@@ -377,16 +416,17 @@ opacity: 0.6;
 
 /* ===== LOGOUT ===== */
 .logout-btn {
-  position: absolute;
-  bottom: 0;
-  width: 88%;
-  margin: 18px 0px;
-  padding: 12px 10px;
+  margin: 16px; /* Margin around button */
+  margin-top: auto; /* Push to bottom if space permits */
+  padding: 14px;
   background: #ff3131ff;
   color: #fff;
   border: none;
   border-radius: 14px;
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0; /* Don't shrink */
 }
 
 
@@ -395,7 +435,7 @@ opacity: 0.6;
   margin: 0 0 8px 0;
   font-size: 24px;
   font-weight: var(--font-weight-bold);
-  color: var(--color-primary-container, #dbe9ff);
+  color: var(--color-white, #dbe9ff);
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -405,18 +445,18 @@ opacity: 0.6;
 }
 
 .charger-card {
-  margin: 12px;
-  background: #212121;
-  border-radius: 18px;
-  padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  min-height: fit-content;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-  animation: glowEnter 0.5s ease-out 0.0s forwards;
-}
+    margin: 16px;
+    background: var(--colorcard-bg);
+    border-radius: 14px;
+    padding: 20px 0px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    min-height: fit-content;
+    // box-shadow: 10px 4px 20px rgba(7, 2, 2, 0);
+    // animation: glowEnter 0.5s ease-out 0.0s forwards;
+    }
 
 .charger-info {
   flex: 1;
@@ -455,12 +495,13 @@ opacity: 0.6;
   width: 100px; /* Reduced slightly for better fit on small mobiles */
   max-width: 130px;
   object-fit: contain;
+  display:none;
 }
 
 /* ===== SLIDER ===== */
 .label {
   font-weight: var(--font-weight-regular);
-  margin: 18px 0 6px;
+  margin: 28px 0 6px;
   font-size: 12px;
   padding: 0px 16px;
 }
@@ -509,9 +550,9 @@ margin: 8px 0px;
 }
 
 .plan {
-  background: #212121;
-  padding: 12px 18px;
-  border-radius: 18px;
+  background: #2b2b2bB2;
+  padding: 12px 24px;
+  border-radius: 14px;
   border: 1px solid var(--color-on-primary-container);
   display: flex;
   height: fit-content;
@@ -556,6 +597,7 @@ margin: 8px 0px;
   font-weight: var(--font-weight-semibold);
   border: none;
   z-index: 99;
+  animation: slideUpBtn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 .error-banner {
@@ -576,7 +618,7 @@ margin: 8px 0px;
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
-  border-radius: 16px;
+  border-radius: 6px;
   font-size: 10px;
   margin-top: 8px;
   text-transform: capitalize;
@@ -604,6 +646,17 @@ color: var(--color-on-primary-container);
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideUpBtn {
+  from {
+    transform: translate(-50%, 100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
 @keyframes pulse {
   0% { opacity: 1; }
   50% { opacity: 0.5; }
@@ -612,19 +665,68 @@ color: var(--color-on-primary-container);
 
 @keyframes glowEnter {
   0% {
-    box-shadow: inset 0 0 0 0 transparent, 0 4px 20px rgba(0,0,0,0.2);
+    box-shadow: inset 0 0 0 0 transparent, 0 4px 20px rgba(0, 0, 0, 0);
   }
   100% {
-   box-shadow: inset 50px 0px 60px -40px rgba(57, 226, 156, 0.2), 0 4px 20px rgba(0,0,0,0.2);
+   box-shadow: inset 50px 0px 60px -40px rgba(57, 226, 156, 0.2), 0 4px 20px rgba(0,0,0,0.1);
   }
 }
 
 .animate-fade {
   animation: fadeIn 0.25s ease-out forwards;
 }
+
+/* ===== BLOB CONFIG ===== */
+.blob-container-config {
+  position: absolute;
+  top: -80vmin;  /* Pull up significantly */
+  right: -50vmin; /* Center/Right shift */
+  width: 150vmin;
+  height: 150vmin; /* Ensure it stays in top region */
+  z-index: 1; /* Low z-index */
+  pointer-events: none;
+  opacity: 0.4;
+  overflow: visible;
+  z-index: 0;
+}
+
+.blob-container-config svg {
+  width: 100%;
+  height: 100%;
+  filter: blur(50px);
+}
+
+/* Reuse keyframes from splash/login logic (re-declared here for scope safety) */
+@keyframes spin-slow { 0% { transform: translate(100px, 100px) rotate(0deg) scale(1.5); } 50% { transform: translate(100px, 100px) rotate(180deg) scale(1.4); } 100% { transform: translate(100px, 100px) rotate(360deg) scale(1.5); } }
+@keyframes spin-medium { 0% { transform: translate(100px, 100px) rotate(0deg) scale(1.2); } 50% { transform: translate(100px, 100px) rotate(-180deg) scale(1.3); } 100% { transform: translate(100px, 100px) rotate(-360deg) scale(1.2); } }
+@keyframes pulse-spin { 0% { transform: translate(100px, 100px) rotate(0deg) scale(0.8); } 50% { transform: translate(100px, 100px) rotate(45deg) scale(1); } 100% { transform: translate(100px, 100px) rotate(0deg) scale(0.8); } }
+@keyframes blob-rise { 0% { transform: translate(20%, 20%) scale(0.8); opacity: 0; } 100% { transform: translate(0, 0) scale(1.1); opacity: 1; } }
+
+.blob-layer { transform-origin: center; opacity: 0.7; }
+.blob-dark { fill: #082f20; animation: spin-slow 20s linear infinite; opacity: 0.9; }
+.blob-green { fill: #008f45; animation: spin-medium 15s linear infinite reverse; opacity: 0.7; }
+.blob-light { fill: #80e8b1; animation: pulse-spin 12s ease-in-out infinite; opacity: 0.4; }
+
+/* Ensure content sits above blobs */
+.charger-card, .label, .plans-header, .plans, .charger-img-container {
+  position: relative;
+  z-index: 5;
+}
+
 `}</style>
 
-      <div className="config-page">
+      <div className="config-page" style={{ position: 'relative', overflowX: 'hidden' }}>
+
+        {/* ===== BLOBS (Conditional) ===== */}
+        {!isChargerUnavailable && (
+          <div className="blob-container-config">
+            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+              <path className="blob-layer blob-dark" d="M44.7,-76.4C58.9,-69.2,71.8,-59.1,81.6,-46.6C91.4,-34.1,98.1,-19.2,95.8,-5.3C93.5,8.6,82.2,21.5,70.9,32.3C59.6,43.1,48.3,51.8,36.5,58.8C24.7,65.8,12.4,71.1,-0.6,72.1C-13.6,73.1,-27.2,69.8,-39.6,62.8C-52,55.8,-63.2,45.1,-71.3,32.2C-79.4,19.3,-84.4,4.2,-81.8,-9.4C-79.2,-23,-69,-35.1,-57.4,-43.8C-45.8,-52.5,-32.8,-57.8,-19.9,-65.4C-7,-73,8.9,-82.9,25.4,-84.2C41.9,-85.5,59,-78.2,44.7,-76.4Z" transform="translate(100 100)" />
+              <path className="blob-layer blob-green" d="M41.3,-72.6C53.4,-65.3,63.2,-54.6,70.4,-42.1C77.6,-29.6,82.2,-15.3,81.3,-1.4C80.4,12.5,74,26,64.8,37.3C55.6,48.6,43.6,57.7,30.8,63.2C18,68.7,4.4,70.6,-8.3,69.7C-21,68.8,-32.8,65.1,-43.2,58.3C-53.6,51.5,-62.6,41.6,-68.9,30.1C-75.2,18.6,-78.8,5.5,-75.9,-6.2C-73,-17.9,-63.6,-28.2,-53.4,-36.5C-43.2,-44.8,-32.2,-51.1,-20.9,-58.5C-9.6,-65.9,2,-74.4,14.5,-76.6C27,-78.8,40.4,-74.7,41.3,-72.6Z" transform="translate(100 100)" />
+              <path className="blob-layer blob-light" d="M35.6,-62.3C46.5,-55.8,55.9,-47.5,63.1,-37.2C70.3,-26.9,75.3,-14.6,74.7,-2.6C74.1,9.4,67.9,21.1,60.1,31.8C52.3,42.5,42.9,52.2,31.7,58.5C20.5,64.8,7.5,67.7,-4.8,67.3C-17.1,66.9,-32.7,63.2,-45.3,55.8C-57.9,48.4,-67.5,37.3,-72.8,24.6C-78.1,11.9,-79.1,-2.4,-75.3,-15.8C-71.5,-29.2,-62.9,-41.7,-51.5,-49.6C-40.1,-57.5,-25.9,-60.8,-11.8,-62.8C2.3,-64.8,16.4,-65.5,29.3,-62.9C42.2,-60.3,54,-54.4,35.6,-62.3Z" transform="translate(100 100)" />
+            </svg>
+          </div>
+        )}
 
         {/* ===== TOP BAR ===== */}
         <div className="topbar">
@@ -825,8 +927,8 @@ color: var(--color-on-primary-container);
                   padding: '16px',
                   paddingRight: '48px',
                   borderRadius: '12px',
-                  border: '1px solid var(--color-on-primary-container)',
-                  background: '#2b2b2b',
+                  border: '0px solid #00000000',
+                  background: '#2b2b2bb5',
                   color: '#fff',
                   fontSize: '18px',
                   fontWeight: '500',
@@ -945,7 +1047,7 @@ color: var(--color-on-primary-container);
                       <div style={{ height: '20px', width: '50px', background: '#3a3a3a', borderRadius: '4px' }}></div>
                     </div>
                   ))
-                ) : (
+                ) : plans && plans.length > 0 ? (
                   plans.map((plan) => (
                     <div
                       key={plan.id}
@@ -965,6 +1067,20 @@ color: var(--color-on-primary-container);
 
                     </div>
                   ))
+                ) : (
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '40px 20px',
+                    textAlign: 'center',
+                    opacity: 0.7
+                  }}>
+                    <ErrorIcon style={{ fontSize: '48px', marginBottom: '12px', color: '#ff5252' }} />
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600' }}>No Plans Found</h4>
+                    <p style={{ margin: 0, fontSize: '14px', color: '#aaa' }}>Try using custom power above</p>
+                  </div>
                 )}
               </div>
             )}
@@ -973,10 +1089,16 @@ color: var(--color-on-primary-container);
         </div>
 
         {/* ===== PAY BUTTON ===== */}
-        <button className="pay-btn" onClick={openReceipt}>
-          Start
-          {/* Pay ₹{selectedPlan?.walletDeduction || 0} */}
-        </button>
+        {(selectedPlan || isChargerUnavailable) && (
+          <button
+            className="pay-btn"
+            onClick={openReceipt}
+            disabled={isChargerUnavailable}
+            style={{ opacity: isChargerUnavailable ? 0.6 : 1, cursor: isChargerUnavailable ? 'not-allowed' : 'pointer' }}
+          >
+            {isChargerUnavailable ? 'Charger Unavailable' : 'Next'}
+          </button>
+        )}
 
         {/* Download Dialog */}
         {
