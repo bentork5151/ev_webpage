@@ -498,11 +498,18 @@ export const SessionProvider = ({ children }) => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }, [])
 
+  const isCustomSession = useMemo(() => {
+    return plan?.type === 'CUSTOM' || plan?.isCustom === true
+  }, [plan])
+
   const getRemainingTime = useCallback(() => {
+    if (isCustomSession) {
+      return formatTime(chargingData.timeElapsed)
+    }
     if (!plan?.durationMin) return '--:--'
     const total = plan.durationMin * 60
     return formatTime(Math.max(0, total - chargingData.timeElapsed))
-  }, [plan?.durationMin, chargingData.timeElapsed, formatTime])
+  }, [plan?.durationMin, chargingData.timeElapsed, formatTime, isCustomSession])
 
   const getBatteryHealth = useCallback(() => {
     const p = chargingData.percentage
@@ -548,6 +555,7 @@ export const SessionProvider = ({ children }) => {
     isSessionActive,
     notificationPermission,
     isNotificationDisabled,
+    isCustomSession,
 
     loadingMessages: LOADING_MESSAGES,
     remainingTime: getRemainingTime(),
@@ -577,6 +585,7 @@ export const SessionProvider = ({ children }) => {
     isSessionActive,
     notificationPermission,
     isNotificationDisabled,
+    isCustomSession,
     getRemainingTime,
     getBatteryHealth,
     initializeSession,

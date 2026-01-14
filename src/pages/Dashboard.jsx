@@ -36,6 +36,27 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    const fetchLatestData = async () => {
+      if (user?.id && user?.email) {
+        try {
+          // 1. Refresh User (Wallet Balance)
+          await userByEmail(user.email);
+
+          // 2. Refresh Transactions
+          const latestTransactions = await AuthService.loadTransaction(user.id, 10);
+          if (Array.isArray(latestTransactions)) {
+            transactionHistory(latestTransactions);
+          }
+        } catch (err) {
+          console.error("Dashboard refresh error:", err);
+        }
+      }
+    };
+
+    fetchLatestData();
+  }, [user?.id, user?.email]);
+
+  useEffect(() => {
     if (!user) navigate("/login");
     if (Array.isArray(transactionData)) setTransactions(transactionData);
   }, [user, transactionData, navigate]);

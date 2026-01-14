@@ -6,6 +6,8 @@ body {
   margin: 0;
   padding: 0;
   height: 100vh;
+  height: 100dvh;
+  width: 100vw;
   overflow: hidden;
   background: radial-gradient(circle at top, #1f1f1f, #0e0e0e);
   /* ❌ no scroll */
@@ -16,18 +18,28 @@ body {
 
 /* --- Base Layout --- */
 .login-container-dark {
+  position: fixed;
+  top: 0;
+  left: 0;
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
+  /* Distribute space vertically */
   text-align: center;
   color: #fff;
   overflow: hidden;
   opacity: 0;
   transform: translateY(40px);
   transition: var(--transition-slow);
+  background-color: #000;
+  /* Solid black fallack */
+  background: radial-gradient(circle at center, #1a1a1a 0%, #000000 70%);
+  z-index: 100;
+  /* Ensure on top */
 }
 
 /* 🔥 Bottom-to-top animation */
@@ -40,192 +52,300 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
+  /* Change to space-between to fill height */
   flex: 1;
-  justify-content: flex-start;
   width: 100%;
+  height: 100%;
   max-width: 420px;
-  padding-top: 40px;
+  padding: 20px 20px 10px;
+  /* Reduced top padding */
+  box-sizing: border-box;
+  position: relative;
+  z-index: 10;
 }
 
 /* ===== BRAND ===== */
-.brand-logo {
-  width: clamp(270px, 20vw, 130px);
-  margin-top: 42px;
-  gap: 10px;
-  padding: 18px 28px;
+.brand-section {
+  flex: 0 0 auto;
+  margin-bottom: 1vh;
+  margin-top: 1vh;
 }
 
-
+.brand-logo {
+  width: 140px;
+  /* Slightly reduced base size */
+  max-width: 40vw;
+  height: auto;
+  object-fit: contain;
+  opacity: 0.9;
+}
 
 /* ===== HERO IMAGE ===== */
+.hero-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+  /* Important for flex child shrinking */
+  padding: 10px 0;
+}
+
 .hero-image {
-  width: 95%;
-  max-width: 3902px;
-  margin-top: 28px;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.05));
+  object-fit: contain;
 }
 
 /* ===== TEXT ===== */
+.text-section-dark {
+  flex: 0 0 auto;
+  margin-bottom: 2vh;
+  width: 100%;
+}
+
 .welcome-text-dark {
-  font-size: clamp(36px, 0vw, 48px);
-  font-weight: var(--font-weight-bold);
+  font-size: 32px;
+  /* Adaptive font size */
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  margin: 0 0 5px 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .subtitle-dark {
-  font-size: 10px;
-  font-weight: var(--font-weight-regular);
+  font-size: 14px;
+  color: #888;
+  font-weight: 400;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* --- Logo --- */
-.login-logo {
-  width: clamp(190px, 20vw, 130px);
-  margin-top: 108;
-  margin-bottom: 20px;
-  padding: 18px 28px;
-
-
-}
-
-/* --- Onboarding Image --- */
-.onboarding-container {
-  display: flex;
-  justify-content: center;
-}
-
-.onboarding-img {
+/* ===== BUTTONS ===== */
+.action-section {
+  flex: 0 0 auto;
   width: 100%;
-  max-width: 380px;
-  margin: 00px 30px;
-
+  margin-bottom: 2vh;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* --- Text Section --- */
-.text-section {
-  margin-bottom: 25px;
-}
-
-.welcome-text {
-  font-size: 28px;
-  font-weight: 400;
-  color: #000;
-  margin-top: 20px;
-  font-family: "Lexend", sans-serif;
-}
-
-.subtitle-text {
-  color: #333;
-  font-weight: 400;
-  font-size: 10px;
-  margin-bottom: 25px;
-  font-family: "Roboto", sans-serif;
-}
-
-.subtitle-text-1 {
-  color: #000000;
-  font-weight: 400;
-  font-family: "Roboto", sans-serif;
-  font-size: 12px;
-  opacity: 0.75;
-  margin-top: 20px;
-
-
-}
-
-/* ---- Google Button ---- */
-/* ===== BUTTON ===== */
 .google-btn-dark {
-  margin-top: 24px;
-  width: 90%;
-  max-width: 360px;
-  height: 56px;
-  background: rgba(48, 48, 48, 0.65);
-  color: #ffffff;
-  border-radius: 28px;
+  width: 100%;
+  height: 50px;
+  /* Slightly compact */
+  background: #ffffff;
+  color: #000000;
+  border-radius: 30px;
   font-size: 16px;
   font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 10px;
+  gap: 12px;
   cursor: pointer;
-  /* Glass effect */
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-
-  /* Motion */
-  transition:
-    /* background 0.25s ease, */
-    transform 0.2s ease;
+  transition: transform 0.2s ease, background 0.2s;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .google-btn-dark:hover {
-  background: rgba(48, 48, 48, 0.8);
+  background: #f0f0f0;
+  transform: translateY(-2px);
 }
 
 .google-btn-dark:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 .google-icon {
-  width: 22px;
-  height: 22px;
-}
-
-.card-2 {
-  background: #F1F1F1;
-  padding: 18px;
-  border-radius: 28px;
-  border: 1px solid #eee;
-  color: rgb(255, 255, 255);
-  align-items: center;
-
-
-
-
-}
-
-
-.bottom-image {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  /* optional */
-  z-index: 0;
-  pointer-events: none;
-}
-
-.top-right-image {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 150px;
-  /* adjust size */
-  /* optional */
-  z-index: 1;
-  /* keep behind content */
-  pointer-events: none;
-  /* avoid click issues */
-  opacity: 0.5;
-}
-
-.sheet-divider {
-  height: 1px;
-  background: #ddd;
-  margin: 16px 0;
+  width: 20px;
+  height: 20px;
+  color: inherit;
 }
 
 /* ===== FOOTER ===== */
-.footer-dark {
-  font-size: 8px;
-  opacity: 0.6;
-  padding: 20px 0;
+.footer-legal {
+  flex: 0 0 auto;
+  padding-bottom: 10px;
+  font-size: 11px;
+  color: #555;
+  text-align: center;
+  line-height: 1.4;
 }
 
-/* ===== SMALL DEVICES ===== */
-/* @media (max-height: 700px) {
-  .hero-image {
-    max-width: 280px;
+.footer-legal p {
+  margin: 0;
+}
+
+.legal-links span {
+  color: #777;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.footer-dark {
+  display: none;
+}
+
+
+/* ===== SMALL DEVICES / TALL SCREENS ===== */
+/* Adjust layout for very short screens */
+@media (max-height: 650px) {
+  .brand-logo {
+    width: 100px;
   }
-} */
+
+  .welcome-text-dark {
+    font-size: 24px;
+  }
+
+  .hero-section {
+    padding: 5px 0;
+  }
+}
+
+/* =========================================
+   SVG BLOB CONTAINER (LOGIN VARIANT)
+   ========================================= */
+
+/* =========================================
+   SVG BLOB CONTAINER (LOGIN VARIANT)
+   ========================================= */
+
+.blob-container-login {
+  position: absolute;
+  /* Lower positioning to stay strictly below welcome text */
+  bottom: -65vh;
+  /* Increased negative value to push it down further */
+  right: -35vh;
+  width: 100vh;
+  height: 100vh;
+  z-index: 1;
+  /* Behind content */
+  pointer-events: none;
+  /* Entrance Animation */
+  animation: blob-rise 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0.5;
+}
+
+/* Make SVG responsive */
+.blob-container-login svg {
+  width: 100%;
+  height: 100%;
+  /* Apply global blur to the SVG elements for the soft gradient effect */
+  filter: blur(40px);
+}
+
+/* =========================================
+   PATH STYLINGS
+   ========================================= */
+
+/* Layer 1: Dark Deep Green Base (Background) */
+.blob-dark {
+  fill: #082f20;
+  transform-origin: center;
+  animation: spin-slow 20s linear infinite;
+  opacity: 0.9;
+}
+
+/* Layer 2: Main Brand Green (Middle) */
+.blob-green {
+  fill: #008f45;
+  transform-origin: center;
+  animation: spin-medium 15s linear infinite reverse;
+  opacity: 0.2;
+}
+
+/* Layer 3: Light/White Glow (Foreground/Top) */
+.blob-light {
+  fill: #80e8b1;
+  transform-origin: center;
+  animation: pulse-spin 12s ease-in-out infinite;
+  opacity: 0.2;
+}
+
+/* =========================================
+   ANIMATIONS
+   ========================================= */
+
+@keyframes blob-rise {
+  0% {
+    transform: translate(20%, 20%) scale(0.8);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translate(0, 0) scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes spin-slow {
+  0% {
+    transform: translate(100px, 100px) rotate(0deg) scale(1.5);
+  }
+
+  50% {
+    transform: translate(100px, 100px) rotate(180deg) scale(1.4);
+  }
+
+  100% {
+    transform: translate(100px, 100px) rotate(360deg) scale(1.5);
+  }
+}
+
+@keyframes spin-medium {
+  0% {
+    transform: translate(100px, 100px) rotate(0deg) scale(1.2);
+  }
+
+  50% {
+    transform: translate(100px, 100px) rotate(-180deg) scale(1.3);
+  }
+
+  100% {
+    transform: translate(100px, 100px) rotate(-360deg) scale(1.2);
+  }
+}
+
+@keyframes pulse-spin {
+  0% {
+    transform: translate(100px, 100px) rotate(0deg) scale(0.8);
+  }
+
+  50% {
+    transform: translate(100px, 100px) rotate(45deg) scale(1);
+  }
+
+  100% {
+    transform: translate(100px, 100px) rotate(0deg) scale(0.8);
+  }
+}
+
+/* Mobile Tweaks */
+@media (max-width: 600px) {
+  .blob-container-login {
+    /* Push significantly lower for mobile to ensure no text overlap */
+    bottom: -55vh;
+    /* Pushed significantly lower */
+    right: -40vh;
+    width: 90vh;
+    height: 90vh;
+  }
+
+  .welcome-text-dark {
+    font-size: 42px;
+  }
+
+  .brand-logo {
+    width: 162px;
+  }
+}

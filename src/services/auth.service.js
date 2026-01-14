@@ -175,7 +175,7 @@ class AuthService {
 
   static logout() {
     CacheService.clearCache()
-    window.location.href = '/login'
+    window.location.href = '/'
   }
 
 

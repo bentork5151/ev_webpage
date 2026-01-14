@@ -9,7 +9,7 @@ const ThankYou = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       navigate("/config-charging");
-    }, 4000);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, [navigate]);
