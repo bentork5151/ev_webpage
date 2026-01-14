@@ -40,7 +40,8 @@ const ChargingSession = () => {
     stopSession,
     toggleNotification,
     formatTime,
-    setError
+    setError,
+    isCustomSession
   } = useSession()
 
   const [stopDialog, setStopDialog] = useState(false)
@@ -175,7 +176,7 @@ const ChargingSession = () => {
             {/* RATE & TIME */}
             <div className="time-center">
               <h3 className="time-1">{(remainingTime === '--:--' || !remainingTime) ? '00:00' : remainingTime}</h3>
-              <p className="time-text">Time Left</p>
+              <p className="time-text">{isCustomSession ? 'Time Elapsed' : 'Time Left'}</p>
             </div>
           </div>
 

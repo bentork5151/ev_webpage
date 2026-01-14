@@ -43,7 +43,7 @@ const TermsPage = () => {
           className="terms-text-container"
           initial={false}
           animate={{
-            height: isExpanded ? "auto" : "50vh",
+            height: isExpanded ? "auto" : "80vh",
             maskImage: isExpanded
               ? "linear-gradient(180deg, black 0%, black 100%)"
               : "linear-gradient(180deg, black 0%, black 50%, transparent 100%)",

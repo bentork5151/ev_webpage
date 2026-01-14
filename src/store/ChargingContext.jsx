@@ -83,10 +83,13 @@ export const ChargingProvider = ({ children }) => {
         setPlansLoading(true)
         try {
             const response = await ApiService.get(API_CONFIG.ENDPOINTS.GET_ALL_PLANS)
-            const filtered = chargerData?.chargerType
-                ? response.filter((p) =>
-                    p.chargerType?.toLowerCase() === chargerData?.chargerType?.toLowerCase())
-                : response
+            const filtered = response.filter((p) => {
+                const matchesType = chargerData?.chargerType
+                    ? p.chargerType?.toLowerCase() === chargerData?.chargerType?.toLowerCase()
+                    : true;
+                const matchesStatus = p.is_active !== false;
+                return matchesType && matchesStatus;
+            });
             setPlans(filtered)
         } catch (error) {
             console.error('Failed to fetch Plans: ', error)
@@ -109,10 +112,15 @@ export const ChargingProvider = ({ children }) => {
     }, [chargerData?.ocppId, updateChargerData])
 
     useEffect(() => {
+        let intervalId;
         if (chargerData?.ocppId) {
-            fetchChargerStatus()
+            fetchChargerStatus(); // Initial fetch
+            intervalId = setInterval(fetchChargerStatus, 5000); // Poll every 5s
         }
-    }, [chargerData?.ocppId])
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [chargerData?.ocppId]);
 
     const selectPlan = useCallback((plan) => {
         console.log('plan set choosen', plan)

@@ -1,158 +1,225 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import TempIcon from "../assets/images/energy.svg";
+import StationImg from "../assets/images/station-img.png";
 
 const OnboardingOne = () => {
   const navigate = useNavigate();
 
   return (
     <>
-      {/* ✅ Internal CSS */}
       <style>
         {`
         .onboarding-page {
-          min-height: 100vh;
-          background: #fff;
-        padding-bottom: 56px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+          height: 100vh;
+          background-color: var(--color-matte-black);
+          color: var(--color-white);
+          padding-bottom: 80px; /* Space for fixed buttons if needed, or just visual buffer */
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          font-family: var(--font-primary);
         }
 
         .onboarding-header {
-          background: #1c1c1c;
-          color: #fff;
-          padding: 24px;
-          border-bottom-left-radius: 28px;
-          border-bottom-right-radius: 28px;
+          background-color: var(--color-card-bg);
+          padding: 32px 24px 40px;
+          border-bottom-left-radius: 32px;
+          border-bottom-right-radius: 32px;
           text-align: center;
+          margin-bottom: 24px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .onboarding-header h2 {
+          margin: 0 0 8px;
+          font-weight: 700;
+          font-size: 24px;
+          letter-spacing: -0.5px;
+        }
+
+        .onboarding-header p {
+          margin: 0;
+          opacity: 0.7;
+          font-size: 15px;
+        }
+
+        .steps-container {
+          padding: 0 20px;
+          margin-bottom: 20px;
         }
 
         .steps-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: 16px;
-          padding: 20px;
+          gap: 20px;
+          row-gap: 32px;
         }
 
-        .step-card img {
+        /* Step Item Styling */
+        .step-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+
+        .image-wrapper {
           width: 100%;
+          aspect-ratio: 1/1;
           border-radius: 16px;
+          overflow: hidden;
+          margin-bottom: 12px;
+          background: #333; /* Placeholder color before load */
+          position: relative;
         }
 
-        .step-number {
-          width: 28px;
-          height: 28px;
-          background: #000;
-          color: #fff;
+        .image-wrapper img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          opacity: 0.9;
+        }
+
+        .step-badge {
+          width: 36px;
+          height: 36px;
+          background-color: var(--color-white);
+          color: var(--color-matte-black);
           border-radius: 50%;
-          margin: 8px auto;
           display: flex;
           align-items: center;
           justify-content: center;
+          font-weight: 700;
+          font-size: 16px;
+          margin-top: -30px; /* Half overlap or push up */
+          margin-bottom: 12px;
+          z-index: 2;
+          border: 4px solid var(--color-matte-black); /* Creates a 'cutout' look against the background */
+          box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        .step-card h4 {
-          text-align: center;
-          margin: 6px 0 2px;
+        .step-item h4 {
+          margin: 0 0 6px;
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--color-white);
         }
 
-        .step-card p {
-          text-align: center;
+        .step-item p {
+          margin: 0;
           font-size: 13px;
-          color: #555;
+          line-height: 1.4;
+          color: #bbb;
+          max-width: 140px;
         }
 
-        .onboarding-actions {
+        /* Buttons matching the design */
+        .action-buttons {
           display: flex;
-          gap: 12px;
-          padding: 0 20px;
+          gap: 16px;
+          padding: 24px;
+          margin-top: 10px;
         }
 
-        .skip-btn {
+        .btn {
           flex: 1;
-          border: 1px solid #000;
-          background: #fff;
-          padding: 14px;
-          border-radius: 30px;
+          height: 52px;
+          border-radius: 26px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: transform 0.2s, opacity 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: none;
         }
 
-        .next-btn {
-          flex: 1;
-          background: #000;
-          color: #fff;
-          padding: 14px;
-          border-radius: 30px;
+        .btn:active {
+          transform: scale(0.98);
         }
 
-        /* Mobile responsiveness */
-@media (max-width: 480px) {
-  .steps-grid {
-    grid-template-columns: 1fr;
-  }
+        .btn-skip {
+          background: transparent;
+          border: 1px solid rgba(255,255,255,0.3);
+          color: var(--color-white);
+        }
 
-  .onboarding-header h2 {
-    font-size: 20px;
-  }
+        .btn-next {
+          background: var(--color-white);
+          color: var(--color-matte-black);
+        }
 
-  .onboarding-header p {
-    font-size: 14px;
-  }
-}
+        /* Responsive Adjustments */
+        @media (max-width: 360px) {
+          .steps-grid {
+            grid-template-columns: 1fr;
+            gap: 24px;
+          }
+           .image-wrapper {
+             aspect-ratio: 16/9; /* Widescreen for single column */
+           }
+           .step-item p {
+             max-width: 100%;
+           }
+        }
         `}
-        
       </style>
 
       <div className="onboarding-page page-enter-anim">
-        {/* Header */}
         <div className="onboarding-header">
           <h2>Connect Your Charger</h2>
           <p>Follow these simple steps</p>
         </div>
 
-        {/* Steps */}
-        <div className="steps-grid">
-          <div className="step-card">
-            <img src={TempIcon} alt="Locate Port" />
-            <div className="step-number">1</div>
-            <h4>Locate Port</h4>
-            <p>Find charging port behind vehicle flap</p>
-          </div>
+        <div className="steps-container">
+          <div className="steps-grid">
+            {/* Step 1 */}
+            <div className="step-item">
+              <div className="image-wrapper">
+                <img src={StationImg} alt="Locate Port" />
+              </div>
+              <div className="step-badge">1</div>
+              <h4>Locate Port</h4>
+              <p>Find charging port behind vehicle flap</p>
+            </div>
 
-          <div className="step-card">
-            <img src={TempIcon} alt="Take Cable" />
-            <div className="step-number">2</div>
-            <h4>Take Cable</h4>
-            <p>Remove cable from station holder</p>
-          </div>
+            {/* Step 2 */}
+            <div className="step-item">
+              <div className="image-wrapper">
+                <img src={StationImg} alt="Take Cable" />
+              </div>
+              <div className="step-badge">2</div>
+              <h4>Take Cable</h4>
+              <p>Remove cable from station holder</p>
+            </div>
 
-          <div className="step-card">
-            <img src={TempIcon} alt="Connect Cable" />
-            <div className="step-number">3</div>
-            <h4>Connect Cable</h4>
-            <p>Connect firmly to vehicle port</p>
-          </div>
+            {/* Step 3 */}
+            <div className="step-item">
+              <div className="image-wrapper">
+                <img src={StationImg} alt="Connect Cable" />
+              </div>
+              <div className="step-badge">3</div>
+              <h4>Connect Cable</h4>
+              <p>Connect firmly to vehicle port</p>
+            </div>
 
-          <div className="step-card">
-            <img src={TempIcon} alt="Check Indicator" />
-            <div className="step-number">4</div>
-            <h4>Check Indicator</h4>
-            <p>Check indicator light is green</p>
+            {/* Step 4 */}
+            <div className="step-item">
+              <div className="image-wrapper">
+                <img src={StationImg} alt="Check Indicator" />
+              </div>
+              <div className="step-badge">4</div>
+              <h4>Check Status</h4>
+              <p>Check indicator light is green</p>
+            </div>
           </div>
         </div>
 
-        {/* Footer Buttons */}
-        <div className="onboarding-actions">
-          <button
-            className="skip-btn"
-            onClick={() => navigate("/config-charging")}
-          >
+        <div className="action-buttons">
+          <button className="btn btn-skip" onClick={() => navigate("/config-charging")}>
             Skip Tutorial
           </button>
-
-          <button
-            className="next-btn"
-            onClick={() => navigate("/onboarding-2")}
-          >
+          <button className="btn btn-next" onClick={() => navigate("/onboarding-2")}>
             Next
           </button>
         </div>
