@@ -64,169 +64,120 @@ const Invoice = () => {
       setIsLoading(false)
     }
   }
+const sendInvoiceEmail = async (data) => {
+  // 1️⃣ Check EmailJS availability
+  if (!EmailService.isAvailable()) {
+    console.log("EmailJS not configured, skipping email");
+    setEmailStatus({
+      sending: false,
+      sent: false,
+      error: "Email service not configured",
+    });
+    return;
+  }
 
-  // const sendInvoiceEmail = async (data) => {
+  // 2️⃣ Check user email
+  if (!user?.email) {
+    console.log("No user email available");
+    setEmailStatus({
+      sending: false,
+      sent: false,
+      error: "User email not available",
+    });
+    return;
+  }
 
-  //   if (!EmailService.isAvailable()) {
-  //     console.log('EmailJS not configured, skipping email')
-  //     setEmailStatus({
-  //       sending: false,
-  //       sent: false,
-  //       error: 'Email service not configured'
-  //     })
-  //     return
-  //   }
+  // 3️⃣ Check session data
+  if (!data) {
+    setEmailStatus({
+      sending: false,
+      sent: false,
+      error: "Session data not available",
+    });
+    return;
+  }
 
-  //   if (!user.email) {
-  //     console.log('No user email available')
-  //     setEmailStatus({
-  //       sending: false,
-  //       sent: false,
-  //       error: 'User email not available'
-  //     })
-  //     return
-  //   }
+  setEmailStatus({ sending: true, sent: false, error: null });
 
-  //   setEmailStatus({ sending: true, sent: false, error: null })
+  try {
+    // 🔢 Safe calculations
+    const energyUsed = Number(data.energyUsed || 0);
+    const rate = Number(data.rate || data.plan?.rate || 0);
+    const totalCost =
+      Number(data.finalCost) ||
+      Number(data.amountDebited) ||
+      energyUsed * rate;
 
-  //   try {
-  //     const invoiceData = {
-  //       userName: user?.name || 'Customer',
-  //       userEmail: user?.email,
-  //       sessionId: data.sessionId,
-  //       receiptId: data.receiptId || data.transactionId,
-  //       stationName: data.stationName || chargerData?.stationName || chargerData?.name || 'N/A',
-  //       chargerType: data.chargerType || chargerData?.chargerType || 'N/A',
-  //       duration: data.duration || 0,
-  //       energyUsed: data.energyUsed || 0,
-  //       rate: data.rate || data.plan?.rate || 0,
-  //       totalCost: data.finalCost || data.amountDebited || 0,
-  //       paymentMethod: data.paymentMethod || 'Wallet',
-  //       transactionId: data.transactionId || data.receiptId || data.sessionId,
-  //       completedAt: data.endTime || new Date().toISOString()
-  //     }
+    // ⏱ Format duration for email
+    const durationMinutes = data.duration
+      ? `${Math.floor(data.duration / 60)} min`
+      : "0 min";
 
-  //     console.log('Invoice data: ', invoiceData)
+    // 📧 Template-safe invoice data
+    const invoiceData = {
+      // USER
+      userName: user?.name || "Customer",
+      userEmail: user.email,
 
-  //     const result = await EmailService.sendInvoiceEmail(invoiceData)
+      // SESSION
+      session_status: "Session Completed",
+      sessionId: data.sessionId,
+      receiptId: data.receiptId || data.transactionId || data.sessionId,
+      completedAt: data.endTime
+        ? new Date(data.endTime).toLocaleString()
+        : new Date().toLocaleString(),
 
-  //     if (result.success) {
-  //       setEmailStatus({ sending: false, sent: true, error: null })
-  //       // setSnackbar({
-  //       //   open: true,
-  //       //   message: `Invoice sent to ${user?.email}`,
-  //       //   severity: 'success'
-  //       // })
-  //     } else {
-  //       throw new Error(result.error)
-  //     }
+      // CHARGING
+      stationName:
+        data.stationName ||
+        chargerData?.stationName ||
+        chargerData?.name ||
+        chargerData?.chargerName ||
+        "N/A",
 
-  //   } catch (error) {
-  //     console.error("Failed to send invoice email:", error)
-  //     setEmailStatus({
-  //       sending: false,
-  //       sent: false,
-  //       error: error.message || 'Failed to send email'
-  //     })
-  //   }
-  // }
-  const sendInvoiceEmail = async (data) => {
-    if (!EmailService.isAvailable()) {
-      console.log("EmailJS not configured, skipping email");
-      setEmailStatus({
-        sending: false,
-        sent: false,
-        error: "Email service not configured",
-      });
-      return;
+      chargerType:
+        data.chargerType ||
+        chargerData?.chargerType ||
+        "N/A",
+
+      duration: durationMinutes,
+      energyUsed: energyUsed.toFixed(2),
+      rate: rate.toFixed(2),
+
+      // PAYMENT
+      paymentMethod: data.paymentMethod || "Wallet",
+      transactionId:
+        data.transactionId ||
+        data.receiptId ||
+        data.sessionId,
+
+      totalCost: totalCost.toFixed(2),
+
+      // COMPANY
+      company_name: "Bentork",
+      company_url: "https://bentork.com",
+    };
+
+    console.log("Invoice data:", invoiceData);
+
+    // 5️⃣ Send email
+    const result = await EmailService.sendInvoiceEmail(invoiceData);
+
+    if (!result?.success) {
+      throw new Error(result?.error || "EmailJS send failed");
     }
 
-    if (!user?.email) {
-      console.log("No user email available");
-      setEmailStatus({
-        sending: false,
-        sent: false,
-        error: "User email not available",
-      });
-      return;
-    }
+    setEmailStatus({ sending: false, sent: true, error: null });
 
-    if (!data) {
-      setEmailStatus({
-        sending: false,
-        sent: false,
-        error: "Session data not available",
-      });
-      return;
-    }
-
-    setEmailStatus({ sending: true, sent: false, error: null });
-
-    try {
-      const invoiceData = {
-        // USER
-        userEmail: user.email,
-        userName: user.name || "Customer",
-
-        // SESSION
-        sessionId: data.sessionId,
-        receiptId:
-          data.receiptId ||
-          data.transactionId ||
-          data.sessionId,
-
-        completedAt: data.endTime || new Date().toISOString(),
-
-        // CHARGING
-        stationName:
-          data.stationName ||
-          chargerData?.stationName ||
-          chargerData?.name ||
-          chargerData?.chargerName ||
-          chargerData?.charger_name ||
-          "Bentork Station",
-
-        chargerType:
-          data.chargerType ||
-          chargerData?.chargerType ||
-          "N/A",
-
-        duration: data.duration || 0,
-        energyUsed: data.energyUsed || 0,
-        rate: data.rate || data.plan?.rate || 0,
-
-        // PAYMENT
-        paymentMethod: data.paymentMethod || "Wallet",
-        transactionId:
-          data.transactionId ||
-          data.receiptId ||
-          data.sessionId,
-
-        totalCost:
-          data.finalCost ||
-          data.amountDebited ||
-          (data.energyUsed || 0) *
-          (data.rate || 0),
-      };
-
-      console.log("Invoice data:", invoiceData);
-
-      const result = await EmailService.sendInvoiceEmail(invoiceData);
-
-      if (!result.success) {
-        throw new Error(result.error);
-      }
-      setEmailStatus({ sending: false, sent: true, error: null });
-    } catch (error) {
-      console.error("Failed to send invoice email:", error);
-      setEmailStatus({
-        sending: false,
-        sent: false,
-        error: logError('INVOICE_SEND_FAIL', error),
-      });
-    }
-  };
-
+  } catch (error) {
+    console.error("Failed to send invoice email:", error);
+    setEmailStatus({
+      sending: false,
+      sent: false,
+      error: error.message || "Failed to send email",
+    });
+  }
+};
 
 
 
