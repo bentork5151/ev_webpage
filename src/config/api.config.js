@@ -32,6 +32,7 @@ const API_CONFIG = {
     STOP_SESSION: '/api/sessions/stop',
     GET_ENERGY_USED: (sessionId) => `/api/sessions/${sessionId}/energy`,
     GET_SESSION_STATUS: (sessionId) => `/api/sessions/${sessionId}/status`,
+    GET_ALL_SESSIONS: '/api/sessions/all/records',
     // GET_KWH_USED: '/session/kwh/used',
 
 

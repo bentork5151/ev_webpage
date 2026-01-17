@@ -64,120 +64,120 @@ const Invoice = () => {
       setIsLoading(false)
     }
   }
-const sendInvoiceEmail = async (data) => {
-  // 1️⃣ Check EmailJS availability
-  if (!EmailService.isAvailable()) {
-    console.log("EmailJS not configured, skipping email");
-    setEmailStatus({
-      sending: false,
-      sent: false,
-      error: "Email service not configured",
-    });
-    return;
-  }
-
-  // 2️⃣ Check user email
-  if (!user?.email) {
-    console.log("No user email available");
-    setEmailStatus({
-      sending: false,
-      sent: false,
-      error: "User email not available",
-    });
-    return;
-  }
-
-  // 3️⃣ Check session data
-  if (!data) {
-    setEmailStatus({
-      sending: false,
-      sent: false,
-      error: "Session data not available",
-    });
-    return;
-  }
-
-  setEmailStatus({ sending: true, sent: false, error: null });
-
-  try {
-    // 🔢 Safe calculations
-    const energyUsed = Number(data.energyUsed || 0);
-    const rate = Number(data.rate || data.plan?.rate || 0);
-    const totalCost =
-      Number(data.finalCost) ||
-      Number(data.amountDebited) ||
-      energyUsed * rate;
-
-    // ⏱ Format duration for email
-    const durationMinutes = data.duration
-      ? `${Math.floor(data.duration / 60)} min`
-      : "0 min";
-
-    // 📧 Template-safe invoice data
-    const invoiceData = {
-      // USER
-      userName: user?.name || "Customer",
-      userEmail: user.email,
-
-      // SESSION
-      session_status: "Session Completed",
-      sessionId: data.sessionId,
-      receiptId: data.receiptId || data.transactionId || data.sessionId,
-      completedAt: data.endTime
-        ? new Date(data.endTime).toLocaleString()
-        : new Date().toLocaleString(),
-
-      // CHARGING
-      stationName:
-        data.stationName ||
-        chargerData?.stationName ||
-        chargerData?.name ||
-        chargerData?.chargerName ||
-        "N/A",
-
-      chargerType:
-        data.chargerType ||
-        chargerData?.chargerType ||
-        "N/A",
-
-      duration: durationMinutes,
-      energyUsed: energyUsed.toFixed(2),
-      rate: rate.toFixed(2),
-
-      // PAYMENT
-      paymentMethod: data.paymentMethod || "Wallet",
-      transactionId:
-        data.transactionId ||
-        data.receiptId ||
-        data.sessionId,
-
-      totalCost: totalCost.toFixed(2),
-
-      // COMPANY
-      company_name: "Bentork",
-      company_url: "https://bentork.com",
-    };
-
-    console.log("Invoice data:", invoiceData);
-
-    // 5️⃣ Send email
-    const result = await EmailService.sendInvoiceEmail(invoiceData);
-
-    if (!result?.success) {
-      throw new Error(result?.error || "EmailJS send failed");
+  const sendInvoiceEmail = async (data) => {
+    // 1️⃣ Check EmailJS availability
+    if (!EmailService.isAvailable()) {
+      console.log("EmailJS not configured, skipping email");
+      setEmailStatus({
+        sending: false,
+        sent: false,
+        error: "Email service not configured",
+      });
+      return;
     }
 
-    setEmailStatus({ sending: false, sent: true, error: null });
+    // 2️⃣ Check user email
+    if (!user?.email) {
+      console.log("No user email available");
+      setEmailStatus({
+        sending: false,
+        sent: false,
+        error: "User email not available",
+      });
+      return;
+    }
 
-  } catch (error) {
-    console.error("Failed to send invoice email:", error);
-    setEmailStatus({
-      sending: false,
-      sent: false,
-      error: error.message || "Failed to send email",
-    });
-  }
-};
+    // 3️⃣ Check session data
+    if (!data) {
+      setEmailStatus({
+        sending: false,
+        sent: false,
+        error: "Session data not available",
+      });
+      return;
+    }
+
+    setEmailStatus({ sending: true, sent: false, error: null });
+
+    try {
+      // 🔢 Safe calculations
+      const energyUsed = Number(data.energyUsed || 0);
+      const rate = Number(data.rate || data.plan?.rate || 0);
+      const totalCost =
+        Number(data.finalCost) ||
+        Number(data.amountDebited) ||
+        energyUsed * rate;
+
+      // ⏱ Format duration for email
+      const durationMinutes = data.duration
+        ? `${Math.floor(data.duration / 60)} min`
+        : "0 min";
+
+      // 📧 Template-safe invoice data
+      const invoiceData = {
+        // USER
+        userName: user?.name || "Customer",
+        userEmail: user.email,
+
+        // SESSION
+        session_status: "Session Completed",
+        sessionId: data.sessionId,
+        receiptId: data.receiptId || data.transactionId || data.sessionId,
+        completedAt: data.endTime
+          ? new Date(data.endTime).toLocaleString()
+          : new Date().toLocaleString(),
+
+        // CHARGING
+        stationName:
+          data.stationName ||
+          chargerData?.stationName ||
+          chargerData?.name ||
+          chargerData?.chargerName ||
+          "N/A",
+
+        chargerType:
+          data.chargerType ||
+          chargerData?.chargerType ||
+          "N/A",
+
+        duration: durationMinutes,
+        energyUsed: energyUsed.toFixed(2),
+        rate: rate.toFixed(2),
+
+        // PAYMENT
+        paymentMethod: data.paymentMethod || "Wallet",
+        transactionId:
+          data.transactionId ||
+          data.receiptId ||
+          data.sessionId,
+
+        totalCost: totalCost.toFixed(2),
+
+        // COMPANY
+        company_name: "Bentork",
+        company_url: "https://bentork.com",
+      };
+
+      console.log("Invoice data:", invoiceData);
+
+      // 5️⃣ Send email
+      const result = await EmailService.sendInvoiceEmail(invoiceData);
+
+      if (!result?.success) {
+        throw new Error(result?.error || "EmailJS send failed");
+      }
+
+      setEmailStatus({ sending: false, sent: true, error: null });
+
+    } catch (error) {
+      console.error("Failed to send invoice email:", error);
+      setEmailStatus({
+        sending: false,
+        sent: false,
+        error: error.message || "Failed to send email",
+      });
+    }
+  };
 
 
 
@@ -283,7 +283,6 @@ const sendInvoiceEmail = async (data) => {
        /* ================== RESET ================== */
 * {
   box-sizing: border-box;
-  
 }
 
 body {
@@ -294,63 +293,59 @@ body {
 
 /* ================== PAGE ================== */
 .invoice-page {
-    min-height: 100vh;
+  min-height: 100vh;
   background: radial-gradient(circle at top, #1e1e1e, #121212);
   padding-bottom: 120px;
   color: #fff;
+  width: 100%;
+  overflow-x: hidden;
 }
-
-
 
 /* ===== INVOICE ROW ===== */
 .invoice-row {
-  padding: 18px;
+  padding: 18px 24px;
   display: flex;
-  height: 64px;
   justify-content: space-between;
   align-items: center;
 }
 
 .invoice-row h1 {
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   color: #ffffff;
 }
 
 /* SESSION COMPLETED PILL */
 .session-pill {
-  padding: 2px 8px;
+  padding: 4px 12px;
   border-radius: 20px;
-
   background: #303030;
   color: #ffffff;
-
-  font-size: 10px;
-  font-weight: 400;
+  font-size: 11px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
 
 /* ================== HEADER ================== */
 .invoice-header {
-   background: linear-gradient(180deg, #1c1c1c 0%, #141414 100%);
-  padding: 42px 28px;
+  background: linear-gradient(180deg, #1c1c1c 0%, #141414 100%);
+  padding: 40px 20px;
   text-align: center;
-  height: 131px;
-   width: 404px;
+  width: 100%;
   border-bottom-left-radius: 32px;
   border-bottom-right-radius: 32px;
-
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 10px;
 }
 
 /* LOGO */
 .header-logo {
   width: 140px;
-  max-width: 70%;
+  max-width: 60%;
   height: auto;
   object-fit: contain;
 }
@@ -375,7 +370,7 @@ body {
 
 /* ================== EMAIL STATUS ================== */
 .email-status {
-  margin: -20px 16px 16px;
+  margin: 0 16px 16px;
   padding: 12px 16px;
   border-radius: 14px;
   display: flex;
@@ -411,45 +406,25 @@ body {
 }
 
 /* ================== CARD ================== */
-.card {
-  margin: 8px;
-   
-      height: 286;
+.card, .card-1 {
+  margin: 16px;
   border-radius: 18px;
-  background: #212121
-  );
-   gap: 10px;
+  background-color: #212121;
+  gap: 10px;
   backdrop-filter: blur(10px);
-  box-shadow: 0 0 0 1px #55555580;
+  box-shadow: 0 0 0 1px rgba(85, 85, 85, 0.5);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.card h2 {
-  padding: 10px 8px;
-  
+.card h2, .card-1 h2 {
+  padding: 16px;
+  margin: 0;
   font-size: 18px;
   font-weight: 600;
   color: #fff;
-}
-  .card-1 {
-  margin: 8px;
-   
-      height: 188px;
-  border-radius: 18px;
-  background: #212121
-  );
-   gap: 10px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0 0 1px #55555580;
-  overflow: hidden;
-}
-
-.card-1 h2 {
-  padding: 10px 8px;
-  
-  font-size: 18px;
-  font-weight: 600;
-  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* ================== ROW ================== */
@@ -458,30 +433,36 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
-  font-size: 13px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .row span:first-child {
-  color: #FFFFFF80;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .row span:last-child {
- 
-  font-weight: 400;
+  font-weight: 500;
+  color: #fff;
+  text-align: right;
 }
 
 /* ================== HIGHLIGHTS ================== */
 .highlight {
-  background: #303030;
+  background: rgba(255, 255, 255, 0.03);
   font-weight: 700;
-   color: #FFFFFF;
+  color: #FFFFFF;
 }
 
 .highlight-green {
-  background: #303030;
+  background: rgba(57, 226, 155, 0.1);
   font-weight: 600;
-   color: #FFFFFF;
+}
+
+.highlight-green span:last-child {
+  color: var(--color-primary-container);
+  font-size: 16px;
+  font-weight: 700;
 }
 
 /* ================== PAID ================== */
@@ -489,7 +470,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--color-primary-container);
+  color: var(--color-primary-container) !important;
   font-weight: 600;
 }
 
@@ -500,55 +481,51 @@ body {
 /* ================== BOTTOM ACTION ================== */
 .bottom-action {
   position: fixed;
-  bottom: 16px;
+  bottom: 0;
   left: 0;
   right: 0;
+  padding: 16px 24px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  background: linear-gradient(0deg, #111 20%, transparent 100%);
   display: flex;
   justify-content: center;
-  z-index: 10;
+  z-index: 100;
 }
 
 .bottom-action button {
-  width: 92%;
-  max-width: 420px;
-  padding: 15px;
-  border-radius: 30px;
+  width: 100%;
+  max-width: 500px;
+  padding: 16px;
+  border-radius: 16px;
   border: none;
   background: #ffffff;
   color: #000;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transition: transform 0.2s;
 }
 
-/* ================== TABLET ================== */
-@media (min-width: 768px) {
-  .invoice-header {
-    padding: 48px 16px 56px;
-  }
+.bottom-action button:active {
+  transform: scale(0.98);
+}
 
-  .card {
+/* ================== RESPONSIVE BREAKPOINTS ================== */
+@media (min-width: 600px) {
+  .card, .card-1 {
+    margin: 24px auto;
+    max-width: 500px;
+  }
+}
+
+@media (min-width: 900px) {
+  .card, .card-1 {
     max-width: 600px;
-    margin: 18px auto;
   }
-
-  .invoice-header h1 {
-    font-size: 22px;
-  }
-}
-
-/* ================== DESKTOP ================== */
-@media (min-width: 1024px) {
-  .invoice-page {
-    padding-bottom: 140px;
-  }
-
-  .card {
-    max-width: 720px;
-  }
-
-  .row {
-    font-size: 14px;
+  
+  .invoice-header {
+    height: 160px;
   }
 }
 

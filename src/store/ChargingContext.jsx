@@ -28,6 +28,7 @@ export const ChargingProvider = ({ children }) => {
     const [selectedPlan, setSelectedPlan] = useState(null)
     const [powerValue, setPowerValue] = useState(0.1)
     const [loading, setLoading] = useState(false)
+    const [chargerLoading, setChargerLoading] = useState(false) // New state
     const [plansLoading, setPlansLoading] = useState(true)
     const [error, setError] = useState('')
     const [notificationStatus, setNotificationStatus] = useState('default')
@@ -52,7 +53,6 @@ export const ChargingProvider = ({ children }) => {
     }, [selectedPlan?.walletDeduction])
 
     const hasInsufficientBalance = useMemo(() => {
-        console.log('check wallet balance', (user?.walletBalance || 0) < pricing.totalAmount)
         return (user?.walletBalance || 0) < pricing.totalAmount
     }, [user?.walletBalance, pricing.totalAmount])
 
@@ -66,8 +66,10 @@ export const ChargingProvider = ({ children }) => {
         const searchParams = new URLSearchParams(location.search)
         const paramId = searchParams.get('ocppId') || searchParams.get('ocppid')
 
-        if (paramId && (!chargerData || chargerData.ocppId !== paramId)) {
+        // Only fetch if we have a NEW paramId that differs from current data
+        if (paramId && chargerData?.ocppId !== paramId) {
             const loadChargerFromUrl = async () => {
+                setChargerLoading(true)
                 try {
                     const response = await ApiService.get(API_CONFIG.ENDPOINTS.GET_CHARGER(paramId))
                     if (response) {
@@ -75,11 +77,15 @@ export const ChargingProvider = ({ children }) => {
                     }
                 } catch (err) {
                     console.error('Failed to fetch charger status from URL:', err)
+                } finally {
+                    setTimeout(() => {
+                        setChargerLoading(false)
+                    }, 800)
                 }
             }
             loadChargerFromUrl()
         }
-    }, [location.search, chargerData, updateChargerData])
+    }, [location.search, chargerData?.ocppId, updateChargerData])
 
     useEffect(() => {
         fetchPlans()
@@ -106,7 +112,7 @@ export const ChargingProvider = ({ children }) => {
                 const matchesType = chargerData?.chargerType
                     ? p.chargerType?.toLowerCase() === chargerData?.chargerType?.toLowerCase()
                     : true;
-                const matchesStatus = p.is_active !== false;
+                const matchesStatus = p.is_active != 0;
                 return matchesType && matchesStatus;
             });
             setPlans(filtered)
@@ -114,7 +120,10 @@ export const ChargingProvider = ({ children }) => {
             console.error('Failed to fetch Plans: ', error)
             setError('Failed to fetch Plans')
         } finally {
-            setPlansLoading(false)
+            // Add intentional delay
+            setTimeout(() => {
+                setPlansLoading(false)
+            }, 800)
         }
     }, [chargerData?.chargerType])
 
@@ -133,13 +142,13 @@ export const ChargingProvider = ({ children }) => {
     useEffect(() => {
         let intervalId;
         if (chargerData?.ocppId) {
-            fetchChargerStatus(); // Initial fetch
-            intervalId = setInterval(fetchChargerStatus, 5000); // Poll every 5s
+            // Only poll, don't re-fetch immediately on mount as URL effect handles initial load
+            intervalId = setInterval(fetchChargerStatus, 5000);
         }
         return () => {
             if (intervalId) clearInterval(intervalId);
         };
-    }, [chargerData?.ocppId]);
+    }, [chargerData?.ocppId, fetchChargerStatus]);
 
     const selectPlan = useCallback((plan) => {
         console.log('plan set choosen', plan)
@@ -295,6 +304,7 @@ export const ChargingProvider = ({ children }) => {
         selectedPlan,
         powerValue,
         loading,
+        chargerLoading,
         plansLoading,
         error,
         isReceiptOpen,
@@ -316,6 +326,7 @@ export const ChargingProvider = ({ children }) => {
         selectedPlan,
         powerValue,
         loading,
+        chargerLoading,
         plansLoading,
         error,
         isReceiptOpen,

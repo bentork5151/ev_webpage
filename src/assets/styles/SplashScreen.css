@@ -91,11 +91,13 @@ md-linear-progress {
 
 .blob-container {
   position: absolute;
-  /* Position center of blob at bottom-right corner */
-  bottom: -60vmax;
-  right: -60vmax;
-  width: 120vmax;
-  height: 120vmax;
+  /* Position center of blob cluster near bottom-right corner */
+  bottom: -40vh;
+  right: -40vh;
+  left: auto;
+  margin: 0;
+  width: 120vh;
+  height: 120vh;
   z-index: 1;
   pointer-events: none;
   /* Entrance Animation */
@@ -153,7 +155,7 @@ md-linear-progress {
   }
 
   100% {
-    transform: translate(0, 0) scale(1.1);
+    transform: translate(0, 0) scale(1);
     opacity: 1;
   }
 }
@@ -225,16 +227,30 @@ md-linear-progress {
   }
 }
 
+@keyframes blob-sink {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(20%, 20%) scale(0.8);
+    opacity: 0;
+  }
+}
+
+.blob-container.exit {
+  animation: blob-sink 2.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
 /* Mobile Tweaks */
 @media (max-width: 600px) {
   .blob-container {
     /* Slightly adjust for mobile portrait */
-    bottom: -40vh;
-    /* Reduced from 50 to ensure less overflow risk */
-    right: -40vh;
-    width: 90vh;
-    /* Controlled width */
-    height: 90vh;
+    bottom: -30vh;
+    right: -30vh;
+    width: 100vh;
+    height: 100vh;
   }
 
   .splash-logo {

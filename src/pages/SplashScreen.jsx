@@ -1,134 +1,3 @@
-// import React, { useEffect, useState } from 'react'
-// import { useNavigate, useParams } from 'react-router-dom'
-// import { Box, LinearProgress, Typography } from '@mui/material'
-// import { styled } from '@mui/material/styles'
-// import AuthService from '../services/auth.service'
-// import ApiService from '../services/api.service'
-// import API_CONFIG from '../config/api.config'
-// import APP_CONFIG from '../config/app.config'
-// import { useAuth } from '../store/AuthContext'
-// import logo from "../assets/images/logo.png";
-// import TopRightBg from "../assets/images/tr.png";
-// import BottomImg from "../assets/images/BottomImg.png";
-// import "../assets/styles/SplashScreen.css"; // ✅ Correct CSS path
-// import "@material/web/progress/linear-progress.js"; // ✅ Material Web progress
-
-
-// const SplashScreen = () => {
-//   const navigate = useNavigate()
-//   const { ocppId } = useParams()
-//   const { updateChargerData, transactionHistory } = useAuth()
-//   const [status, setStatus] = useState('Initializing...')
-//   const [progress, setProgress] = useState(0)
-
-//   useEffect(() => {
-//     initializeApp()
-//   }, [])
-
-//   const initializeApp = async () => {
-//     try {
-
-//       // setProgress(10)
-//       setStatus('Checking authentication...')
-
-//       const cacheUser = await AuthService.getCurrentUser();
-
-//       if (!cacheUser) {
-//         // setProgress(100)
-//         navigate(`/login${ocppId ? `/${ocppId}` : ''}`)
-//         return
-//       }
-//       console.log(cacheUser)
-
-//       // setProgress(25)
-//       setStatus('Validating credentials...')
-
-//       const loginResult = await AuthService.login(cacheUser.email);
-//       console.log(loginResult.user.email)
-//       console.log(loginResult.user.name)
-
-//       if (!loginResult.success) {
-//         // setProgress(100)
-//         navigate(`/login${ocppId ? `/${ocppId}` : ''}`)
-//         return
-//       }
-
-//       // setProgress(40)
-
-//       if (ocppId) {
-//         try{
-//           setStatus('Loading charger data...')
-//           const chargerResponse = await ApiService.get(
-//             API_CONFIG.ENDPOINTS.GET_CHARGER(ocppId)
-//           )
-//           console.info('Charger Data:', chargerResponse)
-//           updateChargerData(chargerResponse)
-//         } catch(error){
-//           console.error('Failed to load charger data:', error)
-//         }
-//         // setProgress(60)
-//       }
-
-//       setStatus('Loading Transaction History')
-//       const transactions = await AuthService.loadTransaction(loginResult.user.id, 10)
-//       transactionHistory(transactions)
-
-//       setStatus('Checking authentication...')
-//       // const authResult = await AuthService.verifyCachedCredentials()
-//       // setProgress(80)
-//       setStatus('Securing Communication...')
-
-//       await new Promise(resolve => setTimeout(resolve, APP_CONFIG.UI.SPLASH_DURATION))
-//       // setProgress(100)
-
-//       navigate('/dashboard')
-
-//     } catch (error) {
-//       console.error('Initialization error:', error)
-//       // setProgress(100)
-//       setTimeout(() => {
-//         navigate(`/login${ocppId ? `/${ocppId}` : ''}`)
-//       }, 1000)
-//     }
-//   }
-
-//   return (
-
-//    <Box className="splash-container">
-//     <img
-//   src={TopRightBg}
-//   alt="Background decoration"
-//   className="top-right-image"
-// />
-//    <img
-//   src={BottomImg}
-//   alt="Bottom decoration"
-//   className="bottom-image"
-// />
-//   <img
-//   src={logo}
-//   alt="Bentork Logo"
-//   className="splash-logo"
-// />
-
-//   <md-linear-progress indeterminate></md-linear-progress>
-
-//   <p className="splash-text">{status}</p>
-// </Box>
-
-//   )
-// }
-
-// export default SplashScreen
-
-
-
-
-
-
-
-
-
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AuthService from "../services/auth.service";
@@ -140,6 +9,7 @@ import "@material/web/progress/linear-progress.js"; // ✅ Material Web progress
 import logo from "../assets/images/logo-1.png";
 import "../assets/styles/SplashScreen.css";
 import CacheService from "../services/cache.service";
+import SessionService from "../services/session.service"; // Ensure this is imported
 import { logError } from "../config/errors.config";
 
 const SplashScreen = () => {
@@ -148,6 +18,14 @@ const SplashScreen = () => {
   const { updateChargerData, transactionHistory, updateUserData } = useAuth();
 
   const [status, setStatus] = useState("Loading...");
+  const [isExiting, setIsExiting] = useState(false);
+
+  const handleNavigation = (path) => {
+    setIsExiting(true);
+    setTimeout(() => {
+      navigate(path);
+    }, 700);
+  };
 
   useEffect(() => {
     initializeApp();
@@ -167,21 +45,16 @@ const SplashScreen = () => {
 
 
       if (!cacheUser) {
-        navigate(`/login${ocppId ? `/${ocppId}` : ""}`);
+        handleNavigation(`/login${ocppId ? `/${ocppId}` : ""}`);
         return;
       }
 
       setStatus("Validating credentials...");
-      // const loginResult = await AuthService.login(cacheUser.email);
 
-      // if (!loginResult?.success) {
-      //   navigate(`/login${ocppId ? `/${ocppId}` : ""}`);
-      //   return;
-      // }
       const userResult = await AuthService.userByEmail(cacheUser.email); // Fetches user details using the existing valid token
       console.log("USER BY EMAIL RESULT", userResult);
       if (!userResult.success) {
-        navigate(`/login${ocppId ? `/${ocppId}` : ""}`);
+        handleNavigation(`/login${ocppId ? `/${ocppId}` : ""}`);
         return;
       }
 
@@ -208,61 +81,93 @@ const SplashScreen = () => {
       transactionHistory(transactions);
 
 
-      console.log("Checking active session...");
+      setStatus("Checking active session...");
 
-      const userActiveSessionId = userResult.user.activeSessionId || userResult.user.active_session_id || userResult.user.currentSessionId;
+      // 1. Check User Profile for Active Session ID
+      // RESTORED: activeSessionId (from AuthService) is the correct property, not sessionId
+      let userActiveSessionId = userResult.user.activeSessionId || userResult.user.active_session_id || userResult.user.currentSessionId;
       let validActiveSession = null;
 
-      if (userActiveSessionId) {
-        console.log("Found Active Session ID in User Profile:", userActiveSessionId);
+      // 2. Fallback: If not in profile, Scan the Sessions Table (Deep Check)
+      // This is crucial if the backend user profile hasn't updated yet but the session is active.
+      if (!userActiveSessionId) {
+        console.log("No activeSessionId in user profile. Scanning all sessions...");
+        try {
+          const allSessionsResponse = await ApiService.get(API_CONFIG.ENDPOINTS.GET_ALL_SESSIONS);
+          const allSessions = Array.isArray(allSessionsResponse) ? allSessionsResponse : (allSessionsResponse?.data || []);
+
+          const foundSession = allSessions.find(s =>
+            Number(s.user?.id || s.userId) === Number(userResult.user.id) &&
+            String(s.status).toUpperCase() === 'ACTIVE'
+          );
+
+          if (foundSession) {
+            console.log("Found Active Session via DB Scan:", foundSession);
+            userActiveSessionId = foundSession.id || foundSession.sessionId;
+
+            validActiveSession = {
+              sessionId: userActiveSessionId,
+              id: userActiveSessionId,
+              status: 'ACTIVE',
+              userId: userResult.user.id,
+              chargerId: foundSession.chargerId || ocppId || 'unknown',
+              boxId: foundSession.boxId || ocppId || 'unknown',
+              startTime: foundSession.startTime || new Date().toISOString()
+            };
+          }
+        } catch (scanErr) {
+          console.error("Session scan failed:", scanErr);
+        }
+      }
+
+      // 3. Verify and Cache Session (if we found an ID via Profile or Scan)
+      if (userActiveSessionId && !validActiveSession) {
+        console.log("Verifying Session ID:", userActiveSessionId);
         try {
           const sessionStatus = await SessionService.getSessionStatus(userActiveSessionId);
           const normalizedStatus = String(sessionStatus || '').toUpperCase();
 
           if (["ACTIVE", "INITIATED", "WARMUP"].includes(normalizedStatus)) {
-            // Recover existing cache if it matches, otherwise create active session object
+            let sessionDetails = null;
+            try {
+              sessionDetails = await ApiService.get(API_CONFIG.ENDPOINTS.GET_SESSION_STATUS(userActiveSessionId));
+            } catch (e) { console.warn("Could not get session details", e); }
+
             const cachedSession = CacheService.getSessionData();
 
             validActiveSession = {
-              ...(cachedSession && cachedSession.sessionId === userActiveSessionId ? cachedSession : {}),
               sessionId: userActiveSessionId,
-              id: userActiveSessionId, // Ensure both ID fields are set
+              id: userActiveSessionId,
               status: normalizedStatus,
               userId: userResult.user.id,
-              chargerId: ocppId || (cachedSession && cachedSession.chargerId) || 'unknown',
-              boxId: ocppId || (cachedSession && cachedSession.boxId) || 'unknown',
+              chargerId: sessionDetails?.chargerId || sessionDetails?.charger_id || ocppId || (cachedSession && cachedSession.chargerId) || 'unknown',
+              boxId: sessionDetails?.boxId || sessionDetails?.box_id || ocppId || (cachedSession && cachedSession.boxId) || 'unknown',
+              startTime: sessionDetails?.startTime || (cachedSession && cachedSession.startTime) || new Date().toISOString(),
+              selectedKwh: sessionDetails?.selectedKwh || sessionDetails?.selected_kwh || (cachedSession && cachedSession.selectedKwh) || 0
             };
 
-            // Ensure we have a start time
-            if (!validActiveSession.startTime) {
-              validActiveSession.startTime = new Date().toISOString();
-            }
-
-            CacheService.saveSessionData(validActiveSession);
-            console.log("Session verified and cached:", validActiveSession);
+            console.log("Session Verified via Status Check");
           } else {
-            console.log("Session exists but status is not active:", normalizedStatus);
-            CacheService.clearSessionData();
+            console.log("Session exists but status is " + normalizedStatus + ". Ignoring.");
           }
         } catch (err) {
           console.error("Failed to verify session status:", err);
-          // If verification fails (e.g. network), we might fallback to cache if the IDs match
+          // Fallback: trust cache if ID matches
           const cachedSession = CacheService.getSessionData();
-          if (cachedSession && cachedSession.sessionId === userActiveSessionId) {
+          if (cachedSession && String(cachedSession.sessionId) === String(userActiveSessionId)) {
             validActiveSession = cachedSession;
           }
         }
-      } else {
-        // No active session in profile -> Clear any stale cache
-        CacheService.clearSessionData();
       }
 
+      // 4. Save to Cache and Decide
       if (validActiveSession) {
-        // Double check user ownership
-        if (String(validActiveSession.userId) === String(userResult.user.id)) {
-          navigate("/charging-session");
-          return;
-        }
+        CacheService.saveSessionData(validActiveSession);
+        console.log("Redirecting to active session:", validActiveSession);
+        handleNavigation("/charging-session");
+        return;
+      } else {
+        CacheService.clearSessionData();
       }
 
       setStatus("Securing communication...");
@@ -271,14 +176,14 @@ const SplashScreen = () => {
       // );
 
       if (ocppId) {
-        navigate(`/config-charging?ocppId=${ocppId}`);
+        handleNavigation(`/config-charging?ocppId=${ocppId}`);
       } else {
-        navigate('/config-charging');
+        handleNavigation('/config-charging');
       }
     } catch (error) {
       logError('SESSION_INIT_ERROR', error)
       setTimeout(() => {
-        navigate(`/login${ocppId ? `/${ocppId}` : ""}`);
+        handleNavigation(`/login${ocppId ? `/${ocppId}` : ""}`);
       }, 1000);
     }
   };
@@ -293,7 +198,11 @@ const SplashScreen = () => {
 
       {/* Bottom Loading Text */}
       {/* <p className="splash-text">{status}</p> */}
-      <div className="blob-container">
+
+
+
+
+      <div className={`blob-container ${isExiting ? 'exit' : ''}`}>
         <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
           {/* Layer 1: Dark Base */}
           <path
