@@ -6,10 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import "../assets/styles/global.css";
 
 const faqData = [
-  {
-    q: "What is an EV charging station?",
-    a: "An EV charging station supplies electric energy to recharge electric vehicles such as cars, scooters, and bikes."
-  },
+
   {
     q: "How do I start charging my vehicle?",
     a: "Select a charger, choose a plan or custom power, connect your vehicle, and tap Start Charging from the app."
@@ -27,25 +24,28 @@ const faqData = [
     a: "Yes, you can select a custom power (kW) depending on charger availability and your vehicle compatibility."
   },
   {
-    q: "What payment methods are supported?",
-    a: "You can pay using wallet balance, UPI, debit/credit cards, and net banking."
-  },
+  "q": "What payment methods are supported?",
+  "a": "You can only pay using your wallet balance."
+},
+ {
+  "q": "Is GST included in the charging amount?",
+  "a": "GST is not added separately to the charging amount; it is deducted from your TopPop wallet balance."
+},
+
   {
-    q: "Is GST included in the charging amount?",
-    a: "Yes, GST is included in the final payable amount shown before starting the session."
-  },
-  {
-    q: "Will I receive an invoice after charging?",
-    a: "Yes, a detailed invoice is automatically sent to your registered email after the charging session completes."
-  },
+  "q": "Will I receive an invoice after charging?",
+  "a": "The charging invoice is only shown , while the TopPop wallet invoice is automatically sent to your registered email."
+},
+
   {
     q: "What happens if charging is interrupted?",
     a: "If charging stops due to power or network issues, billing will be calculated only for the energy consumed."
   },
   {
-    q: "Can I stop charging anytime?",
-    a: "Yes, you can stop charging at any time from the app. Charges apply only for the energy used."
-  },
+  "q": "Can I stop charging anytime?",
+  "a": "Yes, you can stop charging at any time from the app. Charges apply only for the energy used. An emergency stop button is also available at the charging station."
+},
+
   {
     q: "What should I do if the charger is unavailable?",
     a: "If a charger is busy or offline, please try another nearby charger or check again after some time."
