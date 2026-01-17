@@ -92,14 +92,14 @@ const ChargingSession = () => {
       maxWidth="sm"
       className="page-enter-anim"
       sx={{
-        height: "100vh",
-        height: "100dvh",
+        height: "100dvh", /* Dynamic viewport height for mobile */
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
         position: "relative",
         padding: "0 !important",
         background: "#000",
+        width: "100%"
       }}
     >
       <div className="premium-bg">
@@ -155,7 +155,7 @@ const ChargingSession = () => {
             />
             <CircularProgress
               variant="determinate"
-              value={36}
+              value={chargingData.percentage || chargingData.Percentage || 0}
               thickness={2}
               className="cp-fill"
               sx={{
@@ -167,7 +167,7 @@ const ChargingSession = () => {
             <div className="circle-inner">
               <Bolt className="hero-bolt" />
               <h1 className="charge-percent">
-                {Math.round(chargingData.percentage)}<span className="unit">%</span>
+                {Math.round(chargingData.percentage || chargingData.Percentage || 0)}<span className="unit">%</span>
               </h1>
               <span className="charge-status">Charged</span>
             </div>
@@ -187,7 +187,7 @@ const ChargingSession = () => {
             </div>
 
             <div className="glass-card metric-card">
-              <span className="metric-label">{isCustomSession ? 'Time Elapsed' : 'Time Left'}</span>
+              <span className="metric-label">{(isCustomSession || !session?.planId) ? 'Time Elapsed' : 'Time Left'}</span>
               <div className="metric-value-row">
                 <span className="metric-val">{(remainingTime === '--:--' || !remainingTime) ? '00:00' : remainingTime}</span>
               </div>
@@ -331,8 +331,8 @@ const ChargingSession = () => {
             flex-direction: column;
             overflow-y: auto; 
             overflow-x: hidden;
-            /* Extra padding bottom to prevent content hiding behind footer on very small screens */
-            padding-bottom: 110px; 
+            /* Footer Space + Safe Area */
+            padding-bottom: calc(120px + env(safe-area-inset-bottom)); 
             scrollbar-width: none; /* Hide scrollbar for cleaner look */
         }
         .main-layout::-webkit-scrollbar { display: none; }
@@ -367,9 +367,9 @@ const ChargingSession = () => {
             inset: 15px;
             background: var(--color-primary-container);
             filter: blur(60px);
-            opacity: 0.1;
+            opacity: 0.0;
             border-radius: 50%;
-            animation: pulse-glow 2s infinite ease-in-out;
+            // animation: pulse-glow 2s infinite ease-in-out;
         }
 
         /* Override MUI CircularProgress scaling */
@@ -527,7 +527,8 @@ const ChargingSession = () => {
             bottom: 0;
             left: 0;
             right: 0;
-            padding: 10px 24px 24px;
+            padding: 10px 24px;
+            padding-bottom: calc(24px + env(safe-area-inset-bottom));
             background: linear-gradient(0deg, #000 60%, rgba(0,0,0,0) 100%);
             z-index: 50;
             display: flex;
