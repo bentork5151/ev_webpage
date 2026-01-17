@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useSearchParams } from "react-router-dom";
 
 import { useCharging } from '../store/ChargingContext'
 
@@ -77,8 +77,10 @@ const ConfigCharging = () => {
     openReceipt,
     selectPlan,
     updatePowerValue,
+
     error,
-    isChargerUnavailable
+    isChargerUnavailable,
+    chargerLoading // Add this
   } = useCharging()
 
 
@@ -104,6 +106,15 @@ const ConfigCharging = () => {
   const [downloadDialogOpen, setDownloadDialogOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
+
+  // Flicker Prevention Logic
+  const [searchParams] = useSearchParams();
+  const paramOcppId = searchParams.get('ocppId') || searchParams.get('ocppid');
+
+  // If we have an ID in URL but it doesn't match loaded data, force loading state locally
+  // This covers the gap before context updates
+  const isDataMismatch = paramOcppId && chargerData?.ocppId !== paramOcppId;
+  const isPageLoading = chargerLoading || plansLoading || isDataMismatch;
 
   // Drawer Drag Logic
   const [drawerStartX, setDrawerStartX] = useState(0);
@@ -174,7 +185,7 @@ const ConfigCharging = () => {
         planName: 'Custom Power',
         type: 'CUSTOM',
         walletDeduction: powerValue * chargerRate, // Deduced cost per hour? Or just a base? User said multiply.
-        durationMin: 60, // Default to 1 hour for custom? Or 0. Let's keep 0 as before if unsure, but walletDeduction usually implies cost.
+        durationMin: 0, // Set to 0 to let backend stop when desired kW is achieved
         // If the backend expects deduction, this might be it.
         // Safest is to follow the visual instruction first.
         kw: powerValue,
@@ -680,6 +691,96 @@ color: var(--color-on-primary-container);
   animation: fadeIn 0.25s ease-out forwards;
 }
 
+.page-enter-anim {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* ===== WARNING DIALOG ===== */
+.warning-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.warning-dialog {
+  background: #2b2b2b;
+  border: 0px solid rgba(255, 68, 68, 0.3);
+  border-radius: 24px;
+  padding: 32px 24px;
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.warning-icon-container {
+  width: 64px;
+  height: 64px;
+  background: rgba(255, 68, 68, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.warning-icon-lg {
+  color: #ff4444;
+  font-size: 32px !important;
+}
+
+.warning-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.warning-desc {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.warning-btn {
+  margin-top: 12px;
+  background: #333;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.warning-btn:active {
+  transform: scale(0.96);
+  background: #444;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 /* ===== BLOB CONFIG ===== */
 .blob-container-config {
   position: absolute;
@@ -687,17 +788,21 @@ color: var(--color-on-primary-container);
   right: -50vmin; /* Center/Right shift */
   width: 150vmin;
   height: 150vmin; /* Ensure it stays in top region */
-  z-index: 1; /* Low z-index */
   pointer-events: none;
   opacity: 0.4;
   overflow: visible;
   z-index: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+.blob-container-config.hidden {
+  opacity: 0;
 }
 
 .blob-container-config svg {
   width: 100%;
   height: 100%;
-  filter: blur(50px);
+  filter: blur(25px);
 }
 
 /* Reuse keyframes from splash/login logic (re-declared here for scope safety) */
@@ -721,16 +826,16 @@ color: var(--color-on-primary-container);
 
       <div className="config-page" style={{ position: 'relative', overflowX: 'hidden' }}>
 
+
+
         {/* ===== BLOBS (Conditional) ===== */}
-        {!isChargerUnavailable && (
-          <div className="blob-container-config">
-            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-              <path className="blob-layer blob-dark" d="M44.7,-76.4C58.9,-69.2,71.8,-59.1,81.6,-46.6C91.4,-34.1,98.1,-19.2,95.8,-5.3C93.5,8.6,82.2,21.5,70.9,32.3C59.6,43.1,48.3,51.8,36.5,58.8C24.7,65.8,12.4,71.1,-0.6,72.1C-13.6,73.1,-27.2,69.8,-39.6,62.8C-52,55.8,-63.2,45.1,-71.3,32.2C-79.4,19.3,-84.4,4.2,-81.8,-9.4C-79.2,-23,-69,-35.1,-57.4,-43.8C-45.8,-52.5,-32.8,-57.8,-19.9,-65.4C-7,-73,8.9,-82.9,25.4,-84.2C41.9,-85.5,59,-78.2,44.7,-76.4Z" transform="translate(100 100)" />
-              <path className="blob-layer blob-green" d="M41.3,-72.6C53.4,-65.3,63.2,-54.6,70.4,-42.1C77.6,-29.6,82.2,-15.3,81.3,-1.4C80.4,12.5,74,26,64.8,37.3C55.6,48.6,43.6,57.7,30.8,63.2C18,68.7,4.4,70.6,-8.3,69.7C-21,68.8,-32.8,65.1,-43.2,58.3C-53.6,51.5,-62.6,41.6,-68.9,30.1C-75.2,18.6,-78.8,5.5,-75.9,-6.2C-73,-17.9,-63.6,-28.2,-53.4,-36.5C-43.2,-44.8,-32.2,-51.1,-20.9,-58.5C-9.6,-65.9,2,-74.4,14.5,-76.6C27,-78.8,40.4,-74.7,41.3,-72.6Z" transform="translate(100 100)" />
-              <path className="blob-layer blob-light" d="M35.6,-62.3C46.5,-55.8,55.9,-47.5,63.1,-37.2C70.3,-26.9,75.3,-14.6,74.7,-2.6C74.1,9.4,67.9,21.1,60.1,31.8C52.3,42.5,42.9,52.2,31.7,58.5C20.5,64.8,7.5,67.7,-4.8,67.3C-17.1,66.9,-32.7,63.2,-45.3,55.8C-57.9,48.4,-67.5,37.3,-72.8,24.6C-78.1,11.9,-79.1,-2.4,-75.3,-15.8C-71.5,-29.2,-62.9,-41.7,-51.5,-49.6C-40.1,-57.5,-25.9,-60.8,-11.8,-62.8C2.3,-64.8,16.4,-65.5,29.3,-62.9C42.2,-60.3,54,-54.4,35.6,-62.3Z" transform="translate(100 100)" />
-            </svg>
-          </div>
-        )}
+        <div className={`blob-container-config ${isChargerUnavailable ? 'hidden' : ''}`}>
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <path className="blob-layer blob-dark" d="M44.7,-76.4C58.9,-69.2,71.8,-59.1,81.6,-46.6C91.4,-34.1,98.1,-19.2,95.8,-5.3C93.5,8.6,82.2,21.5,70.9,32.3C59.6,43.1,48.3,51.8,36.5,58.8C24.7,65.8,12.4,71.1,-0.6,72.1C-13.6,73.1,-27.2,69.8,-39.6,62.8C-52,55.8,-63.2,45.1,-71.3,32.2C-79.4,19.3,-84.4,4.2,-81.8,-9.4C-79.2,-23,-69,-35.1,-57.4,-43.8C-45.8,-52.5,-32.8,-57.8,-19.9,-65.4C-7,-73,8.9,-82.9,25.4,-84.2C41.9,-85.5,59,-78.2,44.7,-76.4Z" transform="translate(100 100)" />
+            <path className="blob-layer blob-green" d="M41.3,-72.6C53.4,-65.3,63.2,-54.6,70.4,-42.1C77.6,-29.6,82.2,-15.3,81.3,-1.4C80.4,12.5,74,26,64.8,37.3C55.6,48.6,43.6,57.7,30.8,63.2C18,68.7,4.4,70.6,-8.3,69.7C-21,68.8,-32.8,65.1,-43.2,58.3C-53.6,51.5,-62.6,41.6,-68.9,30.1C-75.2,18.6,-78.8,5.5,-75.9,-6.2C-73,-17.9,-63.6,-28.2,-53.4,-36.5C-43.2,-44.8,-32.2,-51.1,-20.9,-58.5C-9.6,-65.9,2,-74.4,14.5,-76.6C27,-78.8,40.4,-74.7,41.3,-72.6Z" transform="translate(100 100)" />
+            <path className="blob-layer blob-light" d="M35.6,-62.3C46.5,-55.8,55.9,-47.5,63.1,-37.2C70.3,-26.9,75.3,-14.6,74.7,-2.6C74.1,9.4,67.9,21.1,60.1,31.8C52.3,42.5,42.9,52.2,31.7,58.5C20.5,64.8,7.5,67.7,-4.8,67.3C-17.1,66.9,-32.7,63.2,-45.3,55.8C-57.9,48.4,-67.5,37.3,-72.8,24.6C-78.1,11.9,-79.1,-2.4,-75.3,-15.8C-71.5,-29.2,-62.9,-41.7,-51.5,-49.6C-40.1,-57.5,-25.9,-60.8,-11.8,-62.8C2.3,-64.8,16.4,-65.5,29.3,-62.9C42.2,-60.3,54,-54.4,35.6,-62.3Z" transform="translate(100 100)" />
+          </svg>
+        </div>
 
         {/* ===== TOP BAR ===== */}
         <div className="topbar">
@@ -867,231 +972,256 @@ color: var(--color-on-primary-container);
 
 
 
-        <div className="page-enter-anim" style={{ minHeight: '100%' }}>
+        {isPageLoading ? (
+          <div className="skeleton-container" style={{ padding: '0 16px', paddingTop: '20px' }}>
+            {/* Charger Card Skeleton */}
+            <div style={{
+              height: '140px',
+              borderRadius: '14px',
+              background: 'rgba(255,255,255,0.05)',
+              marginBottom: '30px',
+              animation: 'pulse 1.5s infinite ease-in-out'
+            }}></div>
 
-          {/* ===== CHARGER CARD ===== */}
-          <div className="charger-card">
-            <div className="charger-info">
-              <p className="charger-name">
-                {chargerData?.name || chargerData?.chargerName || chargerData?.charger_name || chargerData?.stationName || "Bentork Charger"}
-              </p>
+            {/* Input Skeleton */}
+            <div style={{ height: '56px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', marginBottom: '20px', animation: 'pulse 1.5s infinite ease-in-out' }}></div>
 
-              <div
-                className={`status-pill ${!chargerData?.status
-                  ? 'status-offline'
-                  : chargerData.status.toLowerCase() === 'available'
-                    ? 'status-available'
-                    : ['busy', 'charging', 'active', 'preparing', 'finishing', 'suspendedev', 'suspendedevse', 'reserved'].includes(chargerData.status.toLowerCase())
-                      ? 'status-busy'
-                      : 'status-offline'
-                  }`}
-              >
-                {!chargerData?.status ? (
-                  <ErrorIcon style={{ fontSize: 14, marginRight: 4 }} />
-                ) : chargerData.status.toLowerCase() === 'available' ? (
-                  <CheckCircleIcon style={{ fontSize: 14, marginRight: 4 }} />
-                ) : ['busy', 'charging', 'active', 'preparing', 'finishing', 'suspendedev', 'suspendedevse', 'reserved'].includes(chargerData.status.toLowerCase()) ? (
-                  <WarningIcon style={{ fontSize: 14, marginRight: 4 }} />
-                ) : (
-                  <ErrorIcon style={{ fontSize: 14, marginRight: 4 }} />
-                )}
-                {chargerData?.status || 'Offline'}
-              </div>
-
-              <div className="charger-meta">
-                • Type: {chargerData?.connectorType || "CSS2"}<br />
-                • Power: {chargerData?.chargerType || "AC"}
-
-              </div>
-
+            {/* Chips */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '30px' }}>
+              {[1, 2, 3, 4].map(i => <div key={i} style={{ width: '60px', height: '32px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', animation: 'pulse 1.5s infinite ease-in-out' }}></div>)}
             </div>
 
-            <div className="charger-img-container">
-              <img src={StationImg} className="charger-img" alt="Station" />
+            {/* Plans */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {[1, 2, 3].map(i => <div key={i} style={{ height: '80px', borderRadius: '14px', background: 'rgba(255,255,255,0.05)', animation: 'pulse 1.5s infinite ease-in-out' }}></div>)}
             </div>
           </div>
+        ) : (
+          <div className="page-enter-anim" style={{ minHeight: '100%' }}>
+
+            {/* ===== CHARGER CARD ===== */}
+            {/* ===== CHARGER CARD ===== */}
+            <div className="charger-card">
+              <div className="charger-info">
+                <p className="charger-name">
+                  {chargerData?.name || chargerData?.chargerName || chargerData?.charger_name || chargerData?.stationName || "Bentork Charger"}
+                </p>
+
+                <div
+                  className={`status-pill ${!chargerData?.status
+                    ? 'status-offline'
+                    : chargerData.status.toLowerCase() === 'available'
+                      ? 'status-available'
+                      : ['busy', 'charging', 'active', 'preparing', 'finishing', 'suspendedev', 'suspendedevse', 'reserved'].includes(chargerData.status.toLowerCase())
+                        ? 'status-busy'
+                        : 'status-offline'
+                    }`}
+                >
+                  {!chargerData?.status ? (
+                    <ErrorIcon style={{ fontSize: 14, marginRight: 4 }} />
+                  ) : chargerData.status.toLowerCase() === 'available' ? (
+                    <CheckCircleIcon style={{ fontSize: 14, marginRight: 4 }} />
+                  ) : ['busy', 'charging', 'active', 'preparing', 'finishing', 'suspendedev', 'suspendedevse', 'reserved'].includes(chargerData.status.toLowerCase()) ? (
+                    <WarningIcon style={{ fontSize: 14, marginRight: 4 }} />
+                  ) : (
+                    <ErrorIcon style={{ fontSize: 14, marginRight: 4 }} />
+                  )}
+                  {chargerData?.status || 'Offline'}
+                </div>
+
+                <div className="charger-meta">
+                  • Type: {chargerData?.connectorType || "CSS2"}<br />
+                  • Power: {chargerData?.chargerType || "AC"}
+                </div>
+              </div>
+
+              <div className="charger-img-container">
+                <img src={StationImg} className="charger-img" alt="Station" />
+              </div>
+            </div>
 
 
 
 
 
 
-          {/* ===== CUSTOM POWER INPUT ===== */}
-          <div className="label">Custom Power</div>
-          <div style={{ padding: '0 16px 20px' }}>
-            <div style={{ position: 'relative' }}>
-              <input
-                type="number"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="Enter power in kW"
-                value={localInput}
-                onChange={handleInputChange}
-                style={{
-                  width: '100%',
-                  padding: '16px',
-                  paddingRight: '48px',
-                  borderRadius: '12px',
-                  border: '0px solid #00000000',
-                  background: '#2b2b2bb5',
-                  color: '#fff',
-                  fontSize: '18px',
-                  fontWeight: '500',
-                  outline: 'none'
-                }}
-              />
-              {localInput && (
+            {/* ===== CUSTOM POWER INPUT ===== */}
+            <div className="label">Custom Power</div>
+            <div style={{ padding: '0 16px 20px' }}>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  placeholder="Enter power in kW"
+                  value={localInput}
+                  onChange={handleInputChange}
+                  style={{
+                    width: '100%',
+                    padding: '16px',
+                    paddingRight: '48px',
+                    borderRadius: '12px',
+                    border: '0px solid #00000000',
+                    background: '#2b2b2bb5',
+                    color: '#fff',
+                    fontSize: '18px',
+                    fontWeight: '500',
+                    outline: 'none'
+                  }}
+                />
+                {localInput && (
+                  <span
+                    onClick={() => {
+                      setLocalInput('');
+                      updatePowerValue(0);
+                    }}
+                    style={{
+                      position: 'absolute',
+                      right: '14px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      cursor: 'pointer',
+                      color: 'rgba(255,255,255,0.5)',
+                      fontSize: '16px',
+                      padding: '8px'
+                    }}
+                  >
+                    ✕
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Add Chips */}
+            <div style={{ padding: '0 16px', display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '-12px' }}>
+              {(chargerData?.chargerType?.toLowerCase().includes('dc') || chargerData?.chargerType?.toLowerCase().includes('fast')
+                ? [10, 30, 50, 100]
+                : [1, 5, 10]
+              ).map((val) => (
+                <button
+                  key={val}
+                  onClick={() => {
+                    const current = Number(localInput) || 0;
+                    const next = current + val;
+                    setLocalInput(String(next));
+                    updatePowerValue(next);
+                  }}
+                  style={{
+                    background: '#303030',
+                    border: '1px solid #444',
+                    borderRadius: '8px',
+                    padding: '6px 12px',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  +{val} kW
+                </button>
+              ))}
+            </div>
+
+
+            {/* ===== PLANS ===== */}
+            <div className="plans-header">
+              <h3>{isValidCustomPower ? 'Custom Plan' : 'Plans'}</h3>
+              {isValidCustomPower && (
                 <span
+                  className="last-used-pill"
                   onClick={() => {
                     setLocalInput('');
                     updatePowerValue(0);
+                    // selectPlan(null); // Handled by useEffect, but explicit clear is fine too
                   }}
-                  style={{
-                    position: 'absolute',
-                    right: '14px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    cursor: 'pointer',
-                    color: 'rgba(255,255,255,0.5)',
-                    fontSize: '16px',
-                    padding: '8px'
-                  }}
+                  style={{ cursor: 'pointer' }}
                 >
-                  ✕
+                  Reset
                 </span>
               )}
             </div>
-          </div>
 
-          {/* Quick Add Chips */}
-          <div style={{ padding: '0 16px', display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '-12px' }}>
-            {(chargerData?.chargerType?.toLowerCase().includes('dc') || chargerData?.chargerType?.toLowerCase().includes('fast')
-              ? [10, 30, 50, 100]
-              : [1, 5, 10]
-            ).map((val) => (
-              <button
-                key={val}
-                onClick={() => {
-                  const current = Number(localInput) || 0;
-                  const next = current + val;
-                  setLocalInput(String(next));
-                  updatePowerValue(next);
-                }}
-                style={{
-                  background: '#303030',
-                  border: '1px solid #444',
-                  borderRadius: '8px',
-                  padding: '6px 12px',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontSize: '12px'
-                }}
-              >
-                +{val} kW
-              </button>
-            ))}
-          </div>
-
-
-          {/* ===== PLANS ===== */}
-          <div className="plans-header">
-            <h3>{isValidCustomPower ? 'Custom Plan' : 'Plans'}</h3>
-            {isValidCustomPower && (
-              <span
-                className="last-used-pill"
-                onClick={() => {
-                  setLocalInput('');
-                  updatePowerValue(0);
-                  // selectPlan(null); // Handled by useEffect, but explicit clear is fine too
-                }}
-                style={{ cursor: 'pointer' }}
-              >
-                Reset
-              </span>
-            )}
-          </div>
-
-          <div className="plans">
-            {isValidCustomPower ? (
-              <div
-                key="custom-plan"
-                className="plan active animate-fade"
-                style={{ background: '#2b2b2b', outline: '2px solid var(--color-primary-container)' }}
-              >
-                <div>
-                  <strong>Custom Power</strong>
-                  <br />
-                  <span>{powerValue} kW</span>
-                  <br />
-                  <span style={{ fontSize: '10px', opacity: 0.6 }}>Rate: ₹{chargerRate.toFixed(2)} / kWh</span>
-                </div>
-                <span className="price">₹{(powerValue * chargerRate).toFixed(2)}</span>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {plansLoading ? (
-                  // Skeleton Loading
-                  Array.from({ length: 3 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="plan"
-                      style={{
-                        height: '76px',
-                        background: '#2b2b2b',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: '12px',
-                        animation: 'pulse 1.5s infinite'
-                      }}
-                    >
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-                        <div style={{ height: '18px', width: '60%', background: '#3a3a3a', borderRadius: '4px' }}></div>
-                        <div style={{ height: '12px', width: '40%', background: '#3a3a3a', borderRadius: '4px' }}></div>
-                      </div>
-                      <div style={{ height: '20px', width: '50px', background: '#3a3a3a', borderRadius: '4px' }}></div>
-                    </div>
-                  ))
-                ) : plans && plans.length > 0 ? (
-                  plans.map((plan) => (
-                    <div
-                      key={plan.id}
-                      className={`plan ${selectedPlan?.id === plan.id ? "active" : ""} animate-fade`}
-                      onClick={() => {
-                        setLocalInput('');
-                        updatePowerValue(0);
-                        selectPlan(plan);
-                      }}
-                    >
-                      <div>
-                        <strong>{plan.planName}</strong>
-                        <br />
-                        <span>{plan.durationMin} mins</span>
-                      </div>
-                      <span className="price">₹{plan.walletDeduction}</span>
-
-                    </div>
-                  ))
-                ) : (
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '40px 20px',
-                    textAlign: 'center',
-                    opacity: 0.7
-                  }}>
-                    <ErrorIcon style={{ fontSize: '48px', marginBottom: '12px', color: '#ff5252' }} />
-                    <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600' }}>No Plans Found</h4>
-                    <p style={{ margin: 0, fontSize: '14px', color: '#aaa' }}>Try using custom power above</p>
+            <div className="plans">
+              {isValidCustomPower ? (
+                <div
+                  key="custom-plan"
+                  className="plan active animate-fade"
+                  style={{ background: '#2b2b2b', outline: '2px solid var(--color-primary-container)' }}
+                >
+                  <div>
+                    <strong>Custom Power</strong>
+                    <br />
+                    <span>{powerValue} kW</span>
+                    <br />
+                    <span style={{ fontSize: '10px', opacity: 0.6 }}>Rate: ₹{chargerRate.toFixed(2)} / kWh</span>
                   </div>
-                )}
-              </div>
-            )}
-          </div>
+                  <span className="price">₹{(powerValue * chargerRate).toFixed(2)}</span>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {plansLoading ? (
+                    // Skeleton Loading
+                    Array.from({ length: 3 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="plan"
+                        style={{
+                          height: '76px',
+                          background: '#2b2b2b',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          gap: '12px',
+                          animation: 'pulse 1.5s infinite'
+                        }}
+                      >
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                          <div style={{ height: '18px', width: '60%', background: '#3a3a3a', borderRadius: '4px' }}></div>
+                          <div style={{ height: '12px', width: '40%', background: '#3a3a3a', borderRadius: '4px' }}></div>
+                        </div>
+                        <div style={{ height: '20px', width: '50px', background: '#3a3a3a', borderRadius: '4px' }}></div>
+                      </div>
+                    ))
+                  ) : plans && plans.length > 0 ? (
+                    plans.map((plan) => (
+                      <div
+                        key={plan.id}
+                        className={`plan ${selectedPlan?.id === plan.id ? "active" : ""} animate-fade`}
+                        onClick={() => {
+                          setLocalInput('');
+                          updatePowerValue(0);
+                          selectPlan(plan);
+                        }}
+                      >
+                        <div>
+                          <strong>{plan.planName}</strong>
+                          <br />
+                          <span>{plan.durationMin} mins</span>
+                        </div>
+                        <span className="price">₹{plan.walletDeduction}</span>
 
-        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '40px 20px',
+                      textAlign: 'center',
+                      opacity: 0.7
+                    }}>
+                      <ErrorIcon style={{ fontSize: '48px', marginBottom: '12px', color: '#ff5252' }} />
+                      <h4 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600' }}>No Plans Found</h4>
+                      <p style={{ margin: 0, fontSize: '14px', color: '#aaa' }}>Try using custom power above</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+          </div>
+        )}
 
         {/* ===== PAY BUTTON ===== */}
         {selectedPlan && !isChargerUnavailable && (
@@ -1167,6 +1297,24 @@ color: var(--color-on-primary-container);
         }
 
 
+
+        {/* Charger Missing Warning */}
+        {(!chargerData?.ocppId && !isPageLoading) && (
+          <div className="warning-dialog-overlay">
+            <div className="warning-dialog">
+              <div className="warning-icon-container">
+                <WarningIcon className="warning-icon-lg" />
+              </div>
+              <h3 className="warning-title">Charger Not Found</h3>
+              <p className="warning-desc">
+                We couldn't detect a valid charger ID. Please scan the QR code on the charger to proceed.
+              </p>
+              <button className="warning-btn" onClick={() => navigate('/home')}>
+                Go Home
+              </button>
+            </div>
+          </div>
+        )}
 
         <Outlet />
       </div >

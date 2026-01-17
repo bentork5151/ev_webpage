@@ -13,6 +13,9 @@ import SessionService from '../services/session.service'
 import CacheService from '../services/cache.service'
 import NotificationService from '../services/notification.service'
 // import EmailService from '../services/email.service'
+import AuthService from '../services/auth.service'
+import ApiService from '../services/api.service'
+import API_CONFIG from '../config/api.config'
 import APP_CONFIG from '../config/app.config'
 import { logError } from '../config/errors.config'
 
@@ -187,6 +190,7 @@ export const SessionProvider = ({ children }) => {
     initializationStarted.current = true
 
     try {
+      console.log('Initialize Session Started - DB SCAN MODE')
       setError('')
       sessionCompleteHandled.current = false
       lowTimeWarningShown.current = false
@@ -194,39 +198,105 @@ export const SessionProvider = ({ children }) => {
       setIsLoading(false)
       setIsInitializing(true)
 
+      // 1. Get Current User
+      let currentUserId = user?.id;
+      if (!currentUserId) {
+        const cachedUser = await AuthService.getCurrentUser();
+        currentUserId = cachedUser?.id;
+      }
+      console.log('User ID:', currentUserId)
+
       let activeSession = CacheService.getSessionData()
       let activePlan = CacheService.getPlanData()
 
+      // 2. SEARCH DB: Fetch ALL sessions and filter for this user's ACTIVE session
+      // This ensures we get the "Source of Truth" directly from the Session Table as requested
+      try {
+        console.log('Scanning DB for active session...')
+        const allSessionsResponse = await ApiService.get(API_CONFIG.ENDPOINTS.GET_ALL_SESSIONS)
 
-      //Security
-      // if (!activeSession || !(activeSession.sessionId || activeSession.id)) {
-      //   console.warn('No active session found')
-      //   setIsInitializing(false)
-      //   navigate('/config-charging')
-      //   return { success: false }
-      // }
+        // Handle response which might be wrapped or just an array
+        const allSessions = Array.isArray(allSessionsResponse) ? allSessionsResponse : (allSessionsResponse?.data || [])
+
+        console.log(`Scanned ${allSessions.length} records.`)
+
+        const foundSession = allSessions.find(s =>
+          Number(s.user?.id || s.userId) === Number(currentUserId) &&
+          String(s.status).toUpperCase() === 'ACTIVE'
+        )
+
+        if (foundSession) {
+          console.log('✅ FOUND ACTIVE SESSION IN DB:', foundSession)
+
+          activeSession = {
+            ...foundSession,
+            sessionId: foundSession.id,
+            startTime: foundSession.startTime, // This is the gold standard from DB
+            status: foundSession.status,
+            energyUsed: foundSession.energyKwh || foundSession.energyUsed || 0
+          }
+          CacheService.saveSessionData(activeSession)
+
+          // 3. Match Plan using Transaction Amount (Secondary Recovery)
+          // Since Session Table lacks Plan info, we still assume Plan matches similar debit
+          if (!activePlan) {
+            const transactions = await AuthService.loadTransaction(currentUserId, 20)
+            const sessionTx = transactions.find(t =>
+              (String(t.sessionId) === String(foundSession.id) || String(t.session_id) === String(foundSession.id)) &&
+              ['DEBIT', 'debit'].includes(t.type)
+            )
+            if (sessionTx) {
+              const allPlans = await ApiService.get(API_CONFIG.ENDPOINTS.GET_ALL_PLANS)
+              const matchedPlan = allPlans.find(p => Math.abs(Number(p.walletDeduction) - Number(sessionTx.amount)) < 0.5)
+              if (matchedPlan) {
+                console.log('Matched Plan:', matchedPlan)
+                activePlan = matchedPlan
+                CacheService.savePlanData(matchedPlan)
+              }
+            }
+          }
+
+        } else {
+          console.warn('No ACTIVE session found in DB for this user.')
+          // If we rely purely on DB, we might stop here. 
+          // But valid scenarios might have latency, so fall back to cache if really needed
+          // For now, assume if DB says no, then NO.
+        }
+      } catch (dbErr) {
+        console.error('Failed to scan DB sessions:', dbErr)
+      }
+
 
       const sessionId = activeSession?.sessionId || activeSession?.id
-      const sessionData = await SessionService.fetchSessionData(sessionId)
-      console.log('Current session Data from API: ', sessionData)
 
-      const sessionStatus = String(sessionData.status || '').toUpperCase()
-      if (sessionStatus === 'FAILED' || sessionStatus === 'COMPLETED' || sessionStatus === 'STOPPED') {
-        console.error('Session status is invalid/finished, redirecting back')
-        setError(`Session ${sessionStatus.toLowerCase()}. Please start a new session.`)
+      if (!sessionId) {
+        console.warn('No active session identified after DB scan.')
+        setIsInitializing(false)
+        navigate('/config-charging') // Optional: Redirect if strict
+        return { success: false }
+      }
+
+      // 4. Live Status Double-Check (Energy & Status)
+      const sessionData = await SessionService.fetchSessionData(sessionId)
+
+      const sessionStatus = String(sessionData.status || activeSession.status || '').toUpperCase()
+
+      if (['FAILED', 'COMPLETED', 'STOPPED'].includes(sessionStatus)) {
+        console.error('Session is finished (verified live):', sessionStatus)
+        setError(`Session ${sessionStatus.toLowerCase()}.`)
         CacheService.clearSessionData()
         CacheService.clearPlanData()
         setIsInitializing(false)
-        setTimeout(() => {
-          navigate('/config-charging')
-        }, 2000)
-
+        setTimeout(() => navigate('/config-charging'), 2000)
         return { success: false, error: 'Session unavailable' }
       }
 
-      activeSession.status = sessionStatus
-      if (sessionData.energyUsed) {
-        activeSession.energyUsed = sessionData.energyUsed
+      // 5. Update Context State
+      if (activeSession) {
+        activeSession.status = sessionStatus
+        if (sessionData.energyUsed !== undefined) {
+          activeSession.energyUsed = sessionData.energyUsed
+        }
       }
 
       setSession(activeSession)
@@ -234,44 +304,48 @@ export const SessionProvider = ({ children }) => {
       sessionRef.current = activeSession
       planRef.current = activePlan
 
-      // Calculate elapsed time from startTime if not cached
+      // 6. Calculate Timer
       let initialElapsed = 0
-      const savedTimer = CacheService.getSessionTimer()
 
-      if (savedTimer && savedTimer.sessionId === (activeSession.sessionId)) {
-        initialElapsed = savedTimer.timeElapsed
-      } else if (activeSession.startTime) {
-        const start = new Date(activeSession.startTime).getTime()
-        const now = Date.now()
-        initialElapsed = Math.floor((now - start) / 1000)
-        if (initialElapsed < 0) initialElapsed = 0
+      if (activeSession?.startTime) {
+        let startMs = 0;
+        const sTime = activeSession.startTime;
+        // Robust Date Parsing for Java LocalDateTime array [yyyy, MM, dd, HH, mm, ss]
+        if (Array.isArray(sTime)) {
+          startMs = new Date(sTime[0], sTime[1] - 1, sTime[2], sTime[3], sTime[4], sTime[5] || 0).getTime()
+        } else {
+          startMs = new Date(sTime).getTime()
+        }
+
+        if (!isNaN(startMs)) {
+          const now = Date.now()
+          initialElapsed = Math.floor((now - startMs) / 1000)
+          if (initialElapsed < 0) initialElapsed = 0
+          console.log('Calculated Initial Elapsed:', initialElapsed, 's')
+        }
       }
 
       setChargingData(prev => ({
         ...prev,
         timeElapsed: initialElapsed,
         percentage: 0,
-        energyUsed: activeSession.energyUsed || 0,
-        status: activeSession.status || 'ACTIVE'
+        energyUsed: activeSession?.energyUsed || 0,
+        status: activeSession?.status || 'ACTIVE'
       }))
 
-      if (activeSession.warmupCompletedAt || activeSession.status === 'ACTIVE' || initialElapsed > 0) {
-        setIsInitializing(false)
-        startChargingTimers(activeSession, activePlan, initialElapsed)
-      } else {
-        CacheService.clearSessionTimer()
-        await runWarmupSequence(activeSession, activePlan)
-      }
+      // 7. Start UI Timers
+      setIsInitializing(false)
+      startChargingTimers(activeSession, activePlan, initialElapsed)
 
       return { success: true }
     } catch (err) {
+      console.error('Session Init Error:', err)
       setError(logError('SESSION_INIT_ERROR', err))
       setIsInitializing(false)
       setIsLoading(false)
       return { success: false, error: err.message }
     }
-  }, [navigate])
-
+  }, [navigate, user])
 
   const runWarmupSequence = useCallback(async (activeSession, activePlan) => {
     setIsInitializing(true)
@@ -314,9 +388,29 @@ export const SessionProvider = ({ children }) => {
 
       setChargingData(prev => {
         const newElapsed = prev.timeElapsed + 1
-        const percentage = durationSeconds > 0
-          ? (newElapsed / durationSeconds) * 100
-          : 0
+
+        // Use ref to ensure we get the latest session object even inside interval closure
+        const currentSession = sessionRef.current || activeSession;
+        // Check multiple possible property names for the target energy (camel and snake case)
+        const targetKwh = Number(
+          currentSession?.selectedKwh ||
+          currentSession?.selected_kwh ||
+          currentSession?.kwh ||
+          currentSession?.targetKwh ||
+          currentSession?.target_kwh ||
+          0
+        );
+
+        let percentage = 0;
+
+        if (durationSeconds > 0) {
+          percentage = (newElapsed / durationSeconds) * 100;
+        } else if (targetKwh > 0) {
+          // Use live energyUsed (updated via poller) for percentage
+          // Ensure we use the latest available energy reading
+          const currentEnergy = chargingDataRef.current?.energyUsed || prev.energyUsed || 0;
+          percentage = (currentEnergy / targetKwh) * 100;
+        }
 
         const updated = {
           ...prev,
@@ -514,10 +608,10 @@ export const SessionProvider = ({ children }) => {
   }, [plan])
 
   const getRemainingTime = useCallback(() => {
-    if (isCustomSession) {
+    // If custom session or NO PLAN data (recovery failed), show elapsed time
+    if (isCustomSession || !plan?.durationMin) {
       return formatTime(chargingData.timeElapsed)
     }
-    if (!plan?.durationMin) return '--:--'
     const total = plan.durationMin * 60
     return formatTime(Math.max(0, total - chargingData.timeElapsed))
   }, [plan?.durationMin, chargingData.timeElapsed, formatTime, isCustomSession])

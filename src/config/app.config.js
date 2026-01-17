@@ -34,7 +34,7 @@ const APP_CONFIG = {
 
 
   UI: {
-    SPLASH_DURATION: 3000,
+    SPLASH_DURATION: 1000,
     TOAST_DURATION: 4000,
   },
 }

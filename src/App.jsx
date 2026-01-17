@@ -8,6 +8,7 @@ import EmailService from './services/email.service'
 import SplashScreen from './pages/SplashScreen'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
+import Home from './pages/Home'
 import ChargingFlow from './wrapper/ChargingFlow'
 import SessionFlow from './wrapper/SessionFlow'
 import Invoice from './pages/Invoice'
@@ -18,7 +19,7 @@ import About from "./pages/about.jsx";
 import Faq from "./pages/Faq.jsx";
 import OnboardingOne from "./pages/OnboardingOne";
 import OnboardingTwo from "./pages/OnboardingTwo";
-import AnimatedLayout from './wrapper/AnimatedLayout'; 
+import AnimatedLayout from './wrapper/AnimatedLayout';
 
 import ErrorPage from './pages/ErrorPage'
 
@@ -36,16 +37,17 @@ const router = createBrowserRouter([
       { path: '/terms', element: <Terms /> },
       { path: '/privacy', element: <Privacy /> },
       { path: '/about', element: <About /> },
- { path: '/Faq', element: <Faq /> },
-        { path: '/onboarding-1', element: <OnboardingOne /> },
+      { path: '/Faq', element: <Faq /> },
+      { path: '/onboarding-1', element: <OnboardingOne /> },
       { path: '/onboarding-2', element: <OnboardingTwo /> },
       {
         element: <AuthGuard />,
         errorElement: <ErrorPage />,
         children: [
           { path: '/dashboard', element: <Dashboard /> },
+          { path: '/home', element: <Home /> },
 
-          
+
 
           {
             path: '/config-charging', element: <ChargingFlow />,
