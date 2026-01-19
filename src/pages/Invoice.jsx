@@ -26,227 +26,19 @@ const Invoice = () => {
   //   transactionId: "TXN-999",
   //   endTime: new Date().toISOString()
   // });
-  const [isLoading, setIsLoading] = useState(true)
-  const [emailStatus, setEmailStatus] = useState({
-    sending: false,
-    sent: false,
-    error: null
-  })
-  // const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' })
-
-  useEffect(() => {
-    loadSessionData()
-  }, [])
-
-  const loadSessionData = async () => {
-    try {
-      const stored = CacheService.getSessionData()
-      let parsed
-      if (stored) {
-        parsed = stored
-        const completionData = parsed.completionData || parsed
-
-        setSessionData(completionData)
-
-        CacheService.clearPlanData()
-        SessionService.clearSession()
-
-        if (!emailSentRef.current && user?.email) {
-          emailSentRef.current = true
-          await sendInvoiceEmail(completionData)
-        }
-      } else {
-        console.warn("No session completion data found")
-      }
-    } catch (error) {
-      console.error("Error loading session data:", error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-  const sendInvoiceEmail = async (data) => {
-    // 1️⃣ Check EmailJS availability
-    if (!EmailService.isAvailable()) {
-      console.log("EmailJS not configured, skipping email");
-      setEmailStatus({
-        sending: false,
-        sent: false,
-        error: "Email service not configured",
-      });
-      return;
-    }
-
-    // 2️⃣ Check user email
-    if (!user?.email) {
-      console.log("No user email available");
-      setEmailStatus({
-        sending: false,
-        sent: false,
-        error: "User email not available",
-      });
-      return;
-    }
-
-    // 3️⃣ Check session data
-    if (!data) {
-      setEmailStatus({
-        sending: false,
-        sent: false,
-        error: "Session data not available",
-      });
-      return;
-    }
-
-    setEmailStatus({ sending: true, sent: false, error: null });
-
-    try {
-      // 🔢 Safe calculations
-      const energyUsed = Number(data.energyUsed || 0);
-      const rate = Number(data.rate || data.plan?.rate || 0);
-      const totalCost =
-        Number(data.finalCost) ||
-        Number(data.amountDebited) ||
-        energyUsed * rate;
-
-      // ⏱ Format duration for email
-      const durationMinutes = data.duration
-        ? `${Math.floor(data.duration / 60)} min`
-        : "0 min";
-
-      // 📧 Template-safe invoice data
-      const invoiceData = {
-        // USER
-        userName: user?.name || "Customer",
-        userEmail: user.email,
-
-        // SESSION
-        session_status: "Session Completed",
-        sessionId: data.sessionId,
-        receiptId: data.receiptId || data.transactionId || data.sessionId,
-        completedAt: data.endTime
-          ? new Date(data.endTime).toLocaleString()
-          : new Date().toLocaleString(),
-
-        // CHARGING
-        stationName:
-          data.stationName ||
-          chargerData?.stationName ||
-          chargerData?.name ||
-          chargerData?.chargerName ||
-          "N/A",
-
-        chargerType:
-          data.chargerType ||
-          chargerData?.chargerType ||
-          "N/A",
-
-        duration: durationMinutes,
-        energyUsed: energyUsed.toFixed(2),
-        rate: rate.toFixed(2),
-
-        // PAYMENT
-        paymentMethod: data.paymentMethod || "Wallet",
-        transactionId:
-          data.transactionId ||
-          data.receiptId ||
-          data.sessionId,
-
-        totalCost: totalCost.toFixed(2),
-
-        // COMPANY
-        company_name: "Bentork",
-        company_url: "https://bentork.com",
-      };
-
-      console.log("Invoice data:", invoiceData);
-
-      // 5️⃣ Send email
-      const result = await EmailService.sendInvoiceEmail(invoiceData);
-
-      if (!result?.success) {
-        throw new Error(result?.error || "EmailJS send failed");
-      }
-
-      setEmailStatus({ sending: false, sent: true, error: null });
-
-    } catch (error) {
-      console.error("Failed to send invoice email:", error);
-      setEmailStatus({
-        sending: false,
-        sent: false,
-        error: error.message || "Failed to send email",
-      });
-    }
-  };
-
-
-
-
-
-  const handleResendEmail = async () => {
-    if (sessionData && user?.email) {
-      await sendInvoiceEmail(sessionData)
-    }
-  }
-
-  const handleDone = () => {
-    navigate("/thank-you")
-  }
-
-
-
-
-
-
-
-
-  if (isLoading) {
-    return (
-      <div className="invoice-loading">
-        <CircularProgress sx={{ color: '#7dbb63' }} />
-        <p>Loading invoice...</p>
-        <style>{`
-          .invoice-loading {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            gap: 16px;
-          }
-        `}</style>
-      </div>
-    )
-  }
-
-  // Uncomment after fixing Frontend UI
-  if (!sessionData) {
-    return (
-      <div className="invoice-page">
-        {/* <style>{invoiceStyles}</style> */}
-        <div className="invoice-header">
-          <h1>Invoice</h1>
-          <p>No session data found</p>
-        </div>
-        <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
-          <p>The session data may have already been processed.</p>
-          <button className="done-btn" onClick={() => navigate('/config-charging')}>
-            Go to Dashboard
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-
-
-
+  // Dynamic Data Extraction with Formatting
   const stationName = sessionData.stationName || chargerData?.stationName || chargerData?.name || chargerData?.chargerName || chargerData?.charger_name || "N/A"
   const chargerType = sessionData.chargerType || chargerData?.chargerType || "N/A"
   const durationMin = sessionData.duration || 0
-  const energy = sessionData.energyUsed || 0
-  const rate = sessionData.rate || sessionData.plan?.rate || 0
-  const totalCost = sessionData.finalCost || sessionData.amountDebited || (energy * rate)
+
+  const energyVal = Number(sessionData.energyUsed || 0)
+  const rateVal = Number(sessionData.rate || sessionData.plan?.rate || 0)
+  const totalCostVal = Number(sessionData.finalCost || sessionData.amountDebited || (energyVal * rateVal))
+
+  const energy = energyVal.toFixed(2)
+  const rate = rateVal.toFixed(2)
+  const totalCost = totalCostVal.toFixed(2)
+
   const transactionId = sessionData.transactionId || sessionData.receiptId || sessionData.sessionId || "N/A"
   const paymentMethod = sessionData.paymentMethod || "Wallet"
   const sessionId = sessionData.sessionId || "N/A"
@@ -540,26 +332,7 @@ body {
         />
       </div>
 
-      {emailStatus.sending && (
-        <div className="email-status sending">
-          <CircularProgress size={16} sx={{ color: '#fff' }} />
-          <span>Sending invoice to {user?.email}...</span>
-        </div>
-      )}
-
-      {emailStatus.sent && (
-        <div className="email-status sent">
-          <Email sx={{ fontSize: 18 }} />
-          <span>Invoice sent to {user?.email}</span>
-        </div>
-      )}
-
-      {emailStatus.error && (
-        <div className="email-status error">
-          <span>Failed to send email: {emailStatus.error}</span>
-          <button onClick={handleResendEmail}>Retry</button>
-        </div>
-      )}
+      {/* Email Status Removed */}
       <div className="invoice-row">
         <h1>Invoice</h1>
         <span className="session-pill">Session Completed</span>

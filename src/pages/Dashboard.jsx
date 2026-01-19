@@ -11,6 +11,7 @@ import ArrowUp from "../assets/images/ArrowUp.svg";
 import ArrowDown from "../assets/images/ArrowDown.svg";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ProfileIcon from "../assets/images/profile.svg";
+import BatteryIcon from "../assets/images/battery.svg";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -62,9 +63,40 @@ export default function Dashboard() {
   }, [user, transactionData, navigate]);
 
   useEffect(() => {
-    const baseAmount = parseFloat(amount) || 0
+    const baseAmount = parseFloat(amount) || 0;
     setTotalAmount(baseAmount.toFixed(2));
   }, [amount]);
+
+  // Carousel Logic
+  const [currentAdIndex, setCurrentAdIndex] = useState(0);
+  const ads = [
+    {
+      title: "Bentork Batteries",
+      desc: "Power your drive with long-lasting life.",
+      buttonText: "View Range",
+      color: "#39E29B",
+      image: BatteryIcon
+    },
+    {
+      title: "New Fast Chargers",
+      desc: "Experience ultra-fast charging at downtown.",
+      buttonText: "Explore",
+      color: "#2196F3"
+    },
+    {
+      title: "Refer & Earn",
+      desc: "Invite friends and earn ₹100 credits.",
+      buttonText: "Share",
+      color: "#FF9800"
+    }
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentAdIndex((prev) => (prev + 1) % ads.length);
+    }, 4000); // 4 seconds
+    return () => clearInterval(interval);
+  }, [ads.length]);
 
 
 
@@ -302,8 +334,8 @@ export default function Dashboard() {
             color: var(--color-on-primary-container); 
         }
         .icon-debit { 
-            background: rgba(255, 138, 128, 0.15); 
-            color: #0d0100ff; 
+            background: rgba(255, 82, 82, 0.2); 
+            color: #ff5252; 
         }
 
         .tx-info h4 { margin: 0 0 4px 0; font-size: 15px; font-weight: 500; }
@@ -427,6 +459,112 @@ export default function Dashboard() {
         .dialog-backdrop.closing {
           animation: fadeOut 0.3s ease forwards;
         }
+
+        /* ===== AD CAROUSEL ===== */
+        .ad-carousel {
+          position: relative;
+          width: 100%;
+          height: 120px;
+          margin-bottom: 32px;
+          border-radius: 20px;
+          overflow: hidden;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .ad-slide {
+          position: absolute;
+          inset: 0;
+          padding: 16px 20px;
+          display: flex;
+          flex-direction: row; /* Changed to row */
+          justify-content: flex-start;
+          align-items: center;
+          gap: 16px; /* Space between img and text */
+          transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
+          opacity: 0;
+          transform: translateY(20px);
+        }
+
+        .ad-slide.active {
+          opacity: 1;
+          transform: translateY(0);
+          z-index: 2;
+        }
+
+        .ad-img-box {
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .ad-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 8px;
+        }
+
+        .ad-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+
+        .ad-content h4 {
+          margin: 0 0 4px 0;
+          font-size: 16px; 
+          font-weight: 700;
+          color: #fff;
+        }
+
+        .ad-content p {
+          margin: 0 0 12px 0;
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.7);
+          max-width: 80%;
+        }
+
+        .ad-btn {
+          width: fit-content;
+          padding: 6px 14px;
+          border-radius: 8px;
+          font-size: 11px;
+          font-weight: 600;
+          border: none;
+          color: #000;
+          cursor: pointer;
+          background: #fff;
+        }
+
+        .carousel-dots {
+          position: absolute;
+          bottom: 12px;
+          right: 16px;
+          display: flex;
+          gap: 6px;
+          z-index: 5;
+        }
+
+        .dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.2);
+          transition: all 0.3s;
+        }
+        .dot.active {
+          background: #fff;
+          width: 18px; /* Elongated active dot */
+          border-radius: 4px;
+        }
       `}</style>
 
         {/* ===== BACKGROUND BLOBS ===== */}
@@ -458,6 +596,38 @@ export default function Dashboard() {
             <button className="add-btn" onClick={() => setShowDialog(true)}>
               <span>+ Add Money</span>
             </button>
+          </div>
+
+          {/* Ad Carousel */}
+          <div className="ad-carousel">
+            {ads.map((ad, index) => (
+              <div
+                key={index}
+                className={`ad-slide ${index === currentAdIndex ? 'active' : ''}`}
+                style={{
+                  background: `linear-gradient(90deg, ${ad.color}20 0%, transparent 100%)`
+                }}
+              >
+                {ad.image && (
+                  <div className="ad-img-box">
+                    <img src={ad.image} alt={ad.title} className="ad-img" />
+                  </div>
+                )}
+                <div className="ad-content">
+                  <h4 style={{ color: ad.color }}>{ad.title}</h4>
+                  <p>{ad.desc}</p>
+                  <button className="ad-btn" style={{ background: ad.color, color: '#000' }}>
+                    {ad.buttonText}
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <div className="carousel-dots">
+              {ads.map((_, idx) => (
+                <div key={idx} className={`dot ${idx === currentAdIndex ? 'active' : ''}`} />
+              ))}
+            </div>
           </div>
 
           {/* Transactions */}
@@ -540,11 +710,11 @@ export default function Dashboard() {
             <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '16px', marginBottom: '24px' }}>
               <div className="bill-row">
                 <span>Base Amount</span>
-                <span>₹{((parseFloat(amount) || 0) / (1 + (APP_CONFIG.TAX.GST_RATE || 0.18))).toFixed(2)}</span>
+                <span>₹{((parseFloat(amount) || 0) * (1 - (APP_CONFIG.TAX.GST_RATE || 0.18))).toFixed(2)}</span>
               </div>
               <div className="bill-row">
                 <span>GST ({(APP_CONFIG.TAX.GST_RATE || 0.18) * 100}%)</span>
-                <span>₹{((parseFloat(amount) || 0) - ((parseFloat(amount) || 0) / (1 + (APP_CONFIG.TAX.GST_RATE || 0.18)))).toFixed(2)}</span>
+                <span>₹{((parseFloat(amount) || 0) * (APP_CONFIG.TAX.GST_RATE || 0.18)).toFixed(2)}</span>
               </div>
               <div className="bill-row bill-total">
                 <span>Total Payable</span>
