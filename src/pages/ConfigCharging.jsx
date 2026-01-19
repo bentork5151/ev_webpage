@@ -26,6 +26,7 @@ import WarningIcon from "@mui/icons-material/Warning";
 import ErrorIcon from "@mui/icons-material/Error";
 import SchoolIcon from "@mui/icons-material/School";
 import QuizIcon from "@mui/icons-material/Quiz";
+import BoltIcon from '@mui/icons-material/Bolt';
 import About from "./about";
 import AuthService from "../services/auth.service"; // Import service
 
@@ -156,6 +157,14 @@ const ConfigCharging = () => {
     const val = e.target.value;
     // Allow digits only (positive integers)
     if (!/^\d*$/.test(val)) return;
+
+    // Enforce Max Limit
+    const isDC = chargerData?.chargerType?.toLowerCase().includes('dc') || chargerData?.chargerType?.toLowerCase().includes('fast');
+    const maxPower = isDC ? 500 : 50;
+
+    if (val !== '' && Number(val) > maxPower) {
+      return; // Stop input if exceeds limit
+    }
 
     setLocalInput(val);
 
@@ -323,7 +332,7 @@ const ConfigCharging = () => {
   height: 100dvh;
   width: 85vw;
   max-width: 340px;
-  background: #21212196;
+  background: #212121bc;
   backdrop-filter: blur(28px);
   transform: translateX(-100%);
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -566,13 +575,15 @@ margin: 8px 0px;
 
 .plan {
   background: #2b2b2bB2;
-  padding: 12px 24px;
+  padding: 12px 12px;
   border-radius: 14px;
   border: 1px solid var(--color-on-primary-container);
+  outline: 2px solid transparent;
   display: flex;
   height: fit-content;
   justify-content: space-between;
   align-items: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .plan strong{
   font-size: 18px;
@@ -593,6 +604,26 @@ margin: 8px 0px;
 .plan.active {
   background: #2b2b2b;
   outline: 2px solid var(--color-primary-container);
+  border-color: transparent; /* Optional: hide inner border when active for cleaner look */
+}
+
+.plan.active .plan-icon-box {
+    background: var(--color-primary-container);
+    color: var(--color-on-primary-container);
+    box-shadow: 0 0 12px rgba(57, 226, 155, 0.4);
+}
+
+.plan-icon-box {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.8);
+    flex-shrink: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ===== PAY BUTTON ===== */
@@ -973,7 +1004,7 @@ color: var(--color-on-primary-container);
 
 
         {isPageLoading ? (
-          <div className="skeleton-container" style={{ padding: '0 16px', paddingTop: '20px' }}>
+          <div className="skeleton-container" style={{ padding: '0 16px', paddingTop: '20px', position: 'relative', zIndex: 10 }}>
             {/* Charger Card Skeleton */}
             <div style={{
               height: '140px',
@@ -1103,8 +1134,12 @@ color: var(--color-on-primary-container);
                   onClick={() => {
                     const current = Number(localInput) || 0;
                     const next = current + val;
-                    setLocalInput(String(next));
-                    updatePowerValue(next);
+                    const isDC = chargerData?.chargerType?.toLowerCase().includes('dc') || chargerData?.chargerType?.toLowerCase().includes('fast');
+                    const maxPower = isDC ? 500 : 50;
+                    const finalVal = Math.min(next, maxPower);
+
+                    setLocalInput(String(finalVal));
+                    updatePowerValue(finalVal);
                   }}
                   style={{
                     background: '#303030',
@@ -1147,12 +1182,17 @@ color: var(--color-on-primary-container);
                   className="plan active animate-fade"
                   style={{ background: '#2b2b2b', outline: '2px solid var(--color-primary-container)' }}
                 >
-                  <div>
-                    <strong>Custom Power</strong>
-                    <br />
-                    <span>{powerValue} kW</span>
-                    <br />
-                    <span style={{ fontSize: '10px', opacity: 0.6 }}>Rate: ₹{chargerRate.toFixed(2)} / kWh</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div className="plan-icon-box">
+                      <BoltIcon style={{ fontSize: '24px' }} />
+                    </div>
+                    <div>
+                      <strong style={{ textTransform: 'uppercase' }}>Custom Power</strong>
+                      <br />
+                      <span>{powerValue} kW</span>
+                      <br />
+                      <span style={{ fontSize: '10px', opacity: 0.6 }}>Rate: ₹{chargerRate.toFixed(2)} / kWh</span>
+                    </div>
                   </div>
                   <span className="price">₹{(powerValue * chargerRate).toFixed(2)}</span>
                 </div>
@@ -1192,10 +1232,17 @@ color: var(--color-on-primary-container);
                           selectPlan(plan);
                         }}
                       >
-                        <div>
-                          <strong>{plan.planName}</strong>
-                          <br />
-                          <span>{plan.durationMin} mins</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div className="plan-icon-box">
+                            <BoltIcon style={{ fontSize: '24px' }} />
+                          </div>
+                          <div>
+                            <strong style={{ textTransform: 'uppercase' }}>{plan.planName}</strong>
+                            <br />
+                            <span style={{ fontSize: '12px', opacity: 0.7 }}>
+                              Rate: ₹{chargerRate} /kW • {plan.durationMin} mins
+                            </span>
+                          </div>
                         </div>
                         <span className="price">₹{plan.walletDeduction}</span>
 

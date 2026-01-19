@@ -565,9 +565,9 @@ const Home = () => {
 
     // Stations State
     const [stations, setStations] = useState([
-        { id: "OCPPCHG-1123-0116", name: "Bentork Charger-16", distance: "0.5 km", status: "Loading...", type: "AC Type 2", power: "1kW" },
-        { id: "OCPPCHG-1123-0117", name: "Bentork Charger -17", distance: "0.5 km", status: "Loading...", type: "AC Type 2", power: "1kW" },
-        { id: "OCPP-100", name: "Bentork DC Charger", distance: "0.5 km", status: "Loading...", type: "DC Fast", power: "10kW" },
+        { id: "OCPPCHG-1123-0116", name: "BENTORK PLUS-16", distance: "0.5 km", status: "Loading...", type: "AC Type 2", power: "1kW" },
+        { id: "OCPPCHG-1123-0117", name: "BENTORK PLUS-17", distance: "0.5 km", status: "Loading...", type: "AC Type 2", power: "1kW" },
+        { id: "OCPP-100", name: "BENTORK PRO-100", distance: "0.5 km", status: "Loading...", type: "DC Fast", power: "10kW" },
     ]);
 
     // Fetch Stations Status
