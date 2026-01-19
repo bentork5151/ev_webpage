@@ -155,7 +155,7 @@ const ChargingSession = () => {
             />
             <CircularProgress
               variant="determinate"
-              value={chargingData.percentage || chargingData.Percentage || 0}
+              value={24}
               thickness={2}
               className="cp-fill"
               sx={{
