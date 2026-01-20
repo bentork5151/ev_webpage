@@ -527,18 +527,20 @@ export const SessionProvider = ({ children }) => {
     console.log('Building completion data with ', { currentSession, currentPlan, currentChagingData })
 
     const completionData = {
-      sessionId: currentSession?.sessionId || currentSession?.id,
-      receiptId: currentSession?.receiptId,
+      sessionId: data.sessionId || currentSession?.sessionId || currentSession?.id,
+      receiptId: data.receiptId || currentSession?.receiptId,
       status: data.status,
-      startTime: currentSession?.startTime,
+      startTime: data.startTime || currentSession?.startTime,
       endTime: new Date().toISOString(),
       duration: Math.floor((currentChagingData.timeElapsed || 0) / 60),
-      energyUsed: currentChagingData.energyUsed || 0,
+      energyUsed: data.energyUsed || data.energyKwh || currentChagingData.energyUsed || 0,
       plan: currentPlan,
-      amountDebited: currentSession?.amountDebited || currentPlan?.walletDeduction,
-      finalCost: currentSession?.amountDebited || currentPlan?.walletDeduction,
-      rate: currentChagingData?.rate || currentPlan?.rate || 0,
-      transactionId: session?.receiptId || session?.sessionId || session?.id,
+      // Prioritize backend response (data), then session, then plan
+      amountDebited: data.amountDebited ?? currentSession?.amountDebited ?? currentPlan?.walletDeduction,
+      finalCost: data.finalCost ?? data.amountDebited ?? currentSession?.amountDebited ?? currentPlan?.walletDeduction,
+      rate: data.rate ?? currentChagingData?.rate ?? currentPlan?.rate ?? 0,
+
+      transactionId: data.transactionId || session?.receiptId || session?.sessionId || session?.id,
       paymentMethod: 'Wallet',
       stationName: currentChagingData?.stationName || currentChagingData?.name,
       chargerType: currentChagingData?.chargerType,

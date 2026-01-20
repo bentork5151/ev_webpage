@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, Email, Download } from "@mui/icons-material";
+import { CheckCircle, Email, Download, ReceiptLong } from "@mui/icons-material";
 import { CircularProgress, Alert, Snackbar } from "@mui/material"
 import { useAuth } from "../store/AuthContext";
 import CacheService from "../services/cache.service";
@@ -10,10 +10,10 @@ import Logo from "../assets/images/logo-1.png";
 import { logError } from "../config/errors.config";
 const Invoice = () => {
   const navigate = useNavigate();
-  const { user, chargerData } = useAuth();
+  const { user, chargerData, transactionData } = useAuth();
   const emailSentRef = useRef(false)
   const [sessionData, setSessionData] = useState(null);
-  //Static data for testing
+  // Static data for testing
   // const [sessionData, setSessionData] = useState({
   //   sessionId: "MOCK-123",
   //   stationName: "Test Station",
@@ -26,6 +26,148 @@ const Invoice = () => {
   //   transactionId: "TXN-999",
   //   endTime: new Date().toISOString()
   // });
+  const [isLoading, setIsLoading] = useState(true)
+  const [emailStatus, setEmailStatus] = useState({
+    sending: false,
+    sent: false,
+    error: null
+  })
+
+  useEffect(() => {
+    loadSessionData()
+  }, [])
+
+  const loadSessionData = async () => {
+    try {
+      const stored = CacheService.getSessionData()
+      let parsed
+      if (stored) {
+        parsed = stored
+        const completionData = parsed.completionData || parsed
+
+        setSessionData(completionData)
+
+        CacheService.clearPlanData()
+        SessionService.clearSession()
+
+        if (!emailSentRef.current && user?.email) {
+          emailSentRef.current = true
+          // await sendInvoiceEmail(completionData)
+        }
+      } else {
+        console.warn("No session completion data found")
+      }
+    } catch (error) {
+      console.error("Error loading session data:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDone = () => {
+    navigate("/thank-you")
+  }
+
+  if (isLoading) {
+    return (
+      <div className="invoice-loading">
+        <CircularProgress sx={{ color: '#7dbb63' }} />
+        <p>Loading invoice...</p>
+        <style>{`
+          .invoice-loading {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            gap: 16px;
+          }
+        `}</style>
+      </div>
+    )
+  }
+
+  // No Session Data State
+  if (!sessionData) {
+    return (
+      <div className="invoice-page page-enter-anim" style={{
+        minHeight: '100vh',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+        boxSizing: 'border-box',
+        background: '#121212' // Fallback dark background
+      }}>
+        <style>{`
+          .empty-state-card {
+            background: rgba(30, 30, 30, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 40px 24px;
+            border-radius: 28px;
+            text-align: center;
+            max-width: 340px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+          }
+          .empty-icon-box {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            color: rgba(255, 255, 255, 0.6);
+            box-shadow: inset 0 2px 10px rgba(255,255,255,0.05);
+          }
+          .action-btn-primary {
+            background: var(--color-primary-container, #39e29b);
+            color: var(--color-on-primary-container, #000);
+            border: none;
+            padding: 16px 24px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 32px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+          }
+          .action-btn-primary:active {
+            transform: scale(0.96);
+            filter: brightness(0.9);
+          }
+        `}</style>
+
+        <div className="empty-state-card">
+          <div className="empty-icon-box">
+            <ReceiptLong sx={{ fontSize: 36 }} />
+          </div>
+          <h2 style={{ fontSize: '22px', margin: '0 0 12px', fontWeight: 600, color: '#fff' }}>No Invoice Found</h2>
+          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: '1.6', maxWidth: '280px' }}>
+            We couldn't retrieve the invoice details for this session. It may have expired or been processed.
+          </p>
+          <button className="action-btn-primary" onClick={() => navigate('/config-charging')}>
+            Return to Dashboard
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   // Dynamic Data Extraction with Formatting
   const stationName = sessionData.stationName || chargerData?.stationName || chargerData?.name || chargerData?.chargerName || chargerData?.charger_name || "N/A"
   const chargerType = sessionData.chargerType || chargerData?.chargerType || "N/A"
@@ -46,9 +188,9 @@ const Invoice = () => {
 
   const formatDuration = (mins) => {
     const h = Math.floor(mins / 60)
-    const m = mins % 60
+    const m = Math.floor(mins % 60)
     if (h > 0) return `${h}h ${m}m`
-    return `${m} min`
+    return `${m} mins`
   }
 
   const formatDate = (dateString) => {
@@ -72,313 +214,276 @@ const Invoice = () => {
   return (
     <div className="invoice-page page-enter-anim">
       <style>{`
-       /* ================== RESET ================== */
-* {
-  box-sizing: border-box;
-}
+        /* ================== RESET ================== */
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #000; font-family: "Inter", "Roboto", sans-serif; }
 
-body {
-  margin: 0;
-  background: #212121;
-  font-family: "Inter", "Roboto", sans-serif;
-}
+        /* ================== PAGE LAYOUT ================== */
+        .invoice-page {
+          height: 100vh;
+          width: 100%;
+          background: #000;
+          color: #fff;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 20px;
+          padding-bottom: 120px; /* Space for button */
+          overflow-y: auto; /* Scrollable internal content */
+          -webkit-overflow-scrolling: touch;
+        }
 
-/* ================== PAGE ================== */
-.invoice-page {
-  min-height: 100vh;
-  background: radial-gradient(circle at top, #1e1e1e, #121212);
-  padding-bottom: 120px;
-  color: #fff;
-  width: 100%;
-  overflow-x: hidden;
-}
+        /* ================== RECEIPT CARD ================== */
+        .receipt-card {
+          width: 100%;
+          max-width: 420px;
+          background: #181818;
+          border-radius: 24px;
+          overflow: hidden;
+          position: relative;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+          margin-top: 20px;
+          flex-shrink: 0; /* Prevent shrinking */
+        }
 
-/* ===== INVOICE ROW ===== */
-.invoice-row {
-  padding: 18px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+        /* CARD HEADER */
+        .receipt-header {
+          background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%);
+          padding: 32px 24px 24px;
+          text-align: center;
+          border-bottom: 1px dashed rgba(255,255,255,0.1);
+          position: relative;
+        }
 
-.invoice-row h1 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: #ffffff;
-}
+        .brand-logo {
+          height: 60px; /* Increased Size */
+          object-fit: contain;
+          margin-bottom: 16px;
+          opacity: 0.9;
+        }
 
-/* SESSION COMPLETED PILL */
-.session-pill {
-  padding: 4px 12px;
-  border-radius: 20px;
-  background: #303030;
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 500;
-  white-space: nowrap;
-}
+        .receipt-title {
+          font-size: 14px;
+          font-weight: 500;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.4);
+          margin-bottom: 8px;
+        }
 
+        .total-amount {
+          font-size: 36px;
+          font-weight: 700;
+          color: #fff;
+          margin: 8px 0;
+          letter-spacing: -0.5px;
+        }
 
-/* ================== HEADER ================== */
-.invoice-header {
-  background: linear-gradient(180deg, #1c1c1c 0%, #141414 100%);
-  padding: 40px 20px;
-  text-align: center;
-  width: 100%;
-  border-bottom-left-radius: 32px;
-  border-bottom-right-radius: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 10px;
-}
+        .status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 14px;
+          background: rgba(57, 226, 155, 0.1);
+          border: 1px solid rgba(57, 226, 155, 0.2);
+          border-radius: 20px;
+          color: #39e29b;
+          font-size: 12px;
+          font-weight: 600;
+          margin-top: 12px;
+        }
 
-/* LOGO */
-.header-logo {
-  width: 140px;
-  max-width: 60%;
-  height: auto;
-  object-fit: contain;
-}
+        /* CONTENT BODY */
+        .receipt-body {
+          padding: 24px;
+        }
 
-.invoice-header h1 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
+        .info-group {
+          margin-bottom: 24px;
+        }
 
-.invoice-header p {
-  margin-top: 6px;
-  font-size: 13px;
-  opacity: 0.7;
-}
+        .group-label {
+          font-size: 12px;
+          color: rgba(255,255,255,0.4);
+          margin-bottom: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
 
-.sub-heading {
-  font-size: 18px;
-  font-weight: 600;
-}
+        .item-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 14px;
+          font-size: 14px;
+        }
+        
+        .item-row.last {
+            margin-bottom: 0;
+        }
 
-/* ================== EMAIL STATUS ================== */
-.email-status {
-  margin: 0 16px 16px;
-  padding: 12px 16px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-}
+        .item-label {
+          color: rgba(255,255,255,0.7);
+        }
 
-.email-status.sending {
-  background: #1f3a5f;
-  color: #dbe9ff;
-}
+        .item-value {
+          color: #fff;
+          font-weight: 500;
+          text-align: right;
+        }
 
-.email-status.sent {
-  background: #1f3d2b;
-  color: #9df3c4;
-}
+        .divider {
+          height: 1px;
+          background: rgba(255,255,255,0.08);
+          margin: 16px 0;
+        }
 
-.email-status.error {
-  background: #3b1f1f;
-  color: #ffbdbd;
-}
+        /* FOOTER SECTION */
+        .receipt-footer {
+          background: rgba(0,0,0,0.2);
+          padding: 20px 24px;
+          border-top: 1px dashed rgba(255,255,255,0.1);
+        }
+        
+        .footer-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 6px;
+        }
 
-.email-status button {
-  margin-left: auto;
-  background: #c62828;
-  color: #fff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  cursor: pointer;
-}
+        /* ================== ACTION BUTTON ================== */
+        .action-container {
+          width: 100%;
+          max-width: 420px;
+          margin-top: 24px;
+          padding-bottom: 24px;
+          display: flex;
+          justify-content: center;
+        }
 
-/* ================== CARD ================== */
-.card, .card-1 {
-  margin: 16px;
-  border-radius: 18px;
-  background-color: #212121;
-  gap: 10px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0 0 1px rgba(85, 85, 85, 0.5);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
+        .done-btn {
+          width: 100%;
+          max-width: 420px;
+          height: 56px;
+          background: #fff;
+          color: #000;
+          border: none;
+          border-radius: 16px;
+          font-size: 16px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: transform 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
 
-.card h2, .card-1 h2 {
-  padding: 16px;
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* ================== ROW ================== */
-.row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 16px;
-  font-size: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.row span:first-child {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.row span:last-child {
-  font-weight: 500;
-  color: #fff;
-  text-align: right;
-}
-
-/* ================== HIGHLIGHTS ================== */
-.highlight {
-  background: rgba(255, 255, 255, 0.03);
-  font-weight: 700;
-  color: #FFFFFF;
-}
-
-.highlight-green {
-  background: rgba(57, 226, 155, 0.1);
-  font-weight: 600;
-}
-
-.highlight-green span:last-child {
-  color: var(--color-primary-container);
-  font-size: 16px;
-  font-weight: 700;
-}
-
-/* ================== PAID ================== */
-.paid {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--color-primary-container) !important;
-  font-weight: 600;
-}
-
-.paid svg {
-  font-size: 18px;
-}
-
-/* ================== BOTTOM ACTION ================== */
-.bottom-action {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 16px 24px;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom));
-  background: linear-gradient(0deg, #111 20%, transparent 100%);
-  display: flex;
-  justify-content: center;
-  z-index: 100;
-}
-
-.bottom-action button {
-  width: 100%;
-  max-width: 500px;
-  padding: 16px;
-  border-radius: 16px;
-  border: none;
-  background: #ffffff;
-  color: #000;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  transition: transform 0.2s;
-}
-
-.bottom-action button:active {
-  transform: scale(0.98);
-}
-
-/* ================== RESPONSIVE BREAKPOINTS ================== */
-@media (min-width: 600px) {
-  .card, .card-1 {
-    margin: 24px auto;
-    max-width: 500px;
-  }
-}
-
-@media (min-width: 900px) {
-  .card, .card-1 {
-    max-width: 600px;
-  }
-  
-  .invoice-header {
-    height: 160px;
-  }
-}
+        .done-btn:active {
+          transform: scale(0.98);
+        }
 
       `}</style>
 
-      {/* HEADER */}
-      <div className="invoice-header">
-        <img
-          src={Logo}
-          alt="Bentork Logo"
-          className="header-logo"
-        />
-      </div>
-
-      {/* Email Status Removed */}
-      <div className="invoice-row">
-        <h1>Invoice</h1>
-        <span className="session-pill">Session Completed</span>
-      </div>
-
-      {/* CHARGING DETAILS */}
-      <div className="card">
-        <h2 className="sub-heading">Charging Details</h2>
-
-        <Row label="Session ID" value={`#${sessionId}`} />
-        <Row label="Station Name" value={stationName} />
-        <Row label="Charger Type" value={chargerType} />
-        <Row label="Duration" value={formatDuration(durationMin)} />
-        <Row label="Energy Delivered" value={`${energy} kWh`} />
-        <Row label="Rate per kWh" value={`₹${rate}`} />
-        <Row label="Total Energy Cost" value={`₹${totalCost}`} highlight />
-      </div>
-
-      {/* PAYMENT DETAILS */}
-      <div className="card-1">
-        <h2>Payment Details</h2>
-
-        <Row label="Payment Method" value={paymentMethod} />
-
-
-
-        <div className="row">
-          <span>Status</span>
-          <span className="paid">
-            <CheckCircle />
-            PAID
-          </span>
+      <div className="receipt-card">
+        {/* Header */}
+        <div className="receipt-header">
+          <img src={Logo} alt="Bentork" className="brand-logo" />
+          <div className="receipt-title">Invoice</div>
+          <div className="total-amount">₹{totalCost}</div>
+          <div className="status-badge">
+            <CheckCircle sx={{ fontSize: 14 }} />
+            Payment Successful
+          </div>
         </div>
 
-        <div className="row highlight-green">
-          <span>Total Amount Paid</span>
-          <span>₹{Number(totalCost).toFixed(2)}</span>
+        {/* Body */}
+        <div className="receipt-body">
+
+          {/* Session Info */}
+          <div className="info-group">
+            <div className="group-label">Session Details</div>
+            <div className="item-row">
+              <span className="item-label">Station</span>
+              <span className="item-value">{stationName}</span>
+            </div>
+            <div className="item-row">
+              <span className="item-label">Date</span>
+              <span className="item-value">{new Date(completedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            </div>
+            <div className="item-row">
+              <span className="item-label">Time</span>
+              <span className="item-value">{new Date(completedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+            <div className="item-row">
+              <span className="item-label">Duration</span>
+              <span className="item-value">{formatDuration(durationMin)}</span>
+            </div>
+          </div>
+
+          <div className="divider" />
+
+          {/* Charging Stats */}
+          <div className="info-group">
+            <div className="group-label">Charging Usage</div>
+            <div className="item-row">
+              <span className="item-label">Energy Consumed</span>
+              <span className="item-value">{energy} kWh</span>
+            </div>
+            <div className="item-row">
+              <span className="item-label">Charger Type</span>
+              <span className="item-value">{chargerType}</span>
+            </div>
+            <div className="item-row">
+              <span className="item-label">Rate Info</span>
+              <span className="item-value">₹{chargerData.rate} / kWh</span>
+            </div>
+          </div>
+
+          <div className="divider" />
+
+          {/* Payment Method */}
+          <div className="item-row last">
+            <span className="item-label" style={{ color: '#fff' }}>Payment Method</span>
+            <span className="item-value" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#39e29b' }}></div>
+              {paymentMethod}
+            </span>
+          </div>
+
+        </div>
+
+        <div className="receipt-footer">
+          <div className="footer-row" style={{ justifyContent: 'center', textAlign: 'center' }}>
+            <span style={{ marginRight: '8px' }}>Receipt ID:</span>
+            <span style={{ fontFamily: 'monospace', color: '#fff' }}>
+              {(() => {
+                // Try to find a matching transaction in wallet history
+                if (transactionData && transactionData.length > 0) {
+                  // Filter for DEBIT transactions that are recent
+                  const relevantTx = transactionData.find(t =>
+                    (t.type === 'DEBIT' || t.transactionType === 'DEBIT') &&
+                    (t.amount == totalCost || Math.abs(t.amount - totalCost) < 1)
+                  );
+                  if (relevantTx) return relevantTx.transactionId || relevantTx.id;
+                }
+                return transactionId;
+              })()}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* BOTTOM BUTTON */}
-      <div className="bottom-action">
-        <button onClick={handleDone}>
+      {/* Bottom Button */}
+      <div className="action-container">
+        <button className="done-btn" onClick={handleDone}>
           Done
         </button>
       </div>
+
     </div>
   );
 };

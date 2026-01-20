@@ -142,8 +142,8 @@ class SessionService {
       return {
         success: true,
         sessionData: {
-          ...response,
-          ...this.activeSession
+          ...this.activeSession,
+          ...response
         }
       }
     } catch (error) {
