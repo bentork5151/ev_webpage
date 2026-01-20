@@ -687,7 +687,11 @@ export default function Dashboard() {
                 className="amount-input"
                 placeholder="0"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value
+                  if (Number(val) > 100000) return
+                  setAmount(val)
+                }}
                 disabled={loading}
               />
               {amount && (
@@ -700,7 +704,14 @@ export default function Dashboard() {
                 <div
                   key={val}
                   className="amt-chip"
-                  onClick={() => !loading && setAmount((prev) => (parseFloat(prev) || 0) + val)}
+                  onClick={() => {
+                    if (loading) return
+                    setAmount((prev) => {
+                      const current = parseFloat(prev) || 0
+                      const next = current + val
+                      return next > 100000 ? 100000 : next
+                    })
+                  }}
                 >
                   +{val}
                 </div>

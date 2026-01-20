@@ -1135,7 +1135,7 @@ color: var(--color-on-primary-container);
                     const current = Number(localInput) || 0;
                     const next = current + val;
                     const isDC = chargerData?.chargerType?.toLowerCase().includes('dc') || chargerData?.chargerType?.toLowerCase().includes('fast');
-                    const maxPower = isDC ? 500 : 50;
+                    const maxPower = isDC ? 500 : 100;
                     const finalVal = Math.min(next, maxPower);
 
                     setLocalInput(String(finalVal));
