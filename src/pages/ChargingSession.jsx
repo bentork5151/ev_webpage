@@ -44,12 +44,43 @@ const ChargingSession = () => {
     isCustomSession
   } = useSession()
 
+  /* State for smooth visualization */
+  const [displayPercentage, setDisplayPercentage] = useState(0)
+
   const [stopDialog, setStopDialog] = useState(false)
 
   useEffect(() => {
     initializeSession()
     // eslint-disable-next-line
   }, [])
+
+  /* Smoothly animate percentage with dynamic speed base on power */
+  useEffect(() => {
+    // Determine speed based on power output (default to 30kW if unknown)
+    const power = Number(chargingData.power || chargingData.energy || 30);
+
+    // Heuristic: Faster charging = lower interval
+    // 30kW+ -> 400ms
+    // 7-30kW -> 800ms
+    // <7kW -> 1200ms
+    let intervalTime = 300;
+    if (power > 30) intervalTime = 400;
+    if (power < 7) intervalTime = 1200;
+
+    const timer = setInterval(() => {
+      setDisplayPercentage(prev => {
+        const target = Number(chargingData.percentage || chargingData.Percentage || 0)
+
+        // If we are at target, stay there
+        if (prev >= target) return target
+
+        // Increment by 0.01
+        return Math.min(prev + 0.01, target)
+      })
+    }, intervalTime)
+    return () => clearInterval(timer)
+  }, [chargingData.percentage, chargingData.Percentage, chargingData.power])
+
 
   const handleStopClick = () => {
     setStopDialog(true)
@@ -155,7 +186,7 @@ const ChargingSession = () => {
             />
             <CircularProgress
               variant="determinate"
-              value={24}
+              value={displayPercentage}
               thickness={2}
               className="cp-fill"
               sx={{
@@ -167,9 +198,9 @@ const ChargingSession = () => {
             <div className="circle-inner">
               <Bolt className="hero-bolt" />
               <h1 className="charge-percent">
-                {Math.round(chargingData.percentage || chargingData.Percentage || 0)}<span className="unit">%</span>
+                +{displayPercentage.toFixed(2)}<span className="unit">%</span>
               </h1>
-              <span className="charge-status">Charged</span>
+              <span className="charge-status">EST. Charged</span>
             </div>
           </div>
         </div>
@@ -413,7 +444,7 @@ const ChargingSession = () => {
         }
 
         .charge-percent {
-            font-size: 64px;
+            font-size: 46px;
             font-weight: 700;
             margin: 0;
             line-height: 1;
@@ -428,7 +459,7 @@ const ChargingSession = () => {
             vertical-align: middle;
         }
         .charge-status {
-            font-size: 14px;
+            font-size: 12px;
             color: #AAA;
             text-transform: uppercase;
             letter-spacing: 2px;
