@@ -683,14 +683,20 @@ export default function Dashboard() {
             <div className="input-group">
               <span className="currency-symbol">₹</span>
               <input
-                type="number"
+                type="text"
                 className="amount-input"
                 placeholder="0"
-                value={amount}
+                value={(() => {
+                  if (!amount) return '';
+                  const parts = String(amount).split('.');
+                  parts[0] = Number(parts[0]).toLocaleString('en-IN');
+                  return parts.join('.');
+                })()}
                 onChange={(e) => {
-                  const val = e.target.value
-                  if (Number(val) > 100000) return
-                  setAmount(val)
+                  const raw = e.target.value.replace(/,/g, '');
+                  if (!/^\d*\.?\d*$/.test(raw)) return; // Allow digits and single dot
+                  if (Number(raw) > 100000) return;
+                  setAmount(raw);
                 }}
                 disabled={loading}
               />
@@ -721,15 +727,15 @@ export default function Dashboard() {
             <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '16px', marginBottom: '24px' }}>
               <div className="bill-row">
                 <span>Base Amount</span>
-                <span>₹{((parseFloat(amount) || 0) * (1 - (APP_CONFIG.TAX.GST_RATE || 0.18))).toFixed(2)}</span>
+                <span>₹{((parseFloat(amount) || 0) * (1 - (APP_CONFIG.TAX.GST_RATE || 0.18))).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="bill-row">
                 <span>GST ({(APP_CONFIG.TAX.GST_RATE || 0.18) * 100}%)</span>
-                <span>₹{((parseFloat(amount) || 0) * (APP_CONFIG.TAX.GST_RATE || 0.18)).toFixed(2)}</span>
+                <span>₹{((parseFloat(amount) || 0) * (APP_CONFIG.TAX.GST_RATE || 0.18)).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="bill-row bill-total">
                 <span>Total Payable</span>
-                <span>₹{amount || 0}</span>
+                <span>₹{(parseFloat(amount) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
 

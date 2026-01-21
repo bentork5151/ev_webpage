@@ -201,8 +201,12 @@ const ConfigCharging = () => {
         rate: chargerRate,
         isCustom: true // Flag to distinguish if needed
       });
+      // PERSIST FOR RECOVERY: Save local target to survive reload since DB lacks it
+      localStorage.setItem('active_custom_kwh', String(powerValue));
+
     } else if (selectedPlan?.isCustom || selectedPlan?.planName === 'Custom Power') {
       selectPlan(null); // Reset to default flow
+      localStorage.removeItem('active_custom_kwh');
     }
   }, [powerValue, isValidCustomPower, selectPlan, chargerRate, plans]);
 
@@ -714,7 +718,7 @@ color: var(--color-on-primary-container);
     box-shadow: inset 0 0 0 0 transparent, 0 4px 20px rgba(0, 0, 0, 0);
   }
   100% {
-   box-shadow: inset 50px 0px 60px -40px rgba(57, 226, 156, 0.2), 0 4px 20px rgba(0,0,0,0.1);
+    box-shadow: inset 50px 0px 60px -40px rgba(57, 226, 156, 0.2), 0 4px 20px rgba(0,0,0,0.1);
   }
 }
 
