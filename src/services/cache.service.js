@@ -261,6 +261,19 @@ class CacheService {
     return data ? JSON.parse(data) : false
   }
 
+  static saveWarmupFlag(status) {
+    sessionStorage.setItem('warmup_needed', JSON.stringify(status))
+  }
+
+  static getWarmupFlag() {
+    const data = sessionStorage.getItem('warmup_needed')
+    if (data) {
+      sessionStorage.removeItem('warmup_needed') // Consume flag
+      return JSON.parse(data)
+    }
+    return false
+  }
+
 }
 
 export default CacheService

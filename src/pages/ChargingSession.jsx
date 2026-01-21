@@ -54,32 +54,29 @@ const ChargingSession = () => {
     // eslint-disable-next-line
   }, [])
 
-  /* Smoothly animate percentage with dynamic speed base on power */
+  /* Smoothly animate percentage */
   useEffect(() => {
-    // Determine speed based on power output (default to 30kW if unknown)
-    const power = Number(chargingData.power || chargingData.energy || 30);
+    // Immediate update if close, or fast catch-up
+    const target = Number(chargingData.percentage || chargingData.Percentage || 0)
 
-    // Heuristic: Faster charging = lower interval
-    // 30kW+ -> 400ms
-    // 7-30kW -> 800ms
-    // <7kW -> 1200ms
-    let intervalTime = 300;
-    if (power > 30) intervalTime = 400;
-    if (power < 7) intervalTime = 1200;
+    if (Math.abs(displayPercentage - target) < 0.05) {
+      setDisplayPercentage(target)
+      return
+    }
 
-    const timer = setInterval(() => {
+    const animationFrame = requestAnimationFrame(() => {
       setDisplayPercentage(prev => {
-        const target = Number(chargingData.percentage || chargingData.Percentage || 0)
-
-        // If we are at target, stay there
-        if (prev >= target) return target
-
-        // Increment by 0.01
-        return Math.min(prev + 0.01, target)
+        const diff = target - prev
+        // Move 10% of the distance or minimum 0.1 for speed
+        const step = Math.max(0.1, diff * 0.1)
+        if (diff > 0) return Math.min(prev + step, target)
+        if (diff < 0) return Math.max(prev + step, target) // Should mostly increase
+        return target
       })
-    }, intervalTime)
-    return () => clearInterval(timer)
-  }, [chargingData.percentage, chargingData.Percentage, chargingData.power])
+    })
+
+    return () => cancelAnimationFrame(animationFrame)
+  }, [chargingData.percentage, chargingData.Percentage, displayPercentage])
 
 
   const handleStopClick = () => {
@@ -198,9 +195,11 @@ const ChargingSession = () => {
             <div className="circle-inner">
               <Bolt className="hero-bolt" />
               <h1 className="charge-percent">
-                +{displayPercentage.toFixed(2)}<span className="unit">%</span>
+                {isCustomSession ? '+' : ''}{displayPercentage.toFixed(2)}<span className="unit">%</span>
               </h1>
-              <span className="charge-status">EST. Charged</span>
+              <span className="charge-status">
+                {isCustomSession ? 'Est. Charged' : 'Completed'}
+              </span>
             </div>
           </div>
         </div>
@@ -218,7 +217,7 @@ const ChargingSession = () => {
             </div>
 
             <div className="glass-card metric-card">
-              <span className="metric-label">{(isCustomSession || !session?.planId) ? 'Time Elapsed' : 'Time Left'}</span>
+              <span className="metric-label">Session Duration</span>
               <div className="metric-value-row">
                 <span className="metric-val">{(remainingTime === '--:--' || !remainingTime) ? '00:00' : remainingTime}</span>
               </div>
