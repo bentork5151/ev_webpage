@@ -270,6 +270,9 @@ export const ChargingProvider = ({ children }) => {
             const newBalance = Number(user?.walletBalance || 0) - pricing.totalAmount
             updatedWalletBalance(newBalance)
 
+            // Flag for SessionContext to run full animation
+            CacheService.saveWarmupFlag(true)
+
             navigate('/charging-session', { replace: true })
             return { success: true }
         } catch (error) {

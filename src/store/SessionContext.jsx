@@ -38,6 +38,13 @@ const LOADING_MESSAGES = [
   "Almost ready..."
 ]
 
+const RESUMING_MESSAGES = [
+  "Resuming your session...",
+  "Syncing session data...",
+  "Updating status...",
+  "Almost there..."
+]
+
 export const SessionProvider = ({ children }) => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -52,6 +59,7 @@ export const SessionProvider = ({ children }) => {
 
   const sessionRef = useRef(null)
   const planRef = useRef(null)
+  const chargerDataRef = useRef(chargerData)
   const chargingDataRef = useRef({
     energyUsed: 0,
     timeElapsed: 0,
@@ -59,6 +67,7 @@ export const SessionProvider = ({ children }) => {
     status: 'INITIALIZING'
   })
 
+  const isResuming = useRef(false) // Track if we are resuming or starting fresh
   const [session, setSession] = useState(null)
   const [plan, setPlan] = useState(null)
   const [chargingData, setChargingData] = useState({
@@ -86,9 +95,14 @@ export const SessionProvider = ({ children }) => {
     planRef.current = plan
   }, [plan])
 
+  // Sync chargerData to ref for interval access
+  useEffect(() => {
+    chargerDataRef.current = chargerData
+  }, [chargerData])
+
   useEffect(() => {
     chargingDataRef.current = chargingData
-  }, [chargerData])
+  }, [chargingData])
 
   const isSessionActive = useMemo(() => {
     const status = String(chargingData.status || '').toLowerCase()
@@ -146,8 +160,9 @@ export const SessionProvider = ({ children }) => {
     if (isInitializing) {
       messageRef.current = setInterval(() => {
         setMessageIndex((prev) => {
-          const next = (prev + 1) % LOADING_MESSAGES.length
-          setLoadingMessage(LOADING_MESSAGES[next])
+          const messages = isResuming.current ? RESUMING_MESSAGES : LOADING_MESSAGES
+          const next = (prev + 1) % messages.length
+          setLoadingMessage(messages[next])
           return next
         })
       }, APP_CONFIG.SESSION.MESSAGE_ROTATE_INTERVAL)
@@ -198,6 +213,18 @@ export const SessionProvider = ({ children }) => {
       setIsLoading(false)
       setIsInitializing(true)
 
+      // 0. Check for New Session Warmup Flag
+      if (CacheService.getWarmupFlag()) {
+        console.log('Warmup Flag Detected - Running Warmup Sequence')
+        const wSession = CacheService.getSessionData()
+        const wPlan = CacheService.getPlanData()
+        if (wSession) {
+          isResuming.current = false // Explicitly new session
+          runWarmupSequence(wSession, wPlan)
+          return { success: true }
+        }
+      }
+
       // 1. Get Current User
       let currentUserId = user?.id;
       if (!currentUserId) {
@@ -227,19 +254,24 @@ export const SessionProvider = ({ children }) => {
 
         if (foundSession) {
           console.log('✅ FOUND ACTIVE SESSION IN DB:', foundSession)
+          isResuming.current = true // We found it in DB, so we are resuming
+          setLoadingMessage(RESUMING_MESSAGES[0])
 
           activeSession = {
             ...foundSession,
             sessionId: foundSession.id,
             startTime: foundSession.startTime, // This is the gold standard from DB
             status: foundSession.status,
-            energyUsed: foundSession.energyKwh || foundSession.energyUsed || 0
+            energyUsed: foundSession.energyKwh || foundSession.energyUsed || 0,
+            // Map generic DB fields to our internal standard
+            selectedKwh: Number(foundSession.selectedKwh || foundSession.selected_kwh || foundSession.kwh || foundSession.targetKwh || foundSession.target_kwh || 0)
           }
           CacheService.saveSessionData(activeSession)
 
           // 3. Match Plan using Transaction Amount (Secondary Recovery)
           // Since Session Table lacks Plan info, we still assume Plan matches similar debit
           if (!activePlan) {
+            // A. Try matching generic plans by transaction logic
             const transactions = await AuthService.loadTransaction(currentUserId, 20)
             const sessionTx = transactions.find(t =>
               (String(t.sessionId) === String(foundSession.id) || String(t.session_id) === String(foundSession.id)) &&
@@ -253,6 +285,19 @@ export const SessionProvider = ({ children }) => {
                 activePlan = matchedPlan
                 CacheService.savePlanData(matchedPlan)
               }
+            }
+
+            // B. If still no plan, but session has target info -> SYNTHETIC CUSTOM PLAN
+            if (!activePlan && activeSession.selectedKwh > 0) {
+              console.log('Detected Custom Session without Plan object - Synthesizing...')
+              activePlan = {
+                type: 'CUSTOM',
+                isCustom: true,
+                planName: 'Custom Power',
+                kw: activeSession.selectedKwh, // Target
+                durationMin: 0
+              }
+              CacheService.savePlanData(activePlan)
             }
           }
 
@@ -291,12 +336,40 @@ export const SessionProvider = ({ children }) => {
         return { success: false, error: 'Session unavailable' }
       }
 
-      // 5. Update Context State
+      // 5. Update Context State - MERGE FULL DATA
+      // Critical: Ensure we have fields like selectedKwh/targetKwh from the detail view
       if (activeSession) {
-        activeSession.status = sessionStatus
-        if (sessionData.energyUsed !== undefined) {
-          activeSession.energyUsed = sessionData.energyUsed
+        Object.assign(activeSession, sessionData)
+
+        // Remap keys if necessary after merge
+        activeSession.selectedKwh = Number(
+          activeSession.selectedKwh ||
+          activeSession.selected_kwh ||
+          activeSession.kwh ||
+          activeSession.targetKwh ||
+          activeSession.target_kwh ||
+          0
+        )
+      }
+
+      // 5b. Synthetic Custom Plan Check (Redo)
+      // If we didn't find a plan earlier, check again now that we have full session data
+      const cachedKw = Number(localStorage.getItem('active_custom_kwh') || 0)
+      const targetFromSession = Number(activeSession?.selectedKwh || 0)
+      const finalTarget = targetFromSession > 0 ? targetFromSession : cachedKw
+
+      if (!activePlan && finalTarget > 0) {
+        console.log('Synthesizing Custom Plan from Live Data/Cache...', finalTarget)
+        activePlan = {
+          type: 'CUSTOM',
+          isCustom: true,
+          planName: 'Custom Power',
+          kw: finalTarget,
+          durationMin: 0
         }
+        // Ensure session has it too for redundancy
+        activeSession.selectedKwh = finalTarget
+        CacheService.savePlanData(activePlan)
       }
 
       setSession(activeSession)
@@ -347,24 +420,7 @@ export const SessionProvider = ({ children }) => {
     }
   }, [navigate, user])
 
-  const runWarmupSequence = useCallback(async (activeSession, activePlan) => {
-    setIsInitializing(true)
-    setChargingData(prev => ({ ...prev, status: 'INITIALIZING' }))
 
-    await new Promise(resolve => setTimeout(resolve, APP_CONFIG.SESSION.WARMUP_DURATION))
-
-    const updatedSession = await SessionService.completeWarmup(activeSession.sessionId || activeSession.id)
-
-    if (updatedSession) {
-      setSession(updatedSession)
-      sessionRef.current = updatedSession
-    }
-
-    setIsInitializing(false)
-    setChargingData(prev => ({ ...prev, status: 'ACTIVE' }))
-
-    startChargingTimers(activeSession, activePlan, 0)
-  }, [])
 
 
   const startChargingTimers = useCallback((activeSession, activePlan, initialElapsed = 0) => {
@@ -374,6 +430,9 @@ export const SessionProvider = ({ children }) => {
     if (timerRef.current) clearInterval(timerRef.current)
     if (pollingRef.current) clearInterval(pollingRef.current)
 
+    // Anchor time locally
+    const timerStartTimestamp = Date.now() - (initialElapsed * 1000)
+
     setChargingData(prev => ({
       ...prev,
       timeElapsed: initialElapsed,
@@ -382,34 +441,69 @@ export const SessionProvider = ({ children }) => {
 
     timerRef.current = setInterval(() => {
       if (sessionCompleteHandled.current) {
-        console.log('Session already completed, stopping timer')
         return
       }
 
       setChargingData(prev => {
-        const newElapsed = prev.timeElapsed + 1
+        const now = Date.now()
+        // Calculate real elapsed time (float) based on LOCAL anchor
+        const elapsedFloat = Math.max(0, (now - timerStartTimestamp) / 1000)
+        const newElapsed = Math.floor(elapsedFloat)
 
-        // Use ref to ensure we get the latest session object even inside interval closure
         const currentSession = sessionRef.current || activeSession;
-        // Check multiple possible property names for the target energy (camel and snake case)
-        const targetKwh = Number(
+        const currentPlan = planRef.current || activePlan;
+
+        // FAIL-SAFE TARGET EXTRACTION
+        // 1. Session Data
+        // 2. Plan Data
+        // 3. Local Storage (Direct read to bypass any state/prop staleness)
+        let targetKwh = Number(
           currentSession?.selectedKwh ||
           currentSession?.selected_kwh ||
           currentSession?.kwh ||
           currentSession?.targetKwh ||
           currentSession?.target_kwh ||
+          (currentPlan?.isCustom ? currentPlan?.kw : 0) ||
           0
         );
+
+        if (targetKwh <= 0) {
+          targetKwh = Number(localStorage.getItem('active_custom_kwh') || 0);
+        }
 
         let percentage = 0;
 
         if (durationSeconds > 0) {
-          percentage = (newElapsed / durationSeconds) * 100;
+          percentage = (elapsedFloat / durationSeconds) * 100;
         } else if (targetKwh > 0) {
-          // Use live energyUsed (updated via poller) for percentage
-          // Ensure we use the latest available energy reading
-          const currentEnergy = chargingDataRef.current?.energyUsed || prev.energyUsed || 0;
-          percentage = (currentEnergy / targetKwh) * 100;
+          // STRICT CONTROL LOGIC
+          // 1. Get Backend (Polled) Values
+          const backendEnergy = Number(chargingDataRef.current?.energyKwh || chargingDataRef.current?.energyUsed || 0);
+          const backendPercentage = Number(chargingDataRef.current?.backendPercentage || 0);
+
+          // 2. Decide Source
+          // If Backend has ANY progress, we prefer it exactly as is (interpolated for smoothness if needed, but anchored to it)
+          let currentEnergy = 0;
+
+          if (backendEnergy > 0) {
+            currentEnergy = backendEnergy;
+            // Optional: Add tiny tick for visual liveness if needed, but user wants CONTROL
+            // so we stick to backend value primarily. 
+            // Maybe interpolate slightly between polls if needed later.
+          } else {
+            // Fallback Simulation ONLY if backend is 0 (start of session)
+            const realTimePower = Number(chargerDataRef.current?.power) || 30; // Default 30kW
+            currentEnergy = (realTimePower * elapsedFloat) / 3600;
+          }
+
+          // 3. Calculate Final Percentage
+          if (backendPercentage > 0) {
+            percentage = backendPercentage;
+          } else {
+            percentage = (currentEnergy / targetKwh) * 100;
+          }
+
+          prev.energyUsed = currentEnergy;
         }
 
         const updated = {
@@ -420,7 +514,6 @@ export const SessionProvider = ({ children }) => {
         }
 
         chargingDataRef.current = updated
-
         SessionService.updateTimerState(newElapsed, percentage)
 
         const remaining = durationSeconds - newElapsed
@@ -432,34 +525,57 @@ export const SessionProvider = ({ children }) => {
         }
 
         if (newElapsed >= durationSeconds && durationSeconds > 0 && !sessionCompleteHandled.current) {
-          console.log('Timer completed, triggering session completed')
           setTimeout(() => handleSessionComplete({ status: 'COMPLETED' }), 0)
         }
 
         return updated
       })
-    }, 1000)
+    }, 100)
 
     pollingRef.current = setInterval(async () => {
       if (sessionCompleteHandled.current) return
 
       try {
-        const data = await SessionService.fetchSessionData(sessionId)
+        const polledData = await SessionService.fetchSessionData(sessionId)
 
-        setChargingData(prev => ({
-          ...prev,
-          energyUsed: typeof data.energyUsed === 'number' && data.energyUsed > 0.001 ? data.energyUsed : prev.energyUsed,
-          status: data.status || prev.status
-        }))
-
-        const normalizedPollStatus = String(data.status || '').toUpperCase()
-        if (['COMPLETED', 'FAILED'].includes(normalizedPollStatus) && !sessionCompleteHandled.current) {
-          handleSessionComplete({ status: normalizedPollStatus })
+        // 1. Check for completion signals
+        const status = String(polledData.status || '').toUpperCase()
+        if (['COMPLETED', 'FINISHED', 'FAILED', 'STOPPED'].includes(status) && !sessionCompleteHandled.current) {
+          handleSessionComplete(polledData)
+          return
         }
-      } catch (error) {
-        console.error('Polling error: ', error)
+
+        // 2. Sync Real Energy from Backend to Ref
+        // This allows the fast 100ms timer loop to correct its course
+        const remoteEnergy = Number(polledData.energyUsed || polledData.energyKwh || 0);
+
+        if (!isNaN(remoteEnergy)) {
+          // We prioritize the MAX of local vs remote to prevent rollbacks, 
+          // BUT if remote is valid, we inject it into the ref so the next 100ms timer tick uses it.
+          // Note: We deliberately do NOT call setChargingData here to avoid fighting with the 100ms timer.
+          // The timer loop naturally reads chargingDataRef.current values.
+          if (remoteEnergy > (chargingDataRef.current.energyUsed || 0)) {
+            chargingDataRef.current.energyUsed = remoteEnergy
+          }
+          if (remoteEnergy > (chargingDataRef.current.energyKwh || 0)) {
+            chargingDataRef.current.energyKwh = remoteEnergy
+          }
+        }
+
+        // 3. Sync Power if available (adjusts speed dynamically)
+        if (polledData.power) {
+          chargingDataRef.current.power = Number(polledData.power)
+        }
+
+        // 4. Sync Percentage (Critical for Hybrid Logic)
+        if (polledData.percentage || polledData.soc) {
+          chargingDataRef.current.backendPercentage = Number(polledData.percentage || polledData.soc)
+        }
+
+      } catch (err) {
+        console.warn('Poll error', err)
       }
-    }, APP_CONFIG.SESSION.STATUS_POLL_INTERVAL)
+    }, APP_CONFIG.SESSION.STATUS_POLL_INTERVAL || 5000)
 
     SessionService.fetchSessionData(sessionId).then(data => {
       setChargingData(prev => {
@@ -472,6 +588,40 @@ export const SessionProvider = ({ children }) => {
       })
     })
   }, [notifyOnComplete, notificationPermission])
+
+  const runWarmupSequence = useCallback(async (activeSession, activePlan) => {
+    // 1. Force UI into Initializing State
+    setIsInitializing(true)
+    setChargingData(prev => ({ ...prev, status: 'INITIALIZING' }))
+
+    // 2. Wait for full animation duration
+    await new Promise(resolve => setTimeout(resolve, APP_CONFIG.SESSION.WARMUP_DURATION))
+
+    let finalSession = { ...activeSession }
+
+    // 3. Perform Backend Handoff
+    try {
+      const updatedSession = await SessionService.completeWarmup(activeSession.sessionId || activeSession.id)
+      if (updatedSession) {
+        // Merge updated backend data but PRESERVE critical local fields like selectedKwh if backend misses them
+        finalSession = {
+          ...finalSession,
+          ...updatedSession,
+          // Ensure mapping exists
+          selectedKwh: Number(updatedSession.selectedKwh || updatedSession.selected_kwh || updatedSession.kwh || updatedSession.targetKwh || updatedSession.target_kwh || activeSession.selectedKwh || 0)
+        }
+        setSession(finalSession)
+        sessionRef.current = finalSession
+      }
+    } catch (err) {
+      console.warn('Warmup completion warning:', err)
+    }
+
+    // 4. Finally Switch to Active
+    setIsInitializing(false)
+    setChargingData(prev => ({ ...prev, status: 'ACTIVE' }))
+    startChargingTimers(finalSession, activePlan, 0)
+  }, [startChargingTimers])
 
 
   const stopSession = useCallback(async () => {
@@ -536,8 +686,8 @@ export const SessionProvider = ({ children }) => {
       energyUsed: data.energyUsed || data.energyKwh || currentChagingData.energyUsed || 0,
       plan: currentPlan,
       // Prioritize backend response (data), then session, then plan
-      amountDebited: data.amountDebited ?? currentSession?.amountDebited ?? currentPlan?.walletDeduction,
-      finalCost: data.finalCost ?? data.amountDebited ?? currentSession?.amountDebited ?? currentPlan?.walletDeduction,
+      amountDebited: data.amountDebited ?? currentSession?.amountDebited,
+      finalCost: data.finalCost ?? data.amountDebited ?? currentSession?.amountDebited,
       rate: data.rate ?? currentChagingData?.rate ?? currentPlan?.rate ?? 0,
 
       transactionId: data.transactionId || session?.receiptId || session?.sessionId || session?.id,
@@ -606,17 +756,21 @@ export const SessionProvider = ({ children }) => {
   }, [])
 
   const isCustomSession = useMemo(() => {
-    return plan?.type === 'CUSTOM' || plan?.isCustom === true
-  }, [plan])
+    // 1. Check Plan Object
+    if (plan?.type === 'CUSTOM' || plan?.isCustom === true) return true
+
+    // 2. Check Session Data for Custom Markers (Target/Selected kWh)
+    const s = session || chargingData
+    // Check widely for any property indicating a custom energy target
+    const target = Number(s?.selectedKwh || s?.selected_kwh || s?.kwh || s?.targetKwh || s?.target_kwh || 0)
+
+    return target > 0
+  }, [plan, session, chargingData])
 
   const getRemainingTime = useCallback(() => {
-    // If custom session or NO PLAN data (recovery failed), show elapsed time
-    if (isCustomSession || !plan?.durationMin) {
-      return formatTime(chargingData.timeElapsed)
-    }
-    const total = plan.durationMin * 60
-    return formatTime(Math.max(0, total - chargingData.timeElapsed))
-  }, [plan?.durationMin, chargingData.timeElapsed, formatTime, isCustomSession])
+    // Always show elapsed time for consistency
+    return formatTime(chargingData.timeElapsed)
+  }, [chargingData.timeElapsed, formatTime])
 
   const getBatteryHealth = useCallback(() => {
     const p = chargingData.percentage
@@ -664,7 +818,7 @@ export const SessionProvider = ({ children }) => {
     isNotificationDisabled,
     isCustomSession,
 
-    loadingMessages: LOADING_MESSAGES,
+    loadingMessages: isResuming.current ? RESUMING_MESSAGES : LOADING_MESSAGES,
     remainingTime: getRemainingTime(),
     batteryHealth: getBatteryHealth(),
 
