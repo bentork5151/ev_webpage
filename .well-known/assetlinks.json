@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.bentork.application",
+      "sha256_cert_fingerprints": [
+        "8E:32:AE:CA:78:D3:78:F0:CD:32:11:9F:54:6E:AF:05:4D:74:AA:DE:37:68:65:12:07:16:16:08:7F:71:F0:FC"
+      ]
+    }
+  }
+]
